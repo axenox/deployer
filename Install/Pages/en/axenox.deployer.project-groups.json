@@ -1,0 +1,40 @@
+{
+    "id": "0x19d09df0e10111e9903100a0c6000009",
+    "alias_with_namespace": "axenox.deployer.project-groups",
+    "menu_parent_page_alias": "axenox.deployer.home",
+    "menu_index": "2",
+    "menu_visible": true,
+    "name": "Project Groups",
+    "description": "",
+    "intro": "",
+    "replaces_page_alias": null,
+    "contents": {
+        "widget_type": "DataTable",
+        "object_alias": "axenox.Deployer.project_group",
+        "columns": [
+            {
+                "attribute_group_alias": "~VISIBLE"
+            },
+            {
+                "attribute_alias": "project__UID:COUNT",
+                "caption": "Projects"
+            }
+        ],
+        "buttons": [
+            {
+                "action_alias": "exface.Core.ShowObjectCreateDialog"
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectEditDialog",
+                "bind_to_double_click": true
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectCopyDialog"
+            },
+            {
+                "action_alias": "exface.Core.DeleteObject",
+                "visibility": "optional"
+            }
+        ]
+    }
+}

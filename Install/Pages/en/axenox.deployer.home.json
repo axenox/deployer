@@ -1,0 +1,67 @@
+{
+    "id": "0xb9bb4be0e10011e99b6800a0c6000009",
+    "alias_with_namespace": "axenox.deployer.home",
+    "menu_parent_page_alias": "exface.core.administration",
+    "menu_index": "9",
+    "menu_visible": true,
+    "name": "Deployer",
+    "description": "",
+    "intro": "",
+    "replaces_page_alias": null,
+    "contents": {
+        "widget_type": "DataTable",
+        "object_alias": "axenox.Deployer.project",
+        "filters": [
+            {
+                "attribute_alias": "project_group"
+            },
+            {
+                "attribute_alias": "name"
+            }
+        ],
+        "columns": [
+            {
+                "attribute_alias": "name"
+            },
+            {
+                "attribute_alias": "project_group__LABEL"
+            },
+            {
+                "attribute_alias": "host__UID:COUNT",
+                "caption": "Hosts"
+            },
+            {
+                "attribute_alias": "build_recipe"
+            },
+            {
+                "attribute_alias": "deployment_recipe"
+            }
+        ],
+        "sorters": [
+            {
+                "attribute_alias": "project_group__LABEL",
+                "direction": "asc"
+            },
+            {
+                "attribute_alias": "name",
+                "direction": "asc"
+            }
+        ],
+        "buttons": [
+            {
+                "action_alias": "exface.Core.ShowObjectCreateDialog"
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectEditDialog",
+                "bind_to_double_click": true
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectCopyDialog"
+            },
+            {
+                "action_alias": "exface.Core.DeleteObject",
+                "visibility": "optional"
+            }
+        ]
+    }
+}

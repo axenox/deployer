@@ -1,0 +1,40 @@
+{
+    "id": "0xdae6d000e10011e98d8400a0c6000009",
+    "alias_with_namespace": "axenox.deployer.stages",
+    "menu_parent_page_alias": "axenox.deployer.home",
+    "menu_index": "1",
+    "menu_visible": true,
+    "name": "Stages",
+    "description": "",
+    "intro": "",
+    "replaces_page_alias": null,
+    "contents": {
+        "widget_type": "DataTable",
+        "object_alias": "axenox.Deployer.stage",
+        "columns": [
+            {
+                "attribute_group_alias": "~VISIBLE"
+            },
+            {
+                "attribute_alias": "host__UID:COUNT",
+                "caption": "Hosts"
+            }
+        ],
+        "buttons": [
+            {
+                "action_alias": "exface.Core.ShowObjectCreateDialog"
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectEditDialog",
+                "bind_to_double_click": true
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectCopyDialog"
+            },
+            {
+                "action_alias": "exface.Core.DeleteObject",
+                "visibility": "optional"
+            }
+        ]
+    }
+}
