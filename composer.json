@@ -1,7 +1,8 @@
 {
 	"name" : "axenox/deployer",
 	"require" : {
-		"exface/core" : "~0.1"
+		"exface/core" : "~0.1",
+		"deployer/deployer" : "^6.5"
 	},
 	"support" : {
 		"issues" : "https://github.com/axenox/deployer/issues"
