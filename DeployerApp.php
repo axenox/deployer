@@ -15,6 +15,7 @@ class DeployerApp extends App
         $sqlInstaller = new MySqlDatabaseInstaller($this->getSelector());
         $sqlInstaller
             ->setFoldersWithMigrations(['InitDB','Migrations'])
+            ->setMigrationsTableName($sqlInstaller->getMigrationsTableName() . '_deployer')
             ->setDataConnection($this->getWorkbench()->model()->getModelLoader()->getDataConnection());
         $installer->addInstaller($sqlInstaller);
         return $installer;
