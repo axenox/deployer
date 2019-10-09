@@ -1,28 +1,29 @@
 {
-    "name": "axenox/deployer",
-    "require": {
-        "exface/core": "~0.1",
-        "deployer/deployer": "^6.5"
-    },
-    "support": {
-        "issues": "https://github.com/axenox/deployer/issues"
-    },
-    "autoload": {
-        "psr-4": {
-            "\\axenox\\Deployer\\": ""
-        },
-        "exclude-from-classmap": [
-            "/Config/",
-            "/Translations/",
-            "/Model/"
-        ]
-    },
-    "extra": {
-        "app": {
-            "app_uid": "0x11e9e072016ba0dd8afae4b318306b9a",
-            "app_alias": "axenox.Deployer",
-            "model_md5": "5c0a3ff16314da5a63bac706d58ea453",
-            "model_timestamp": "2019-10-01 10:19:50"
-        }
-    }
+	"name" : "axenox/deployer",
+	"require" : {
+		"exface/core" : "~0.1",
+		"deployer/deployer" : "^6.5",
+		"deployer/recipes" : "^6.2.2"
+	},
+	"support" : {
+		"issues" : "https://github.com/axenox/deployer/issues"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"\\axenox\\Deployer\\" : ""
+		},
+		"exclude-from-classmap" : [
+			"/Config/",
+			"/Translations/",
+			"/Model/"
+		]
+	},
+	"extra" : {
+		"app" : {
+			"app_uid" : "0x11e9e072016ba0dd8afae4b318306b9a",
+			"app_alias" : "axenox.Deployer",
+			"model_md5" : "5c0a3ff16314da5a63bac706d58ea453",
+			"model_timestamp" : "2019-10-01 10:19:50"
+		}
+	}
 }
