@@ -125,7 +125,7 @@ task('copy_directories', function () {
     if ( ! test('[ -f {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/{{config_dir}}/{{modx_config_file}} ]' ) ) {
         
         run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/ && chmod +w ./ && mkdir -p {{config_dir}}');
-        run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/{{config_dir}}/ && (echo \'{\\"PATH_TO_MODX\": \\"../../../index-exface.php\\"}\') > exface.ModxCmsConnector.config.json');
+        run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/{{config_dir}}/ && (echo \'{"PATH_TO_MODX": "../../../index-exface.php"}\') > exface.ModxCmsConnector.config.json');
         
         // FIXME scp would be much nicer, but it keeps saying, remote path is neither file nor directory!
         // runLocally('scp -r -F "{{host_ssh_config}}" {{host_upload_dir}} {{host_short}}:{{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/');
