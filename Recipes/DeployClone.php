@@ -34,7 +34,7 @@ set('source_files', $source_files);
 set('config_dir', $config_dir);
 set('git_tty', false); 
 set('shared_files', []);
-set('shared_dirs', ['backup', 'cache', 'export', 'logs', 'UserData']);
+set('shared_dirs', ['backup', 'cache', 'export', 'UserData', 'logs']);
 set('copy_dirs', ['config']);
 set('keep_releases', $keep_releases);
 set('allow_anonymous_stats', false);
@@ -151,6 +151,10 @@ task('post_install', function(){
         writeln('');
     });
 });
+
+task('wait', function (){
+	sleep(180);
+});
     
 task('deploy', [  
     'use_bin_symlink_with_cygwin_prefix',
@@ -165,18 +169,22 @@ task('deploy', [
     //'deploy:writable', 
     'deploy:symlink',    
     // 'deploy:update_code' //, Update does require git repository, otherwise fails with error   The command "/cygdrive/c/Program Files/Git/cmd/git version" //failed.
-    'deploy:shared', 
-    
+	'wait',
+    'deploy:shared',     
     ///'deploy:vendors', // Installation via composer requires installation of composer on client
     //'deploy:clear_paths'
     'create_exface_symlink',
 	//'deploy:unlock', // ok for first installation not to use this
+    'wait',
     'create_shared_links',
+	'wait',
 	'post_install',
     'cleanup',
     'show_release_names',
     'success'
 ]); 
+
+
 
 //task('redirect_current_to_previous_release', function () {
 //    if (has('previous_release')) {
