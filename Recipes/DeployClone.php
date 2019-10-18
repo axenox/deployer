@@ -189,5 +189,3 @@ task('deploy', [
 //   'redirect_current_to_previous_release',
 //   'post_install'
 //]);
-
-
