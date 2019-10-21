@@ -127,10 +127,16 @@ task('create_exface_symlink', function() {
     run("cd {{basic_deploy_path_cygwin}} && {{bin/symlink}} {{relative_deploy_path}}/current exface"); 
 });
 
-task('upload_to_release_path', function () { 
+task('upload_tar_to_release_path', function () { 
 	runLocally('cat {{builds_archives_path}}\{{release_name}}.tar.gz | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{deploy_path}}/{{release_path}}; cat > {{archiv_name}})"');
-	run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && tar -xzf {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/{{archiv_name}}');
-    run('cd {{deploy_path}}');
+	run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && tar -xzf {{archiv_name}}');
+    //run('cd {{deploy_path}}');
+});
+
+task('upload_php_to_release_path', function () {
+    runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{deploy_path}}/{{release_path}}; cat > {{release_name}}.php)"');
+    run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && php -d memory_limit=400M {{release_name}}.php');
+    //run('cd {{deploy_path}}');
 });
 
 
@@ -201,7 +207,7 @@ task('deploy_build', [
 	
     'set_release_path',
     'deploy:release', 
-    'upload_to_release_path',
+    'upload_php_to_release_path',
     'fix_permissions',
     'copy_directories',
     //'deploy:writable', 
@@ -221,3 +227,17 @@ task('deploy_build', [
     'show_release_names',
     'success'
 ]);
+
+/*task('deploy_build2', [
+    'get_build_name',
+    'use_bin_symlink_with_cygwin_prefix',
+    'deploy:prepare',
+    //'deploy:lock',    // ok for first installation not to use this
+    //'generate_release_name',
+    
+    'set_release_path',
+    'deploy:release',
+    'upload_php_to_release_path',
+]);*/
+
+
