@@ -151,6 +151,10 @@ task('post_install', function(){
         writeln('');
     });
 });
+
+task('wait', function (){
+    sleep(180);
+});
     
 task('deploy', [  
     'use_bin_symlink_with_cygwin_prefix',
@@ -164,15 +168,17 @@ task('deploy', [
     'copy_directories',
     //'deploy:writable', 
     'deploy:symlink',    
-    // 'deploy:update_code' //, Update does require git repository, otherwise fails with error   The command "/cygdrive/c/Program Files/Git/cmd/git version" //failed.
-    'deploy:shared', 
-    
-    ///'deploy:vendors', // Installation via composer requires installation of composer on client
+    //'deploy:update_code' //, Update does require git repository, otherwise fails with error   The command "/cygdrive/c/Program Files/Git/cmd/git version" //failed.
+    'wait',
+    'deploy:shared',    
+    //'deploy:vendors', // Installation via composer requires installation of composer on client
     //'deploy:clear_paths'
     'create_exface_symlink',
 	//'deploy:unlock', // ok for first installation not to use this
+    'wait',
     'create_shared_links',
-	'post_install',
+    'wait',
+    'post_install',
     'cleanup',
     'show_release_names',
     'success'
