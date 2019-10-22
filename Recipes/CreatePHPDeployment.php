@@ -64,7 +64,7 @@ if (!is_dir($current_path)) {
     foreach ($copy_dirs as $dir) {
         $dst = $release_path . DIRECTORY_SEPARATOR . $dir;
         $src = $current_path . DIRECTORY_SEPARATOR . $dir;
-        recurse_copy($src, $dst);
+        recurseCopy($src, $dst);
         echo("Directory {$dir} copied!\n");
     }    
 }
@@ -95,7 +95,7 @@ if (is_dir($base_config_path)) {
             echo("Base config {$file} copied!\n");
         }
     }
-    rmdir($base_config_path);
+    deleteDirectory($base_config_path);
     echo("Directory {$base_config_path} removed!\n");
 }
 
@@ -135,13 +135,13 @@ echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
 unlink(__FILE__);
 
 //copy whole directory (with subdirectories)
-function recurse_copy(string $src, string $dst) {
+function recurseCopy(string $src, string $dst) {
     $dir = opendir($src);
     mkdir($dst);
     while(false !== ( $file = readdir($dir)) ) {
         if (( $file != '.' ) && ( $file != '..' )) {
             if ( is_dir($src . DIRECTORY_SEPARATOR . $file) ) {
-                recurse_copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
+                recurseCopy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
             }
             else {
                 copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
@@ -149,6 +149,30 @@ function recurse_copy(string $src, string $dst) {
         }
     }
     closedir($dir);
+}
+
+//removing dir that is not empty
+function deleteDirectory(string $dir) {
+    if (!file_exists($dir)) {
+        return true;
+    }
+    
+    if (!is_dir($dir)) {
+        return unlink($dir);
+    }
+    
+    foreach (scandir($dir) as $item) {
+        if ($item == '.' || $item == '..') {
+            continue;
+        }
+        
+        if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+            return false;
+        }
+        
+    }
+    
+    return rmdir($dir);
 }
 
 //extracting archive that is appended to this php file
