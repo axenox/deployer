@@ -10,7 +10,21 @@ set('path_script_createphparchive', $path_script_createphparchive);
 set('path_script_createphpdeployment', $path_script_createphpdeployment);
 
 task('create_self_extracting_deployment', function () {
-    runLocally('copy /b "{{path_script_createphpdeployment}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
+    $temp_php = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('release_name') . '.php';
+    set('temp_php', $temp_php);
+    copy(get('path_script_createphpdeployment'), $temp_php);
+    $str=file_get_contents($temp_php);
+    $replace_basic_deploy_path = '$basic_deploy_path = ' . "'" .  get('basic_deploy_path') . "'";
+    $replace_relative_deploy_path = '$relative_deploy_path = ' . "'" .  get('relative_deploy_path') . "'";
+    $replace_shared_dirs = '$shared_dirs = ' . "['" . implode("', '", get('shared_dirs')) . "']";
+    $replace_copy_dirs = '$copy_dirs = ' . "['" . implode("', '", get('copy_dirs')) . "']";
+    $str=str_replace('$basic_deploy_path = \'\'', $replace_basic_deploy_path, $str);
+    $str=str_replace('$relative_deploy_path = \'\'', $replace_relative_deploy_path, $str);
+    $str=str_replace('$shared_dirs = \'\'', $replace_shared_dirs, $str);
+    $str=str_replace('$copy_dirs = \'\'', $replace_copy_dirs, $str);    
+    file_put_contents($temp_php, $str);
+    
+    runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
 });
 
 task('create_self_extracting_archive', function () {
@@ -74,7 +88,7 @@ task('deploy:shared', function () {
 
         // Symlink shared dir to release dir
         run("{{bin/symlink}} $sharedPath/$dir {{release_path}}/$dir");
-        //sleep(60);
+        sleep(60);
     }
 
     foreach (get('shared_files') as $file) {
@@ -243,15 +257,15 @@ task('deploy_build_with_archiv', [
     //'deploy:writable', 
     'deploy:symlink',    
     // 'deploy:update_code' //, Update does require git repository, otherwise fails with error   The command "/cygdrive/c/Program Files/Git/cmd/git version" //failed.
-	//'wait',
+	'wait',
     'deploy:shared',     
     ///'deploy:vendors', // Installation via composer requires installation of composer on client
     //'deploy:clear_paths'
     'create_exface_symlink',
 	//'deploy:unlock', // ok for first installation not to use this
-    //'wait',
+    'wait',
     'create_shared_links',
-	//'wait',
+	'wait',
 	'post_install',
     'cleanup',
     'show_release_names',

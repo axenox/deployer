@@ -2,8 +2,10 @@
 
 ini_set('memory_limit', '-1'); // or you could use 1G
 
-$basic_deploy_path =  'C:\wamp\www\powerui-int'; //should be included
-$relative_deploy_path = 'powerui'; //maybe should be included
+$basic_deploy_path = ''; //should be included
+$relative_deploy_path = ''; //maybe should be included
+$shared_dirs = ''; //should be included
+$copy_dirs = ''; //should be included
 $relative_releases_path = 'releases';
 $relative_shared_path = 'shared';
 $relative_current_path = 'current';
@@ -11,8 +13,7 @@ $deploy_path = $basic_deploy_path .  DIRECTORY_SEPARATOR . $relative_deploy_path
 $releases_path = $deploy_path . DIRECTORY_SEPARATOR . $relative_releases_path;
 $shared_path = $deploy_path . DIRECTORY_SEPARATOR . $relative_shared_path;
 $current_path = $deploy_path . DIRECTORY_SEPARATOR . $relative_current_path;
-$shared_dirs = ['backup', 'cache', 'export', 'UserData', 'logs']; //should be included
-$copy_dirs = ['config']; //should be included
+
 $release_name = pathinfo(__FILE__,  PATHINFO_FILENAME);
 $release_path = $releases_path . DIRECTORY_SEPARATOR . $release_name;
 $base_config_path = $release_path . DIRECTORY_SEPARATOR . 'base-config';
