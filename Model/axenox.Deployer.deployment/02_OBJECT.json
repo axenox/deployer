@@ -80,25 +80,25 @@
     ],
     "rows": [
         {
-            "CREATED_ON": "2019-10-01 07:57:20",
-            "MODIFIED_ON": "2019-10-01 10:18:51",
+            "CREATED_ON": "2019-10-22 13:37:23",
+            "MODIFIED_ON": "2019-10-22 13:37:51",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
-            "UID": "0x11e9e42115b0c631bacde4b318306b9a",
+            "UID": "0x11e9f4d0fabcbcffbacde4b318306b9a",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
             "COMMENTS": "",
             "DOCS": "",
-            "NAME": "Build",
+            "NAME": "Deploy",
             "INHERIT_DATA_SOURCE_BASE_OBJECT": "1",
-            "DATA_SOURCE": "0x11e6b09e2002641f8943e4b318306b9a",
+            "DATA_SOURCE": "0x32000000000000000000000000000000",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "SHORT_DESCRIPTION": "",
             "PARENT_OBJECT": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_EDITOR_UXON": null,
-            "ALIAS": "project_build",
-            "DATA_ADDRESS": "deployer\/[#PARENT_FOLDER__FOLDER_NAME#]\/builds\/*"
+            "ALIAS": "deployment",
+            "DATA_ADDRESS": "axxdep_deployment"
         }
     ],
     "totals_rows": [],

@@ -2,7 +2,6 @@
 -- Tabellenstruktur für Tabelle `axxdep_host`
 --
 
-DROP TABLE IF EXISTS `axxdep_host`;
 CREATE TABLE IF NOT EXISTS `axxdep_host` (
   `oid` binary(16) NOT NULL,
   `created_on` datetime NOT NULL,
@@ -25,7 +24,6 @@ CREATE TABLE IF NOT EXISTS `axxdep_host` (
 -- Tabellenstruktur für Tabelle `axxdep_project`
 --
 
-DROP TABLE IF EXISTS `axxdep_project`;
 CREATE TABLE IF NOT EXISTS `axxdep_project` (
   `oid` binary(16) NOT NULL,
   `created_on` datetime NOT NULL,
@@ -47,7 +45,6 @@ CREATE TABLE IF NOT EXISTS `axxdep_project` (
 -- Tabellenstruktur für Tabelle `axxdep_project_group`
 --
 
-DROP TABLE IF EXISTS `axxdep_project_group`;
 CREATE TABLE IF NOT EXISTS `axxdep_project_group` (
   `oid` binary(16) NOT NULL,
   `created_on` datetime NOT NULL,
@@ -64,7 +61,6 @@ CREATE TABLE IF NOT EXISTS `axxdep_project_group` (
 -- Tabellenstruktur für Tabelle `axxdep_stage`
 --
 
-DROP TABLE IF EXISTS `axxdep_stage`;
 CREATE TABLE IF NOT EXISTS `axxdep_stage` (
   `oid` binary(16) NOT NULL,
   `created_on` datetime NOT NULL,
