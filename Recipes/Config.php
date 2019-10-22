@@ -6,10 +6,11 @@ require 'vendor/deployer/deployer/recipe/common.php';
 ini_set('memory_limit', '-1'); // deployment may exceed 128MB internal memory limit
 
 $source_path = 'vendor';
-$source_files = 'vendor composer.json composer.lock composer.phar';
+$source_files = 'base-config vendor composer.json composer.lock composer.phar';
 $config_dir = 'config';
 $modx_config_file = 'exface.ModxCmsConnector.config.json';
 $releaseName = '';
+$php_path = 'php';
 
 // === semantic versioning parameters  ===
 $time_zone = 'Europe/Berlin';
@@ -26,6 +27,7 @@ set('host_short', $host_short);
 set('host_ssh_config', $host_ssh_config);
 set('builds_archives_path', $builds_archives_path);
 set('release_name', $releaseName);
+set('php_path', $php_path);
 
 // === name of modx config file
 set('modx_config_file', $modx_config_file);
