@@ -4,6 +4,34 @@ namespace Deployer;
 use Symfony\Component\Console\Input\InputArgument;
 use Deployer\Exception\Exception;
 
+$path_script_createphparchive = 'C:\\wamp\\www\\exface\\exface\\vendor\\axenox\\deployer\\Recipes\\CreatePHPArchive.php';
+$path_script_createphpdeployment = 'C:\\wamp\\www\\exface\\exface\\vendor\\axenox\\deployer\\Recipes\\CreatePHPDeployment.php';
+set('path_script_createphparchive', $path_script_createphparchive);
+set('path_script_createphpdeployment', $path_script_createphpdeployment);
+
+task('create_self_extracting_deployment', function () {
+    //copy deployment script and replace placeholders
+    $temp_php = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('release_name') . '.php';
+    set('temp_php', $temp_php);
+    copy(get('path_script_createphpdeployment'), $temp_php);
+    $str=file_get_contents($temp_php);
+    $replace_basic_deploy_path = get('basic_deploy_path');
+    $replace_relative_deploy_path = get('relative_deploy_path');
+    $replace_shared_dirs = "['" . implode("', '", get('shared_dirs')) . "']";
+    $replace_copy_dirs = "['" . implode("', '", get('copy_dirs')) . "']";
+    $str=str_replace('[#basic#]', $replace_basic_deploy_path, $str);
+    $str=str_replace('[#relative#]', $replace_relative_deploy_path, $str);
+    $str=str_replace('[#shared#]', $replace_shared_dirs, $str);
+    $str=str_replace('[#copy#]', $replace_copy_dirs, $str);    
+    file_put_contents($temp_php, $str);
+
+    runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
+});
+
+task('create_self_extracting_archive', function () {
+    runLocally('copy /b "{{path_script_createphparchive}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
+});
+
 task('get_build_name', function () {
     if (get('release_name') == '') {
 		if (input()->getOption('build') != null) {
@@ -11,7 +39,7 @@ task('get_build_name', function () {
 			$archivName = $releaseName . '.tar.gz';
 			set('release_name', $releaseName );
 			set('archiv_name', $archivName);
-			runLocally('echo Build gesetzt: {{release_name}}');
+			runLocally('echo release name set: {{release_name}}');
 		} else {
 		    $directory = get('builds_archives_path');
 			$files = scandir($directory, SCANDIR_SORT_DESCENDING);
@@ -21,8 +49,7 @@ task('get_build_name', function () {
 			$releaseName = substr($archivName,0,($stringLength-7));
 			set('release_name', $releaseName );
 			set('archiv_name', $archivName);
-			runLocally('echo ReleaseName: {{release_name}}');
-			//throw new Exception('Build name you want to deploy needs to be given when only running deploy_build task!');
+			runLocally('echo release name set: {{release_name}}');
 		}		
 	}		
 });
@@ -133,12 +160,27 @@ task('upload_tar_to_release_path', function () {
     //run('cd {{deploy_path}}');
 });
 
-task('upload_php_to_release_path', function () {
+task('upload_php_archive_to_release_path', function () {
     runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{deploy_path}}/{{release_path}}; cat > {{release_name}}.php)"');
-    run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && php -d memory_limit=400M {{release_name}}.php');
-    //run('cd {{deploy_path}}');
 });
 
+task('extract_php_archive', function() {
+    run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && {{php_path}} -d memory_limit=400M {{release_name}}.php');
+});
+
+task('upload_php_deployment_to_basic_deploy_path', function () {
+    runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{basic_deploy_path_cygwin}}; cat > {{release_name}}.php)"');
+});
+
+task('run_php_deployment', function () {
+    $composer_output = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=400M {{release_name}}.php');;
+    write($composer_output);
+    writeln('');
+});
+
+task('delete_local_php_file', function() {
+    runLocally('del /f {{builds_archives_path}}\{{release_name}}.php');
+});
 
 task('copy_directories', function () {
     $copy_dir_array = get('copy_dirs');
@@ -188,7 +230,7 @@ task('cleanup_only',[
     
 task('post_install', function(){
     within('{{deploy_path}}', function() {
-        $composer_output =  run('cd ../exface && php composer.phar run-script post-install-cmd');   
+        $composer_output =  run('cd ../exface && {{php_path}} composer.phar run-script post-install-cmd');   
         write($composer_output);
         writeln('');
     });
@@ -198,7 +240,7 @@ task('wait', function (){
 	sleep(180);
 });
 
-task('deploy_build', [ 
+task('deploy_build_with_archiv', [ 
 	'get_build_name',
     'use_bin_symlink_with_cygwin_prefix',
     'deploy:prepare', 
@@ -206,8 +248,10 @@ task('deploy_build', [
     //'generate_release_name',
 	
     'set_release_path',
-    'deploy:release', 
-    'upload_php_to_release_path',
+    'deploy:release',
+    'create_self_extracting_archive',
+    'upload_php_archive_to_release_path',
+    'extract_php_archive',
     'fix_permissions',
     'copy_directories',
     //'deploy:writable', 
@@ -225,19 +269,17 @@ task('deploy_build', [
 	'post_install',
     'cleanup',
     'show_release_names',
+    'delete_local_php_file',
     'success'
 ]);
 
-/*task('deploy_build2', [
-    'get_build_name',
-    'use_bin_symlink_with_cygwin_prefix',
-    'deploy:prepare',
-    //'deploy:lock',    // ok for first installation not to use this
-    //'generate_release_name',
-    
+task('deploy_build_with_php_deployment', [
+    'get_build_name',    
     'set_release_path',
-    'deploy:release',
-    'upload_php_to_release_path',
-]);*/
+    'create_self_extracting_deployment',
+    'upload_php_deployment_to_basic_deploy_path',
+    'run_php_deployment',
+    'delete_local_php_file'
+]);
 
 

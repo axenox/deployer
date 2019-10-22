@@ -9,6 +9,7 @@ $source_path = 'vendor';
 $source_files = 'vendor composer.json composer.lock composer.phar';
 $config_dir = 'config';
 $modx_config_file = 'exface.ModxCmsConnector.config.json';
+$php_path = 'php';
 
 // === semantic versioning parameters  ===
 $time_zone = 'Europe/Berlin';
@@ -23,6 +24,7 @@ set('relative_deploy_path', $relative_deploy_path);
 set('basic_deploy_path_cygwin', '/cygdrive/' . str_replace(['\\', ':'], ['/', ''], $basic_deploy_path));
 set('host_short', $host_short);
 set('host_ssh_config', $host_ssh_config);
+set('php_path', $php_path);
 
 // === name of modx config file
 set('modx_config_file', $modx_config_file);
@@ -212,7 +214,7 @@ task('cleanup_only',[
     
 task('post_install', function(){
     within('{{deploy_path}}', function() {
-        $composer_output =  run('cd ../exface && php composer.phar run-script post-install-cmd');   
+        $composer_output =  run('cd ../exface && {{php_path}} composer.phar run-script post-install-cmd');   
         write($composer_output);
         writeln('');
     });
