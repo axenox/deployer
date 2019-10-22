@@ -2,10 +2,10 @@
 
 ini_set('memory_limit', '-1'); // or you could use 1G
 
-$basic_deploy_path = ''; //should be included
-$relative_deploy_path = ''; //maybe should be included
-$shared_dirs = ''; //should be included
-$copy_dirs = ''; //should be included
+$basic_deploy_path = '[#basic#]'; //placeholder for string
+$relative_deploy_path = '[#relative#]'; //placeholder for string
+$shared_dirs = [#shared#]; //placeholder for array
+$copy_dirs = [#copy#]; //placeholder for array
 $relative_releases_path = 'releases';
 $relative_shared_path = 'shared';
 $relative_current_path = 'current';

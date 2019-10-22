@@ -10,20 +10,21 @@ set('path_script_createphparchive', $path_script_createphparchive);
 set('path_script_createphpdeployment', $path_script_createphpdeployment);
 
 task('create_self_extracting_deployment', function () {
+    //copy deployment script and replace placeholders
     $temp_php = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('release_name') . '.php';
     set('temp_php', $temp_php);
     copy(get('path_script_createphpdeployment'), $temp_php);
     $str=file_get_contents($temp_php);
-    $replace_basic_deploy_path = '$basic_deploy_path = ' . "'" .  get('basic_deploy_path') . "'";
-    $replace_relative_deploy_path = '$relative_deploy_path = ' . "'" .  get('relative_deploy_path') . "'";
-    $replace_shared_dirs = '$shared_dirs = ' . "['" . implode("', '", get('shared_dirs')) . "']";
-    $replace_copy_dirs = '$copy_dirs = ' . "['" . implode("', '", get('copy_dirs')) . "']";
-    $str=str_replace('$basic_deploy_path = \'\'', $replace_basic_deploy_path, $str);
-    $str=str_replace('$relative_deploy_path = \'\'', $replace_relative_deploy_path, $str);
-    $str=str_replace('$shared_dirs = \'\'', $replace_shared_dirs, $str);
-    $str=str_replace('$copy_dirs = \'\'', $replace_copy_dirs, $str);    
+    $replace_basic_deploy_path = get('basic_deploy_path');
+    $replace_relative_deploy_path = get('relative_deploy_path');
+    $replace_shared_dirs = "['" . implode("', '", get('shared_dirs')) . "']";
+    $replace_copy_dirs = "['" . implode("', '", get('copy_dirs')) . "']";
+    $str=str_replace('[#basic#]', $replace_basic_deploy_path, $str);
+    $str=str_replace('[#relative#]', $replace_relative_deploy_path, $str);
+    $str=str_replace('[#shared#]', $replace_shared_dirs, $str);
+    $str=str_replace('[#copy#]', $replace_copy_dirs, $str);    
     file_put_contents($temp_php, $str);
-    
+
     runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
 });
 
@@ -49,7 +50,6 @@ task('get_build_name', function () {
 			set('release_name', $releaseName );
 			set('archiv_name', $archivName);
 			runLocally('echo release name set: {{release_name}}');
-			//throw new Exception('Build name you want to deploy needs to be given when only running deploy_build task!');
 		}		
 	}		
 });
