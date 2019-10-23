@@ -13,7 +13,13 @@ task('generate_release_name', function(){
 
 
 task('create_release_archiv', function () {
-	runLocally('tar -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}}');
+    $builds_path = get('builds_archives_path');
+    if (!is_dir($builds_path)) {
+        mkdir($builds_path);
+    }
+    $builds_path_relative = strstr($builds_path , 'deployer');
+    set('builds_archives_relative_path', $builds_path_relative);
+	runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}}');
 });
 
 task('create_build', [
