@@ -4,8 +4,8 @@ namespace Deployer;
 use Symfony\Component\Console\Input\InputArgument;
 use Deployer\Exception\Exception;
 
-$path_script_createphparchive = 'C:\\wamp\\www\\exface\\exface\\vendor\\axenox\\deployer\\Recipes\\CreatePHPArchive.php';
-$path_script_createphpdeployment = 'C:\\wamp\\www\\exface\\exface\\vendor\\axenox\\deployer\\Recipes\\CreatePHPDeployment.php';
+$path_script_createphparchive = '.\\vendor\\axenox\\deployer\\Recipes\\CreatePHPArchive.php';
+$path_script_createphpdeployment = '.\\vendor\\axenox\\deployer\\Recipes\\CreatePHPDeployment.php';
 set('path_script_createphparchive', $path_script_createphparchive);
 set('path_script_createphpdeployment', $path_script_createphpdeployment);
 
