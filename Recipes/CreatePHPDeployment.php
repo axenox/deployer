@@ -6,6 +6,7 @@ $basic_deploy_path = '[#basic#]'; //placeholder for string
 $relative_deploy_path = '[#relative#]'; //placeholder for string
 $shared_dirs = [#shared#]; //placeholder for array
 $copy_dirs = [#copy#]; //placeholder for array
+$php_path = '[#php#]'; //placeholder for array
 $relative_releases_path = 'releases';
 $relative_shared_path = 'shared';
 $relative_current_path = 'current';
@@ -99,6 +100,11 @@ if (is_dir($base_config_path)) {
     echo("Directory {$base_config_path} removed!\n");
 }
 
+//permissions
+//chmod($release_path, 0777);
+//chmod($release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
+//echo("Permissions set!\n");
+
 //create 'current' symlink to new release
 chdir($deploy_path);
 if (is_dir($current_path)) {
@@ -128,12 +134,28 @@ if (!$test)
 }
 
 //Install Apps
-require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
+//require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+//echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
+$path = $basic_deploy_path . DIRECTORY_SEPARATOR . 'exface';
+if (substr(php_uname(), 0, 7) == "Windows"){
+    $command = "cd {$path} && {$php_path} composer.phar run-script post-install-cmd";
+}
+else {
+    //TODO not tested yet on Linux!
+    $command = "cd {$path} && {$php_path} composer.phar run-script post-install-cmd";
+}
+echo ("Installing apps...\n");
+$cmdarray = [];
+echo exec("{$command}", $cmdarray);
+foreach($cmdarray as $line) {
+    echo ($line . "\n");
+}
 
 //delete this file
 unlink(__FILE__);
+echo ("Self deployment file deleted!\n");
 
+//Functions
 //copy whole directory (with subdirectories)
 function recurseCopy(string $src, string $dst) {
     $dir = opendir($src);
