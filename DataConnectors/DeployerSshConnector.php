@@ -75,6 +75,10 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
 {
     private $host = null;
     
+    private $port = '22';
+    
+    private $user = null;
+    
     private $ssh_config = [];
     
     private $ssh_private_key = null;
@@ -189,4 +193,56 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
         $this->ssh_private_key = $value;
         return $this;
     }
+    
+    /**
+     * 
+     * 
+     * @return string
+     */
+    public function getUser() : string
+    {
+        return $this->user;
+    }
+    
+    /**
+     * SSH user
+     * 
+     * @uxon-property user
+     * @uxon-type string
+     * @uxon-required
+     * 
+     * @param string $value
+     * @return DeployerSshConnector
+     */
+    public function setUser(string $value) : DeployerSshConnector
+    {
+        $this->user = $value;
+        return $this;
+    }
+    
+    /**
+     *
+     * @return int
+     */
+    public function getPort() : int
+    {
+        return $this->port;
+    }
+    
+    /**
+     * SSH port
+     * 
+     * @uxon-property port
+     * @uxon-type integer
+     * @uoxn-default 22
+     * 
+     * @param int $value
+     * @return DeployerSshConnector
+     */
+    public function setPort(int $value) : DeployerSshConnector
+    {
+        $this->port = $value;
+        return $this;
+    }
+    
 }
