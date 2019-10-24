@@ -4,8 +4,8 @@ namespace Deployer;
 use Symfony\Component\Console\Input\InputArgument;
 use Deployer\Exception\Exception;
 
-$path_script_createphparchive = 'C:\\wamp\\www\\exface\\exface\\vendor\\axenox\\deployer\\Recipes\\CreatePHPArchive.php';
-$path_script_createphpdeployment = 'C:\\wamp\\www\\exface\\exface\\vendor\\axenox\\deployer\\Recipes\\CreatePHPDeployment.php';
+$path_script_createphparchive = '.\\vendor\\axenox\\deployer\\Recipes\\CreatePHPArchive.php';
+$path_script_createphpdeployment = '.\\vendor\\axenox\\deployer\\Recipes\\CreatePHPDeployment.php';
 set('path_script_createphparchive', $path_script_createphparchive);
 set('path_script_createphpdeployment', $path_script_createphpdeployment);
 
@@ -19,10 +19,12 @@ task('create_self_extracting_deployment', function () {
     $replace_relative_deploy_path = get('relative_deploy_path');
     $replace_shared_dirs = "['" . implode("', '", get('shared_dirs')) . "']";
     $replace_copy_dirs = "['" . implode("', '", get('copy_dirs')) . "']";
+    $replace_php_path = get('php_path');
     $str=str_replace('[#basic#]', $replace_basic_deploy_path, $str);
     $str=str_replace('[#relative#]', $replace_relative_deploy_path, $str);
     $str=str_replace('[#shared#]', $replace_shared_dirs, $str);
-    $str=str_replace('[#copy#]', $replace_copy_dirs, $str);    
+    $str=str_replace('[#copy#]', $replace_copy_dirs, $str);
+    $str=str_replace('[#php#]', $replace_php_path, $str);
     file_put_contents($temp_php, $str);
 
     runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
