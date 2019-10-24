@@ -6,7 +6,7 @@ ALTER TABLE `axxdep_project`
 	ADD COLUMN `default_composer_auth_json` TEXT NULL AFTER `default_composer_json`;
 
 ALTER TABLE `axxdep_build`
-	CHANGE COLUMN `status` `status` INT(2) NOT NULL AFTER `name`;
+	ADD COLUMN `status` INT(2) NOT NULL AFTER `name`;
 	
 ALTER TABLE `axxdep_deployment`
 	ADD COLUMN `status` INT(2) NOT NULL AFTER `deploy_recipe_file`,
