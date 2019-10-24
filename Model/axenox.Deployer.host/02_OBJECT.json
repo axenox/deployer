@@ -81,7 +81,7 @@
     "rows": [
         {
             "CREATED_ON": "2019-09-27 07:22:43",
-            "MODIFIED_ON": "2019-10-22 13:30:15",
+            "MODIFIED_ON": "2019-10-24 08:39:01",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9e0f798c74f73bacde4b318306b9a",
@@ -96,7 +96,7 @@
             "SHORT_DESCRIPTION": "",
             "PARENT_OBJECT": "",
             "DATA_ADDRESS_PROPS": null,
-            "DEFAULT_EDITOR_UXON": null,
+            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Dialog\",\"widgets\":[{\"widget_type\":\"tabs\",\"tabs\":[{\"caption\":\"Host\",\"widgets\":[{\"widget_type\":\"WidgetGroup\",\"widgets\":[{\"attribute_alias\":\"name\"},{\"attribute_alias\":\"stage\"},{\"attribute_alias\":\"data_connection\"},{\"attribute_alias\":\"project\"}]},{\"widget_type\":\"WidgetGroup\",\"caption\":\"Deployment\",\"widgets\":[{\"attribute_alias\":\"path_abs_to_api\"},{\"attribute_alias\":\"path_rel_to_releases\"},{\"attribute_alias\":\"operating_system\"},{\"attribute_alias\":\"php_cli\"}]}]},{\"caption\":\"Deploys\",\"widgets\":[{\"widget_type\":\"DataTable\",\"object_alias\":\"axenox.Deployer.deployment\",\"filters\":[{\"attribute_alias\":\"host\",\"comparator\":\"==\",\"widget_type\":\"InputHidden\",\"required\":true}],\"columns\":[{\"attribute_alias\":\"build__LABEL\"},{\"attribute_alias\":\"started_on\"},{\"attribute_alias\":\"completed_on\"},{\"attribute_alias\":\"status\"}],\"sorters\":[{\"attribute_alias\":\"started_on\",\"direction\":\"desc\"}],\"buttons\":[{\"action_alias\":\"exface.Core.ShowObjectInfoDialog\",\"bind_to_double_click\":true}]}]}]}],\"buttons\":[{\"caption\":\"New Connection\",\"close_dialog\":false,\"action\":{\"alias\":\"exface.Core.ShowObjectCreateDialog\",\"object_alias\":\"exface.Core.CONNECTION\",\"prefill_with_input_data\":true}}]}",
             "ALIAS": "host",
             "DATA_ADDRESS": "axxdep_host"
         }
