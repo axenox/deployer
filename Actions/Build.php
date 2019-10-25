@@ -15,6 +15,8 @@ use exface\Core\Exceptions\Actions\ActionInputMissingError;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\CommonLogic\Filemanager;
+use axenox\Deployer\DeployerSshConnector\DeployerSshConnector;
+use exface\Core\Factories\DataConnectionFactory;
 
 /**
  * Creates a build from the passed data.
@@ -65,7 +67,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildRecipe = $this->getBuildRecipeFile($task);
             
             $buildFolder = $this->createBuildFolder($task);
-            $deployPhp = $this->createDeployPhp($buildRecipe);
+            $deployPhp = $this->createDeployPhp($buildRecipe, $buildFolder);
 
             // TODO run the deployer recipe for building and see if it is successfull!
             // Use symfony process? 
@@ -120,7 +122,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         return $recipeFile;
     }
     
-    protected function createDeployPhp(string $recipePath) : string
+    protected function createDeployPhp(string $recipePath, string $buildFolder) : string
     {
         $content = <<<PHP
 
@@ -131,7 +133,7 @@ require 'vendor/autoload.php'; // Or move it to deployer and automatically detec
 
 \$application = 'Power UI';
 \$version = '0.1-beta';
-\$project = basename(__DIR__);
+\$project = $buildFolder;
 
 // === Host ===
 \$stage = 'test';
@@ -142,37 +144,58 @@ require 'vendor/autoload.php'; // Or move it to deployer and automatically detec
 // === Path definitions ===
 \$basic_deploy_path =  'C:\\wamp\\www\\powerui';
 \$relative_deploy_path = 'powerui';
+\$builds_archives_path = __DIR__ . '\\builds';
 
 require '{$recipePath}';
 
 PHP;
+        
+        $content_php = fopen($buildFolder . DIRECTORY_SEPARATOR . 'deploy.php', 'w');
+        fwrite($content_php, $content);
+        fclose($content_php);
+        
+        
         // TODO Datei speichern unter deployer\[project-alias]\deploy.php
         // return /* TODO pfad */;
-        return '';
+        return $buildFolder . DIRECTORY_SEPARATOR . 'deploy.php';
     }
     
     protected function createBuildFolder(TaskInterface $task) : string
     {
-        $privateKey = $this->getConnectionData($task, 'ssh_private_key');
-        $hostName = $this->getConnectionData($task, 'host_name');
-        $customOptions = $this->getConnectionData($task, 'ssh_config');
+     //   $connection = $this->getSshConnection($task);
         
+     //   $hostName = $connection->getHostName();
+     //   $customOptions = $connection->getSshConfig();
+     //   $privateKey = $connection->getSshPrivateKey();
+        
+        $fm = $this->getWorkbench()->filemanager();
+        $buildsFolderPath = $fm->getPathToBaseFolder() 
+            . DIRECTORY_SEPARATOR . 'deployer' 
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias') 
+            . DIRECTORY_SEPARATOR . $this->getBuildsFolderName();
+        Filemanager::pathConstruct($buildsFolderPath);
+        
+
         /*
          * TODO
          * 
          * deployer
             	[project_alias]
-            		hosts
-            			host_name
-            				ssh_config -> Daten aus der DataConnection
-            				known_hosts -> leer
-            				id_rsa -> private key aus DataConnection
             		builds -> leerer ordner
+            		deploy.php
          */
         
         // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
         
-        return 'deployer\sfc_koenig';
+        return $fm->getPathToBaseFolder()
+        . DIRECTORY_SEPARATOR . 'deployer'
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias') ;
+        //'deployer\sfc_koenig';
+    }
+    
+    protected function getBuildsFolderName() : string
+    {
+        return 'builds';
     }
     
     protected function getDefaultSshConfig(string $pathToHostFolder, string $hostName, string $user, string $port) : array
@@ -190,12 +213,31 @@ PHP;
         ];
     }
     
-    protected function getConnectionData(TaskInterface $task, string $option) : string
+    protected function getHostData(TaskInterface $task, string $option) : string
     {
-        // TODO wie getProjectData()
-        
-        return $option;
-        
+        if ($this->hostData === null) {
+            $inputData = $this->getInputDataSheet($task);
+            if ($col = $inputData->getColumns()->get('host')) {
+                $hostUid = $col->getCellValue(0);
+            } else {
+                throw new ActionInputMissingError($this, 'TODO: not host!');
+            }
+            
+            $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
+            $ds->getColumns()->addMultiple([
+                'data_connection'
+            ]);
+            $ds->addFilterFromString('UID', $hostUid, ComparatorDataType::EQUALS);
+            $ds->dataRead();
+            $this->hostData = $ds;
+        }
+        return $this->hostData->getCellValue($option, 0);
+    }
+    
+    protected function getSshConnection(TaskInterface $task) : DeployerSshConnector
+    {
+        $connectionUid = $this->getHostData($task, 'data_connection');
+        return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
     }    
     
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
@@ -210,8 +252,16 @@ PHP;
 
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
             $ds->getColumns()->addMultiple([
-                'build_recipe'
-                // TODO: was noch?
+                'alias',
+                'build_recipe',
+                'build_recipe_custom_path',
+                'default_composer_json',
+                'default_composer_auth_json',
+                'default_config',
+                'deployment_recipe',
+                'deployment_receipe_custom_path',
+                'name',
+                'project_group'
             ]);
             $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
             $ds->dataRead();
