@@ -92,7 +92,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Update build with actual build results
             $buildData->dataUpdate(false, $transaction);
             
-            $this->cleanupFiles();
+            $this->cleanupFiles($buildFolder);
 
             yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
 
@@ -314,8 +314,15 @@ PHP;
         return [];
     }
     
-    protected function cleanupFiles()
+    
+    /**
+     * delete all files created in the build process
+     * @param string $buildFolder
+     */
+    protected function cleanupFiles(string $buildFolder)
     {
+        unlink($buildFolder . DIRECTORY_SEPARATOR . 'deploy.php');
+        
         // TODO alles löschen außer deployer\[project_alias]\builds
     }
 }
