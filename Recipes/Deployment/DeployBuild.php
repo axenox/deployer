@@ -1,60 +1,9 @@
 <?php
 namespace Deployer;
 
-use Symfony\Component\Console\Input\InputArgument;
-use Deployer\Exception\Exception;
-
-$path_script_createphparchive = '.\\vendor\\axenox\\deployer\\Recipes\\CreatePHPArchive.php';
-$path_script_createphpdeployment = '.\\vendor\\axenox\\deployer\\Recipes\\CreatePHPDeployment.php';
-set('path_script_createphparchive', $path_script_createphparchive);
-set('path_script_createphpdeployment', $path_script_createphpdeployment);
-
-task('create_self_extracting_deployment', function () {
-    //copy deployment script and replace placeholders
-    $temp_php = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('release_name') . '.php';
-    set('temp_php', $temp_php);
-    copy(get('path_script_createphpdeployment'), $temp_php);
-    $str=file_get_contents($temp_php);
-    $replace_basic_deploy_path = get('basic_deploy_path');
-    $replace_relative_deploy_path = get('relative_deploy_path');
-    $replace_shared_dirs = "['" . implode("', '", get('shared_dirs')) . "']";
-    $replace_copy_dirs = "['" . implode("', '", get('copy_dirs')) . "']";
-    $replace_php_path = get('php_path');
-    $str=str_replace('[#basic#]', $replace_basic_deploy_path, $str);
-    $str=str_replace('[#relative#]', $replace_relative_deploy_path, $str);
-    $str=str_replace('[#shared#]', $replace_shared_dirs, $str);
-    $str=str_replace('[#copy#]', $replace_copy_dirs, $str);
-    $str=str_replace('[#php#]', $replace_php_path, $str);
-    file_put_contents($temp_php, $str);
-
-    runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
-});
-
-task('create_self_extracting_archive', function () {
-    runLocally('copy /b "{{path_script_createphparchive}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
-});
-
-task('get_build_name', function () {
-    if (get('release_name') == '') {
-		if (input()->getOption('build') != null) {
-			$releaseName = input()->getOption('build');
-			$archivName = $releaseName . '.tar.gz';
-			set('release_name', $releaseName );
-			set('archiv_name', $archivName);
-			runLocally('echo release name set: {{release_name}}');
-		} else {
-		    $directory = get('builds_archives_path');
-			$files = scandir($directory, SCANDIR_SORT_DESCENDING);
-			$newest_file = $files[0];
-			$archivName = $newest_file;
-			$stringLength = strlen($archivName);
-			$releaseName = substr($archivName,0,($stringLength-7));
-			set('release_name', $releaseName );
-			set('archiv_name', $archivName);
-			runLocally('echo release name set: {{release_name}}');
-		}		
-	}		
-});
+require 'vendor/axenox/deployer/Recipes/Deplyoment/DeployTasks/GetReleaseName.php';
+require 'vendor/axenox/deployer/Recipes/Deplyoment/DeployTasks/CreateSelfExtractingArchive.php';
+require 'vendor/axenox/deployer/Recipes/Deplyoment/DeployTasks/DeleteLocalPHPFile.php';
 
 desc('Creating symlinks for shared files and dirs');
 task('deploy:shared', function () {
@@ -122,7 +71,7 @@ task('deploy:shared', function () {
     }
 });
 
-task('use_bin_symlink_with_cygwin_prefix' , function () {
+task('configure_remote_shell_for_windows' , function () {
    set('symlink_prefix' , 'export set CYGWIN=winsymlinks:nativestrict && ');
    set('bin/symlink', function () {
         return get('use_relative_symlink') ? get('symlink_prefix') . 'ln -nfs --relative' : get('symlink_prefix') . 'ln -nfs';
@@ -156,32 +105,12 @@ task('create_exface_symlink', function() {
     run("cd {{basic_deploy_path_cygwin}} && {{bin/symlink}} {{relative_deploy_path}}/current exface"); 
 });
 
-task('upload_tar_to_release_path', function () { 
-	runLocally('cat {{builds_archives_path}}\{{release_name}}.tar.gz | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{deploy_path}}/{{release_path}}; cat > {{archiv_name}})"');
-	run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && tar -xzf {{archiv_name}}');
-    //run('cd {{deploy_path}}');
-});
-
 task('upload_php_archive_to_release_path', function () {
     runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{deploy_path}}/{{release_path}}; cat > {{release_name}}.php)"');
 });
 
 task('extract_php_archive', function() {
     run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && {{php_path}} -d memory_limit=400M {{release_name}}.php');
-});
-
-task('upload_php_deployment_to_basic_deploy_path', function () {
-    runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{basic_deploy_path_cygwin}}; cat > {{release_name}}.php)"');
-});
-
-task('run_php_deployment', function () {
-    $composer_output = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=400M {{release_name}}.php');;
-    write($composer_output);
-    writeln('');
-});
-
-task('delete_local_php_file', function() {
-    runLocally('del /f {{builds_archives_path}}\{{release_name}}.php');
 });
 
 task('copy_directories', function () {
@@ -226,9 +155,6 @@ task('fix_permissions', function() {
    run('chmod +x {{deploy_path}}/{{release_path}}/vendor/bin');
 });
 
-task('cleanup_only',[
-    'cleanup'
-]);
     
 task('post_install', function(){
     within('{{deploy_path}}', function() {
@@ -238,50 +164,40 @@ task('post_install', function(){
     });
 });
 
-task('wait', function (){
-	sleep(180);
-});
+
 
 task('deploy_build_with_archiv', [ 
-	'get_build_name',
-    'use_bin_symlink_with_cygwin_prefix',
+	'build:find',
+    'remote_windows:use_native_symlinks',
     'deploy:prepare', 
     //'deploy:lock',    // ok for first installation not to use this
     //'generate_release_name',
 	
-    'set_release_path',
+    'muss_weg:set_release_path',
     'deploy:release',
-    'create_self_extracting_archive',
-    'upload_php_archive_to_release_path',
-    'extract_php_archive',
-    'fix_permissions',
-    'copy_directories',
+    'self_extractor:create',
+    'self_extractor:upload',
+    'self_extractor:extract',
+    'deploy:fix_permissions',
+    'deploy:copy_directories',
     //'deploy:writable', 
     'deploy:symlink',    
     // 'deploy:update_code' //, Update does require git repository, otherwise fails with error   The command "/cygdrive/c/Program Files/Git/cmd/git version" //failed.
-	'wait',
+	'network:wait',
     'deploy:shared',     
     ///'deploy:vendors', // Installation via composer requires installation of composer on client
     //'deploy:clear_paths'
-    'create_exface_symlink',
+    'deploy:create_exface_symlink',
 	//'deploy:unlock', // ok for first installation not to use this
-    'wait',
-    'create_shared_links',
-	'wait',
-	'post_install',
-    'cleanup',
-    'show_release_names',
-    'delete_local_php_file',
-    'success'
-]);
-
-task('deploy_build_with_php_deployment', [
-    'get_build_name',    
-    'set_release_path',
-    'create_self_extracting_deployment',
-    'upload_php_deployment_to_basic_deploy_path',
-    'run_php_deployment',
-    'delete_local_php_file'
+    'network:wait',
+    'deploy:create_shared_links',
+	'network:wait',
+	'install:install_current_packages',//post_install',
+	'install:uninstall_unused_packages';
+    'deploy:show_release_names',
+    'self_extractor:delete_remote_file',
+    'self_extractor:delete_local_file',
+    'deploy:success'
 ]);
 
 

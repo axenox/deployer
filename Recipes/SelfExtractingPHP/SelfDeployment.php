@@ -136,6 +136,7 @@ if (!$test)
 //Install Apps
 //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
+
 $path = $basic_deploy_path . DIRECTORY_SEPARATOR . 'exface';
 if (substr(php_uname(), 0, 7) == "Windows"){
     $command = "cd {$path} && {$php_path} composer.phar run-script post-install-cmd";
