@@ -196,8 +196,8 @@ PHP;
         
         return $option;
         
-    }
-
+    }    
+    
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->projectData === null) {
@@ -221,7 +221,7 @@ PHP;
     }
 
     /**
-     * 
+     * Generates buildname from buildversion and current time
      * @param TaskInterface $task
      * @return string
      */
