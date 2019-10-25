@@ -53,7 +53,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         $generator = function () use ($task, $buildData, $result, $transaction) {
 
             // TODO generate build name
-            $buildName = '0.1-beta+20191024115900';
+            $buildName = $this->generateBuildName($task);
+            // e.g. '0.1-beta+20191024115900';
 
             yield 'Building ' . $buildName;
 
@@ -147,6 +148,7 @@ require '{$recipePath}';
 PHP;
         // TODO Datei speichern unter deployer\[project-alias]\deploy.php
         // return /* TODO pfad */;
+        return '';
     }
     
     protected function createBuildFolder(TaskInterface $task) : string
@@ -192,6 +194,8 @@ PHP;
     {
         // TODO wie getProjectData()
         
+        return $option;
+        
     }
 
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
@@ -216,6 +220,27 @@ PHP;
         return $this->projectData->getCellValue($projectAttributeAlias, 0);
     }
 
+    /**
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function generateBuildName(TaskInterface $task) : string
+    {
+        $inputData = $this->getInputDataSheet($task);
+        if ($col = $inputData->getColumns()->get('version')) {
+            $version = $col->getCellValue(0);
+        } else {
+            throw new ActionInputMissingError($this, 'TODO: no version');
+        }
+
+        $timestamp = date('YmdHis');
+        
+        return $version . '+' . $timestamp;
+
+    }
+   
+    
     /**
      *
      * {@inheritdoc}
