@@ -52,7 +52,7 @@ if (!is_dir($release_path)) {
     mkdir($release_path);
     echo("Directory {$release_path} created!\n");
 } else {
-    throw new Exception('Release already exists!');
+    throw new Exception("The selected release '{$release_name}' does already exist on the server!');
 }
 
 //copy directories which should get copied from old to new releases
