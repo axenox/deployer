@@ -9,7 +9,6 @@ require 'vendor/axenox/deployer/Recipes/RemoteWindows.php';
 require 'vendor/axenox/deployer/Recipes/SelfExtractor.php';
 require 'vendor/axenox/deployer/Recipes/Deploy.php';
 require 'vendor/axenox/deployer/Recipes/Install.php';
-require 'vendor/axenox/deployer/Recipes/Network.php';
 
 option('build', null, InputOption::VALUE_OPTIONAL, 'test option.');
 
@@ -17,23 +16,18 @@ task('LocalBldSshInstall', [
     'build:find',
     'remote_windows:use_native_symlinks',
     'deploy:prepare',
-    'deploy:release',
     'self_extractor:create',
     'self_extractor:upload',
     'self_extractor:extract',
     'deploy:fix_permissions',
-    'deploy:copy_directories',
-    'deploy:symlink',
-    'network:wait',
+    'deploy:copy_directories',   
     'deploy:shared',
-    'deploy:create_exface_symlink',
-    'network:wait',
+    'deploy:create_symlinks',
     'deploy:create_shared_links',
-    'network:wait',
-    'install:install_current_packages',//post_install',
+    'install:install_current_packages',
     'install:uninstall_unused_packages',
     'deploy:show_release_names',
     'self_extractor:delete_remote_file',
     'self_extractor:delete_local_file',
-    'deploy:success'    
+    'deploy:success'
 ]);
