@@ -67,7 +67,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildRecipe = $this->getBuildRecipeFile($task);
             
             $buildFolder = $this->createBuildFolder($task);
-            $deployPhp = $this->createDeployPhp($buildRecipe, $buildFolder);
+            $deployPhp = $this->createDeployPhp($task, $buildRecipe, $buildFolder);
 
             // TODO run the deployer recipe for building and see if it is successfull!
             // Use symfony process? 
@@ -75,6 +75,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Beispiel - s. WebConsoleFacade ab Zeile 124
             $log = '';
             $seconds = 0;
+            //$process = Process::fromShellCommandline($cmd);
             foreach ($process as $msg) {
                 // Live output
                 yield $msg;
@@ -92,7 +93,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Update build with actual build results
             $buildData->dataUpdate(false, $transaction);
             
-            $this->cleanupFiles($buildFolder);
+            //$this->cleanupFiles($buildFolder);
 
             yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
 
@@ -122,8 +123,14 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         return $recipeFile;
     }
     
-    protected function createDeployPhp(string $recipePath, string $buildFolder) : string
+    protected function createDeployPhp(TaskInterface $task, string $recipePath, string $buildFolder) : string
     {
+        
+        $version = $this->getVersion($task);
+        $stage = "test"; // $this->getHostData($task, 'stage');
+        $name = "testbuild"; //$this->getHostData($task, 'name');
+        
+        
         $content = <<<PHP
 
 <?php
@@ -132,19 +139,19 @@ namespace Deployer;
 require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
 
 \$application = 'Power UI';
-\$version = '0.1-beta';
-\$project = $buildFolder;
+\$version = '{$version}'; //'0.1-beta'
+\$project = '{$buildFolder}';
 
 // === Host ===
-\$stage = 'test';
+\$stage = '{$stage}'; //'test'
 \$keep_releases = 6;
-\$host_short = 'powerui';
-\$host_ssh_config = __DIR__ . '\\hosts\\' . \$host_short . '\\ssh_config';
+\$host_short = '{$name}'; //'powerui'
+// \$host_ssh_config = __DIR__ . '\\hosts\\' . \$host_short . '\\ssh_config';
 
 // === Path definitions ===
 \$basic_deploy_path =  'C:\\wamp\\www\\powerui';
 \$relative_deploy_path = 'powerui';
-\$builds_archives_path = __DIR__ . '\\builds';
+\$builds_archives_path = __DIR__ . '\\' . '{$this->getBuildsFolderName()}';
 
 require '{$recipePath}';
 
@@ -175,6 +182,14 @@ PHP;
             . DIRECTORY_SEPARATOR . $this->getBuildsFolderName();
         Filemanager::pathConstruct($buildsFolderPath);
         
+        $hostsFolderPath = $fm->getPathToBaseFolder()
+            . DIRECTORY_SEPARATOR . 'deployer'
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias')
+            . DIRECTORY_SEPARATOR . $this->gethostsFolderName()
+            . DIRECTORY_SEPARATOR . 'host_name';
+        
+        Filemanager::pathConstruct($hostsFolderPath);
+        
 
         /*
          * TODO
@@ -198,17 +213,23 @@ PHP;
         return 'builds';
     }
     
+    protected function getHostsFolderName() : string
+    {
+        return 'hosts';
+    }
+    
     protected function getDefaultSshConfig(string $pathToHostFolder, string $hostName, string $user, string $port) : array
     {
+
         return [
             /*
-            HostName 10.57.2.40 // Kommt aus Dataconnection
-            User SFCKOENIG\ITSaltBI // Kommt aus DataConnection
-            port 22 // Kommt aus DataConnection
-            PreferredAuthentications publickey
-            StrictHostKeyChecking no
-            IdentityFile C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
-            UserKnownHostsFile C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
+            HostName: $hostName, // 10.57.2.40 // Kommt aus Dataconnection
+            User: $user, //SFCKOENIG\ITSaltBI // Kommt aus DataConnection
+            port: port, //22 // Kommt aus DataConnection
+            PreferredAuthentications: publickey,
+            StrictHostKeyChecking: no,
+            IdentityFile: pathToHostFolder . DIRECTORY_SEPERATOR . "id_rsa", //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
+            UserKnownHostsFile: pathToHostFolder . DIRECTORY_SEPERATOR . "known_hosts" //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
             */
         ];
     }
@@ -225,7 +246,15 @@ PHP;
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
             $ds->getColumns()->addMultiple([
-                'data_connection'
+                'data_connection',
+                'last_build_deployed',
+                'name',
+                'operating_system',
+                'path_abs_to_api',
+                'path_rel_to_releases',
+                'php_cli',
+                'project',
+                'stage'
             ]);
             $ds->addFilterFromString('UID', $hostUid, ComparatorDataType::EQUALS);
             $ds->dataRead();
@@ -277,19 +306,32 @@ PHP;
      */
     protected function generateBuildName(TaskInterface $task) : string
     {
+        $timestamp = date('YmdHis');
+        
+        return $this->getVersion($task) . '+' . $timestamp;
+
+    }
+       
+    
+    /**
+     * gets version from task
+     * 
+     * @param TaskInterface $task
+     * @throws ActionInputMissingError
+     * @return string
+     */
+    protected function getVersion(TaskInterface $task) : string 
+    {
+        
         $inputData = $this->getInputDataSheet($task);
         if ($col = $inputData->getColumns()->get('version')) {
             $version = $col->getCellValue(0);
         } else {
             throw new ActionInputMissingError($this, 'TODO: no version');
         }
-
-        $timestamp = date('YmdHis');
-        
-        return $version . '+' . $timestamp;
-
+        return $version;        
     }
-   
+    
     
     /**
      *
