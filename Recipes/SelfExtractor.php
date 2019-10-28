@@ -17,10 +17,10 @@ task('self_extractor:extract', function() {
 });
     
 task('self_extractor:delete_remote_file', function() {
-    run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && del /f {{release_name}}.php');
+    run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}} && rm -f {{release_name}}.php');
 });
     
 task('self_extractor:delete_local_file', function() {
-    runLocally('del /f {{builds_archives_path}}\{{release_name}}.php');
+    runLocally('rm -f {{builds_archives_path}}\{{release_name}}.php');
 });
                     
