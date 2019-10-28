@@ -11,6 +11,6 @@ task('install:install_current_packages', function(){
 });
 
 //TODO
-task('install:install_current_packages', function(){
+task('install:uninstall_unused_packages', function(){
     
 });
