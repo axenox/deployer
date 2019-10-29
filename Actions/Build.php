@@ -17,6 +17,7 @@ use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\CommonLogic\Filemanager;
 use axenox\Deployer\DeployerSshConnector\DeployerSshConnector;
 use exface\Core\Factories\DataConnectionFactory;
+use Symfony\Component\Process\Process;
 
 /**
  * Creates a build from the passed data.
@@ -73,11 +74,14 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
 
             // TODO run the deployer recipe for building and see if it is successfull!
             // Use symfony process? 
-            // c:\wamp\www\sfckoenig\exface> vendor\bin\dep -f=deployer\sfc\deploy_prod.php deploy
+            //chdir('c:\\wamp\\www\\exface\\exface');
+            $cmd = "vendor\\bin\\dep -f=deployer\\" . $this->getProjectData($task, 'alias')  . "\\build.php CloneLocal";
+            //$cwd = 'c:\\wamp\\www\\exface\\exface';
             // Beispiel - s. WebConsoleFacade ab Zeile 124
             $log = '';
             $seconds = 0;
-            //$process = Process::fromShellCommandline($cmd);
+            $process = Process::fromShellCommandline($cmd, null, null, null, 600);
+            $process->start();
             foreach ($process as $msg) {
                 // Live output
                 yield $msg;
@@ -116,14 +120,14 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     {
         $recipe = $this->getProjectData($task, 'build_recipe');
         $recipeFile = '';
-        $recipiesBasePath = Filemanager::FOLDER_NAME_VENDOR . DIRECTORY_SEPARATOR . $this->getApp()->getDirectory() . DIRECTORY_SEPARATOR . 'Recipes' . DIRECTORY_SEPARATOR;
+        $recipiesBasePath = Filemanager::FOLDER_NAME_VENDOR . DIRECTORY_SEPARATOR . $this->getApp()->getDirectory() . DIRECTORY_SEPARATOR . 'Recipes' . DIRECTORY_SEPARATOR . 'Build' . DIRECTORY_SEPARATOR;
 
         switch ($recipe) {
             case BuildRecipeDataType::COMPOSER_INSTALL:
                 // TODO füllen von $recipeFile
                 break;
             case BuildRecipeDataType::CLONE_LOCAL:
-                $recipeFile = $recipiesBasePath . 'CreateBuild.php';
+                $recipeFile = $recipiesBasePath . 'CloneLocal.php';
                 break;
         }
 
@@ -196,7 +200,6 @@ PHP;
     {
       
         $content = <<<PHP
-        
 <?php
 namespace Deployer;
 
@@ -207,8 +210,8 @@ require 'vendor/deployer/deployer/recipe/common.php';
 set('release_name', \$releaseName);
 
 // === Path definitions ===
-\$builds_archives_path = __DIR__ . '\\' . '{$this->getBuildsFolderName()}';
-\$base_config_path = __DIR__ . '\\' . '{$this->getBaseConfigFolderName()}';
+\$builds_archives_path = __DIR__ . '\\\' . '{$this->getBuildsFolderName()}';
+\$base_config_path = __DIR__ . '\\\' . '{$this->getBaseConfigFolderName()}';
 set('builds_archives_path', \$builds_archives_path);
 set('base_config_path', \$base_config_path);
 
