@@ -6,19 +6,19 @@ use Deployer\Exception\Exception;
 use function Deployer\Support\str_contains;
 
 task('deploy:copy_directories', function () {
-    $copy_dir_array = get('copy_dirs');
-    $has_previous_release = false;
+    $copyDirArray = get('copy_dirs');
+    $hasPreviousRelease = false;
     set('target_dir_cygwin', get('basic_deploy_path_cygwin') . '/' . get('relative_deploy_path') . '/' . get('release_path') );
     set('target_dir', get('deploy_path'). '/'. get('release_path'));
     //check if symlink 'curent' exists, if so, set path to it as previous_release
     if (test("[ -L {{deploy_path}}/current ]")) {        
         set('cygwin_path_previous_release', get('basic_deploy_path_cygwin') . '/' . get('relative_deploy_path') . '/current');
-        $has_previous_release = true;
+        $hasPreviousRelease = true;
     }        
-    foreach ($copy_dir_array as $dir_to_copy) {
-        set('current_copy_dir' , $dir_to_copy );
+    foreach ($copyDirArray as $dirToCopy) {
+        set('current_copy_dir' , $dirToCopy );
         run('cd {{target_dir}} && mkdir -p {{current_copy_dir}}');
-        if ($has_previous_release === true) {
+        if ($hasPreviousRelease === true) {
             if(test( '[ -d {{cygwin_path_previous_release}}/{{current_copy_dir}} ]')) {
                 run('cp -rf {{cygwin_path_previous_release}}/{{current_copy_dir}}/. {{target_dir}}/{{current_copy_dir}}/');
             }

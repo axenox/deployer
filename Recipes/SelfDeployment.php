@@ -1,8 +1,8 @@
 <?php
 namespace Deployer;
 
-$path_script_createphpdeployment = 'vendor\\axenox\\deployer\\Recipes\\SelfExtractingPHP\\SelfDeployment.php';
-set('path_script_createphpdeployment', $path_script_createphpdeployment);
+$pathScriptCreatephpdeployment = 'vendor\\axenox\\deployer\\Recipes\\SelfExtractingPHP\\SelfExtractingDeployment.php';
+set('path_script_createphpdeployment', $pathScriptCreatephpdeployment);
 
 task('self_deployment:create', function () {
     //copy deployment script and replace placeholders
@@ -10,16 +10,16 @@ task('self_deployment:create', function () {
     set('temp_php', $temp_php);
     copy(get('path_script_createphpdeployment'), $temp_php);
     $str=file_get_contents($temp_php);
-    $replace_basic_deploy_path = get('basic_deploy_path');
-    $replace_relative_deploy_path = get('relative_deploy_path');
-    $replace_shared_dirs = "['" . implode("', '", get('shared_dirs')) . "']";
-    $replace_copy_dirs = "['" . implode("', '", get('copy_dirs')) . "']";
-    $replace_php_path = get('php_path');
-    $str=str_replace('[#basic#]', $replace_basic_deploy_path, $str);
-    $str=str_replace('[#relative#]', $replace_relative_deploy_path, $str);
-    $str=str_replace('[#shared#]', $replace_shared_dirs, $str);
-    $str=str_replace('[#copy#]', $replace_copy_dirs, $str);
-    $str=str_replace('[#php#]', $replace_php_path, $str);
+    $replaceBasicDeployPath = get('basic_deploy_path');
+    $replaceRelativeDeployPath = get('relative_deploy_path');
+    $replaceSharedDirs = "['" . implode("', '", get('shared_dirs')) . "']";
+    $replaceCopyDirs = "['" . implode("', '", get('copy_dirs')) . "']";
+    $replacePhpPath= get('php_path');
+    $str=str_replace('[#basic#]', $replaceBasicDeployPath, $str);
+    $str=str_replace('[#relative#]', $replaceRelativeDeployPath, $str);
+    $str=str_replace('[#shared#]', $replaceSharedDirs, $str);
+    $str=str_replace('[#copy#]', $replaceCopyDirs, $str);
+    $str=str_replace('[#php#]', $replacePhpPath, $str);
     file_put_contents($temp_php, $str);
     
     runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
@@ -30,8 +30,8 @@ task('self_deployment:upload', function () {
 });
     
 task('self_deployment:run', function () {
-    $composer_output = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=400M {{release_name}}.php');;
-    write($composer_output);
+    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=400M {{release_name}}.php');;
+    write($composerOutput);
     writeln('');
 });
 
