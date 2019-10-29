@@ -48,8 +48,11 @@ task('build:create_from_local', function() {
         $base_config_path = null;
     }
     if ($base_config_path !=='' && $base_config_path !== null) {
-        $path = substr($base_config_path, strrpos($base_config_path, '\\') + 1);
-        runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $path);
+        if (!is_dir($$base_config_path)) {
+            mkdir($$base_config_path);
+        }
+        $directory_name = substr($base_config_path, strrpos($base_config_path, '\\') + 1);
+        runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $directory_name);
     } else {
         runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}}');        
     }
