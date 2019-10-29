@@ -2,7 +2,7 @@
 
 namespace Deployer;
 
-require 'vendor/axenox/deployer/Recipes/Config.php';
+require 'vendor/axenox/deployer/Recipes/BuildConfig.php';
 require 'vendor/axenox/deployer/Recipes/Build.php';
 
 task('CloneLocal', [

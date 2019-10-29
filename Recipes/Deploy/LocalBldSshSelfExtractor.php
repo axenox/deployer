@@ -3,7 +3,7 @@ namespace Deployer;
 
 use Symfony\Component\Console\Input\InputOption;
 
-require 'vendor/axenox/deployer/Recipes/Config.php';
+require 'vendor/axenox/deployer/Recipes/DeployConfig.php';
 require 'vendor/axenox/deployer/Recipes/Build.php';
 require 'vendor/axenox/deployer/Recipes/SelfDeployment.php';
 
