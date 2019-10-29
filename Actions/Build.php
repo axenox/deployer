@@ -15,6 +15,8 @@ use exface\Core\Exceptions\Actions\ActionInputMissingError;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\CommonLogic\Filemanager;
+use axenox\Deployer\DeployerSshConnector\DeployerSshConnector;
+use exface\Core\Factories\DataConnectionFactory;
 
 /**
  * Creates a build from the passed data.
@@ -53,7 +55,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         $generator = function () use ($task, $buildData, $result, $transaction) {
 
             // TODO generate build name
-            $buildName = '0.1-beta+20191024115900';
+            $buildName = $this->generateBuildName($task);
+            // e.g. '0.1-beta+20191024115900';
 
             yield 'Building ' . $buildName;
 
@@ -64,7 +67,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildRecipe = $this->getBuildRecipeFile($task);
             
             $buildFolder = $this->createBuildFolder($task);
-            $deployPhp = $this->createDeployPhp($buildRecipe);
+            $deployPhp = $this->createDeployPhp($task, $buildRecipe, $buildFolder);
 
             // TODO run the deployer recipe for building and see if it is successfull!
             // Use symfony process? 
@@ -72,13 +75,13 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Beispiel - s. WebConsoleFacade ab Zeile 124
             $log = '';
             $seconds = 0;
+            //$process = Process::fromShellCommandline($cmd);
             foreach ($process as $msg) {
                 // Live output
                 yield $msg;
                 // Save to log
                 $log .= $msg;
             }
-
             if ($success === false) {
                 $buildData->setCellValue('status', 0, 90); // failed
             } else {
@@ -89,7 +92,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Update build with actual build results
             $buildData->dataUpdate(false, $transaction);
             
-            $this->cleanupFiles();
+            //$this->cleanupFiles($buildFolder);
 
             yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
 
@@ -101,6 +104,12 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         return $result;
     }
 
+    /**
+     *
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
     protected function getBuildRecipeFile(TaskInterface $task): string
     {
         $recipe = $this->getProjectData($task, 'build_recipe');
@@ -119,8 +128,22 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         return $recipeFile;
     }
     
-    protected function createDeployPhp(string $recipePath) : string
+    /**
+     * generates deploy data and creates deploy.php file
+     * 
+     * @param TaskInterface $task
+     * @param string $recipePath
+     * @param string $buildFolder
+     * @return string
+     */
+    
+    protected function createDeployPhp(TaskInterface $task, string $recipePath, string $buildFolder) : string
     {
+        
+        $stage = "test"; // $this->getHostData($task, 'stage');
+        $name = "testbuild"; //$this->getHostData($task, 'name');
+        
+        
         $content = <<<PHP
 
 <?php
@@ -129,71 +152,180 @@ namespace Deployer;
 require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
 
 \$application = 'Power UI';
-\$version = '0.1-beta';
-\$project = basename(__DIR__);
+\$version = '{$this->getVersion($task)}'; //'0.1-beta'
+\$project = '{$buildFolder}';
 
 // === Host ===
-\$stage = 'test';
+\$stage = '{$stage}'; //'test'
 \$keep_releases = 6;
-\$host_short = 'powerui';
-\$host_ssh_config = __DIR__ . '\\hosts\\' . \$host_short . '\\ssh_config';
+\$host_short = '{$name}'; //'powerui'
+// \$host_ssh_config = __DIR__ . '\\hosts\\' . \$host_short . '\\ssh_config';
 
 // === Path definitions ===
 \$basic_deploy_path =  'C:\\wamp\\www\\powerui';
 \$relative_deploy_path = 'powerui';
+\$builds_archives_path = __DIR__ . '\\' . '{$this->getBuildsFolderName()}';
 
 require '{$recipePath}';
 
 PHP;
+        
+        $content_php = fopen($buildFolder . DIRECTORY_SEPARATOR . 'deploy.php', 'w');
+        fwrite($content_php, $content);
+        fclose($content_php);
+        
+        
         // TODO Datei speichern unter deployer\[project-alias]\deploy.php
         // return /* TODO pfad */;
+        return $buildFolder . DIRECTORY_SEPARATOR . 'deploy.php';
     }
     
+    
+    /**
+     * creates the folder structure needed for the building process
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
     protected function createBuildFolder(TaskInterface $task) : string
     {
-        $privateKey = $this->getConnectionData($task, 'ssh_private_key');
-        $hostName = $this->getConnectionData($task, 'host_name');
-        $customOptions = $this->getConnectionData($task, 'ssh_config');
+     //   $connection = $this->getSshConnection($task);
         
+     //   $hostName = $connection->getHostName();
+     //   $customOptions = $connection->getSshConfig();
+     //   $privateKey = $connection->getSshPrivateKey();
+        
+        $fm = $this->getWorkbench()->filemanager();
+        $buildsFolderPath = $fm->getPathToBaseFolder() 
+            . DIRECTORY_SEPARATOR . 'deployer' 
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias') 
+            . DIRECTORY_SEPARATOR . $this->getBuildsFolderName();
+        Filemanager::pathConstruct($buildsFolderPath);
+        
+        $hostsFolderPath = $fm->getPathToBaseFolder()
+            . DIRECTORY_SEPARATOR . 'deployer'
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias')
+            . DIRECTORY_SEPARATOR . $this->gethostsFolderName()
+            . DIRECTORY_SEPARATOR . 'host_name';
+        
+        Filemanager::pathConstruct($hostsFolderPath);
+        
+
         /*
          * TODO
          * 
          * deployer
             	[project_alias]
-            		hosts
-            			host_name
-            				ssh_config -> Daten aus der DataConnection
-            				known_hosts -> leer
-            				id_rsa -> private key aus DataConnection
             		builds -> leerer ordner
+            		deploy.php
          */
         
         // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
         
-        return 'deployer\sfc_koenig';
+        return $fm->getPathToBaseFolder()
+        . DIRECTORY_SEPARATOR . 'deployer'
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias') ;
+        //'deployer\sfc_koenig';
     }
     
+    /**
+     * 
+     * @return string
+     */
+    protected function getBuildsFolderName() : string
+    {
+        return 'builds';
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function getHostsFolderName() : string
+    {
+        return 'hosts';
+    }
+    
+    /**
+     * 
+     * @param string $pathToHostFolder
+     * @param string $hostName
+     * @param string $user
+     * @param string $port
+     * @return array
+     */
     protected function getDefaultSshConfig(string $pathToHostFolder, string $hostName, string $user, string $port) : array
     {
+
         return [
             /*
-            HostName 10.57.2.40 // Kommt aus Dataconnection
-            User SFCKOENIG\ITSaltBI // Kommt aus DataConnection
-            port 22 // Kommt aus DataConnection
-            PreferredAuthentications publickey
-            StrictHostKeyChecking no
-            IdentityFile C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
-            UserKnownHostsFile C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
+            HostName: $hostName, // 10.57.2.40 // Kommt aus Dataconnection
+            User: $user, //SFCKOENIG\ITSaltBI // Kommt aus DataConnection
+            port: port, //22 // Kommt aus DataConnection
+            PreferredAuthentications: publickey,
+            StrictHostKeyChecking: no,
+            IdentityFile: pathToHostFolder . DIRECTORY_SEPERATOR . "id_rsa", //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
+            UserKnownHostsFile: pathToHostFolder . DIRECTORY_SEPERATOR . "known_hosts" //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
             */
         ];
     }
     
-    protected function getConnectionData(TaskInterface $task, string $option) : string
+    /**
+     * function for getting a value out of the hosts data
+     * 
+     * @param TaskInterface $task
+     * @param string $option
+     * @throws ActionInputMissingError
+     * @return string
+     */
+    protected function getHostData(TaskInterface $task, string $option) : string
     {
-        // TODO wie getProjectData()
-        
+        if ($this->hostData === null) {
+            $inputData = $this->getInputDataSheet($task);
+            if ($col = $inputData->getColumns()->get('host')) {
+                $hostUid = $col->getCellValue(0);
+            } else {
+                throw new ActionInputMissingError($this, 'TODO: not host!');
+            }
+            
+            $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
+            $ds->getColumns()->addMultiple([
+                'data_connection',
+                'last_build_deployed',
+                'name',
+                'operating_system',
+                'path_abs_to_api',
+                'path_rel_to_releases',
+                'php_cli',
+                'project',
+                'stage'
+            ]);
+            $ds->addFilterFromString('UID', $hostUid, ComparatorDataType::EQUALS);
+            $ds->dataRead();
+            $this->hostData = $ds;
+        }
+        return $this->hostData->getCellValue($option, 0);
     }
-
+    
+    /**
+     * 
+     * @param TaskInterface $task
+     * @return DeployerSshConnector
+     */
+    protected function getSshConnection(TaskInterface $task) : DeployerSshConnector
+    {
+        $connectionUid = $this->getHostData($task, 'data_connection');
+        return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
+    }    
+    
+    /**
+     * function for getting a value out of the projects data
+     * 
+     * @param TaskInterface $task
+     * @param string $projectAttributeAlias
+     * @throws ActionInputMissingError
+     * @return string
+     */
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->projectData === null) {
@@ -206,8 +338,16 @@ PHP;
 
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
             $ds->getColumns()->addMultiple([
-                'build_recipe'
-                // TODO: was noch?
+                'alias',
+                'build_recipe',
+                'build_recipe_custom_path',
+                'default_composer_json',
+                'default_composer_auth_json',
+                'default_config',
+                'deployment_recipe',
+                'deployment_receipe_custom_path',
+                'name',
+                'project_group'
             ]);
             $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
             $ds->dataRead();
@@ -216,6 +356,40 @@ PHP;
         return $this->projectData->getCellValue($projectAttributeAlias, 0);
     }
 
+    /**
+     * Generates buildname from buildversion and current time
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function generateBuildName(TaskInterface $task) : string
+    {
+        $timestamp = date('YmdHis');
+        
+        return $this->getVersion($task) . '+' . $timestamp;
+
+    }
+       
+    
+    /**
+     * gets version from task
+     * 
+     * @param TaskInterface $task
+     * @throws ActionInputMissingError
+     * @return string
+     */
+    protected function getVersion(TaskInterface $task) : string 
+    {
+        
+        $inputData = $this->getInputDataSheet($task);
+        if ($col = $inputData->getColumns()->get('version')) {
+            $version = $col->getCellValue(0);
+        } else {
+            throw new ActionInputMissingError($this, 'TODO: no version');
+        }
+        return $version;        
+    }
+    
+    
     /**
      *
      * {@inheritdoc}
@@ -239,8 +413,15 @@ PHP;
         return [];
     }
     
-    protected function cleanupFiles()
+    
+    /**
+     * delete all files created in the build process
+     * @param string $buildFolder
+     */
+    protected function cleanupFiles(string $buildFolder)
     {
+        unlink($buildFolder . DIRECTORY_SEPARATOR . 'deploy.php');
+        
         // TODO alles löschen außer deployer\[project_alias]\builds
     }
 }
