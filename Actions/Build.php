@@ -82,7 +82,6 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 // Save to log
                 $log .= $msg;
             }
-
             if ($success === false) {
                 $buildData->setCellValue('status', 0, 90); // failed
             } else {
@@ -105,6 +104,12 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         return $result;
     }
 
+    /**
+     *
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
     protected function getBuildRecipeFile(TaskInterface $task): string
     {
         $recipe = $this->getProjectData($task, 'build_recipe');
@@ -123,10 +128,18 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         return $recipeFile;
     }
     
+    /**
+     * generates deploy data and creates deploy.php file
+     * 
+     * @param TaskInterface $task
+     * @param string $recipePath
+     * @param string $buildFolder
+     * @return string
+     */
+    
     protected function createDeployPhp(TaskInterface $task, string $recipePath, string $buildFolder) : string
     {
         
-        $version = $this->getVersion($task);
         $stage = "test"; // $this->getHostData($task, 'stage');
         $name = "testbuild"; //$this->getHostData($task, 'name');
         
@@ -139,7 +152,7 @@ namespace Deployer;
 require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
 
 \$application = 'Power UI';
-\$version = '{$version}'; //'0.1-beta'
+\$version = '{$this->getVersion($task)}'; //'0.1-beta'
 \$project = '{$buildFolder}';
 
 // === Host ===
@@ -167,6 +180,13 @@ PHP;
         return $buildFolder . DIRECTORY_SEPARATOR . 'deploy.php';
     }
     
+    
+    /**
+     * creates the folder structure needed for the building process
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
     protected function createBuildFolder(TaskInterface $task) : string
     {
      //   $connection = $this->getSshConnection($task);
@@ -208,16 +228,32 @@ PHP;
         //'deployer\sfc_koenig';
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function getBuildsFolderName() : string
     {
         return 'builds';
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function getHostsFolderName() : string
     {
         return 'hosts';
     }
     
+    /**
+     * 
+     * @param string $pathToHostFolder
+     * @param string $hostName
+     * @param string $user
+     * @param string $port
+     * @return array
+     */
     protected function getDefaultSshConfig(string $pathToHostFolder, string $hostName, string $user, string $port) : array
     {
 
@@ -234,6 +270,14 @@ PHP;
         ];
     }
     
+    /**
+     * function for getting a value out of the hosts data
+     * 
+     * @param TaskInterface $task
+     * @param string $option
+     * @throws ActionInputMissingError
+     * @return string
+     */
     protected function getHostData(TaskInterface $task, string $option) : string
     {
         if ($this->hostData === null) {
@@ -263,12 +307,25 @@ PHP;
         return $this->hostData->getCellValue($option, 0);
     }
     
+    /**
+     * 
+     * @param TaskInterface $task
+     * @return DeployerSshConnector
+     */
     protected function getSshConnection(TaskInterface $task) : DeployerSshConnector
     {
         $connectionUid = $this->getHostData($task, 'data_connection');
         return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
     }    
     
+    /**
+     * function for getting a value out of the projects data
+     * 
+     * @param TaskInterface $task
+     * @param string $projectAttributeAlias
+     * @throws ActionInputMissingError
+     * @return string
+     */
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->projectData === null) {
