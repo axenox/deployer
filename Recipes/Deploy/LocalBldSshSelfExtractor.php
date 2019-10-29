@@ -14,5 +14,6 @@ task('LocalBldSshSelfExtractor', [
     'self_deployment:create',
     'self_deployment:upload',
     'self_deployment:run',
-    'self_deployment:delete_local_file'
+    'self_deployment:delete_local_file',
+    'deploy:success'
 ]);
