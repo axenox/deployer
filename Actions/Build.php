@@ -67,6 +67,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildRecipe = $this->getBuildRecipeFile($task);
             
             $buildFolder = $this->createBuildFolder($task);
+            
+            $buildPhp = $this->createBuildPhp($task, $buildRecipe, $buildFolder, $buildName);
             $deployPhp = $this->createDeployPhp($task, $buildRecipe, $buildFolder);
 
             // TODO run the deployer recipe for building and see if it is successfull!
@@ -175,10 +177,56 @@ PHP;
         fclose($content_php);
         
         
-        // TODO Datei speichern unter deployer\[project-alias]\deploy.php
-        // return /* TODO pfad */;
+
         return $buildFolder . DIRECTORY_SEPARATOR . 'deploy.php';
     }
+    
+    
+    /**
+     * generates build data and creates build.php file
+     * 
+     * @param TaskInterface $task
+     * @param string $recipePath
+     * @param string $buildFolder
+     * @param string $buildName
+     * @return string
+     */
+    protected function createBuildPhp(TaskInterface $task, string $recipePath, string $buildFolder, string $buildName) : string
+    {
+      
+        $content = <<<PHP
+        
+<?php
+namespace Deployer;
+
+require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
+
+set('release_name', '{$buildName}');
+set('application', 'Power UI');
+set('customer_specific_version', '{$this->getVersion($task)}'); //'0.1-beta'
+
+// === Path definitions ===
+\$builds_archives_path = __DIR__ . '\\' . '{$this->getBuildsFolderName()}';
+\$base_config_path = __DIR__ . '\\' . '{$this->getBaseConfigFolderName()}';
+set('builds_archives_path', \$builds_archives_path);
+set('base_config_path', \$base_config_path);
+
+require '{$recipePath}';
+
+PHP;
+        
+        $content_php = fopen($buildFolder . DIRECTORY_SEPARATOR . 'build.php', 'w');
+        fwrite($content_php, $content);
+        fclose($content_php);
+        
+        
+        
+        return $buildFolder . DIRECTORY_SEPARATOR . 'build.php';
+    }
+    
+    
+    
+    
     
     
     /**
@@ -210,6 +258,12 @@ PHP;
         
         Filemanager::pathConstruct($hostsFolderPath);
         
+        $baseConfigFolderPath = $fm->getPathToBaseFolder()
+            . DIRECTORY_SEPARATOR . 'deployer'
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias')
+            . DIRECTORY_SEPARATOR . $this->getBaseConfigFolderName();
+            
+        Filemanager::pathConstruct($baseConfigFolderPath);
 
         /*
          * TODO
@@ -244,6 +298,15 @@ PHP;
     protected function getHostsFolderName() : string
     {
         return 'hosts';
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function getBaseConfigFolderName() : string
+    {
+        return 'base-config';
     }
     
     /**
