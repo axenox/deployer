@@ -52,7 +52,7 @@ if (!is_dir($release_path)) {
     mkdir($release_path);
     echo("Directory {$release_path} created!\n");
 } else {
-    throw new Exception('Release already exists!');
+    throw new Exception("The selected release '{$release_name}' does already exist on the server");
 }
 
 //copy directories which should get copied from old to new releases
@@ -136,6 +136,7 @@ if (!$test)
 //Install Apps
 //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
+
 $path = $basic_deploy_path . DIRECTORY_SEPARATOR . 'exface';
 if (substr(php_uname(), 0, 7) == "Windows"){
     $command = "cd {$path} && {$php_path} composer.phar run-script post-install-cmd";
