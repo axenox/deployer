@@ -3,6 +3,7 @@
 namespace Deployer;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Deployer\Exception\ConfigurationException;
 
 task('build:find', function () {
     if (get('release_name') == '') {
@@ -41,7 +42,17 @@ task('build:create_from_local', function() {
     }
     $builds_path_relative = strstr($builds_path , 'deployer');
     set('builds_archives_relative_path', $builds_path_relative);
-    runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}}');
+    try {
+        $base_config_path = get('base_config_path');
+    } catch (ConfigurationException $e) {
+        $base_config_path = null;
+    }
+    if ($base_config_path !=='' && $base_config_path !== null) {
+        $path = substr($base_config_path, strrpos($base_config_path, '\\') + 1);
+        runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $path);
+    } else {
+        runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}}');        
+    }
 });
 
 //TODO
