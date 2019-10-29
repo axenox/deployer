@@ -151,22 +151,23 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
 <?php
 namespace Deployer;
 
-require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
+ini_set('memory_limit', '-1'); // deployment may exceed 128MB internal memory limit
 
-\$application = 'Power UI';
-\$version = '{$this->getVersion($task)}'; //'0.1-beta'
-\$project = '{$buildFolder}';
+require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
+require 'vendor/deployer/deployer/recipe/common.php';
 
 // === Host ===
-\$stage = '{$stage}'; //'test'
-\$keep_releases = 6;
-\$host_short = '{$name}'; //'powerui'
-// \$host_ssh_config = __DIR__ . '\\hosts\\' . \$host_short . '\\ssh_config';
+set('stage', '{$stage}'); 
+\$host_short = '{$name}';
+set('host_short', \$name);
+\$host_ssh_config = __DIR__ . '\\hosts\\' . \$host_short . '\\ssh_config';
+set('host_ssh_config', \host_ssh_config); 
 
 // === Path definitions ===
-\$basic_deploy_path =  'C:\\wamp\\www\\powerui';
-\$relative_deploy_path = 'powerui';
+set('basic_deploy_path', 'C:\\wamp\\www\\powerui');
+set('relative_deploy_path', 'powerui');
 \$builds_archives_path = __DIR__ . '\\' . '{$this->getBuildsFolderName()}';
+set('builds_archives_path', \$builds_archives_path);
 
 require '{$recipePath}';
 
@@ -200,10 +201,10 @@ PHP;
 namespace Deployer;
 
 require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
+require 'vendor/deployer/deployer/recipe/common.php';
 
-set('release_name', '{$buildName}');
-set('application', 'Power UI');
-set('customer_specific_version', '{$this->getVersion($task)}'); //'0.1-beta'
+\$releaseName = '{$buildName}';
+set('release_name', \$releaseName);
 
 // === Path definitions ===
 \$builds_archives_path = __DIR__ . '\\' . '{$this->getBuildsFolderName()}';
