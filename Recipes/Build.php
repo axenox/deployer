@@ -27,31 +27,39 @@ task('build:find', function () {
 });
 
 task('build:generate_release_name', function(){
-    $current_date = new \DateTime('now' , new \DateTimeZone(get('time_zone')));
-    $current_date = $current_date->format('YmdHis');
-    $releaseName = get('customer_specific_version') . '+build' . $current_date;
+    try {
+        $releaseName = get('release_name');
+    } catch (ConfigurationException $e) {
+        $releaseName = null;
+    }
+    echo('Name: ' . $releaseName);
+    if ($releaseName ==='' || $releaseName === null) {
+        $currentDate = new \DateTime('now' , new \DateTimeZone(get('time_zone')));
+        $currentDate = $currentDate->format('YmdHis');
+        $releaseName = get('customer_specific_version') . '+build' . $currentDate;
+        set('release_name', $releaseName );
+    }
     $archivName = $releaseName . '.tar.gz';
-    set('release_name', $releaseName );
     set('archiv_name', $archivName);
 });
     
 task('build:create_from_local', function() {
-    $builds_path = get('builds_archives_path');
-    if (!is_dir($builds_path)) {
-        mkdir($builds_path);
+    $buildsPath = get('builds_archives_path');
+    if (!is_dir($buildsPath)) {
+        mkdir($buildsPath);
     }
-    $builds_path_relative = strstr($builds_path , 'deployer');
-    set('builds_archives_relative_path', $builds_path_relative);
+    $buildsPathRelative = strstr($buildsPath , 'deployer');
+    set('builds_archives_relative_path', $buildsPathRelative);
     try {
-        $base_config_path = get('base_config_path');
+        $baseConfigPath = get('base_config_path');
     } catch (ConfigurationException $e) {
-        $base_config_path = null;
+        $baseConfigPath = null;
     }
-    if ($base_config_path !=='' && $base_config_path !== null) {
-        if (!is_dir($base_config_path)) {
-            mkdir($base_config_path);
+    if ($baseConfigPath !=='' && $baseConfigPath !== null) {
+        if (!is_dir($baseConfigPath)) {
+            mkdir($baseConfigPath);
         }
-        $directory_name = substr($base_config_path, strrpos($base_config_path, '\\') + 1);
+        $directory_name = substr($baseConfigPath, strrpos($baseConfigPath, '\\') + 1);
         runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $directory_name);
     } else {
         runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}}');        

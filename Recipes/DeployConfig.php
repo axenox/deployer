@@ -1,10 +1,6 @@
 <?php
 namespace Deployer;
 
-require 'vendor/deployer/deployer/recipe/common.php';
-
-ini_set('memory_limit', '-1'); // deployment may exceed 128MB internal memory limit
-
 $config_dir = 'config';
 $releaseName = '';
 $php_path = 'php';
