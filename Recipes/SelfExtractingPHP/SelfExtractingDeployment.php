@@ -2,78 +2,78 @@
 
 ini_set('memory_limit', '-1'); // or you could use 1G
 
-$basic_deploy_path = '[#basic#]'; //placeholder for string
-$relative_deploy_path = '[#relative#]'; //placeholder for string
-$shared_dirs = [#shared#]; //placeholder for array
-$copy_dirs = [#copy#]; //placeholder for array
-$php_path = '[#php#]'; //placeholder for array
-$relative_releases_path = 'releases';
-$relative_shared_path = 'shared';
-$relative_current_path = 'current';
-$deploy_path = $basic_deploy_path .  DIRECTORY_SEPARATOR . $relative_deploy_path;
-$releases_path = $deploy_path . DIRECTORY_SEPARATOR . $relative_releases_path;
-$shared_path = $deploy_path . DIRECTORY_SEPARATOR . $relative_shared_path;
-$current_path = $deploy_path . DIRECTORY_SEPARATOR . $relative_current_path;
+$basicDeployPath = '[#basic#]'; //placeholder for string
+$relativeDeployPath = '[#relative#]'; //placeholder for string
+$sharedDirs = [#shared#]; //placeholder for array
+$copyDirs = [#copy#]; //placeholder for array
+$phpPath = '[#php#]'; //placeholder for string
+$relativeReleasesPath = 'releases';
+$relativeSharedPath = 'shared';
+$relativeCurrentPath = 'current';
+$deployPath = $basicDeployPath .  DIRECTORY_SEPARATOR . $relativeDeployPath;
+$releasesPath = $deployPath . DIRECTORY_SEPARATOR . $relativeReleasesPath;
+$sharedPath = $deployPath . DIRECTORY_SEPARATOR . $relativeSharedPath;
+$currentPath = $deployPath . DIRECTORY_SEPARATOR . $relativeCurrentPath;
 
-$release_name = pathinfo(__FILE__,  PATHINFO_FILENAME);
-$release_path = $releases_path . DIRECTORY_SEPARATOR . $release_name;
-$base_config_path = $release_path . DIRECTORY_SEPARATOR . 'base-config';
-$config_path = $release_path . DIRECTORY_SEPARATOR . 'config';
-$config_files = ['exface.ModxCmsConnector.config.json'];
+$releaseName = pathinfo(__FILE__,  PATHINFO_FILENAME);
+$releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
+$baseConfigPath = $releasePath . DIRECTORY_SEPARATOR . 'base-config';
+$configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
+$configFiles = ['exface.ModxCmsConnector.config.json'];
 
 //create relative deploy path directory if it not exists yet
-if (!is_dir($deploy_path)) {
-    mkdir($deploy_path);
-    echo("Directory {$deploy_path} created!\n");
+if (!is_dir($deployPath)) {
+    mkdir($deployPath);
+    echo("Directory {$deployPath} created!\n");
 }
 
 //create releases directory if it not exists yet
-if (!is_dir($releases_path)) {
-    mkdir($releases_path);
-    echo("Directory {$releases_path} created!\n");
+if (!is_dir($releasesPath)) {
+    mkdir($releasesPath);
+    echo("Directory {$releasesPath} created!\n");
 }
 
 //create shared directory if it not exists yet
-if (!is_dir($shared_path)) {
-    mkdir($shared_path);
-    echo("Directory {$shared_path} created!\n");
+if (!is_dir($sharedPath)) {
+    mkdir($sharedPath);
+    echo("Directory {$sharedPath} created!\n");
 }
 
 //create directories which are shared between releases
-foreach ($shared_dirs as $dir) {
-    if (!is_dir($shared_path . DIRECTORY_SEPARATOR . $dir)) {
-        mkdir($shared_path . DIRECTORY_SEPARATOR . $dir);
+foreach ($sharedDirs as $dir) {
+    if (!is_dir($sharedPath . DIRECTORY_SEPARATOR . $dir)) {
+        mkdir($sharedPath . DIRECTORY_SEPARATOR . $dir);
         echo("Directory {$dir} created!\n");
     }
 }
 
 //create directory with release name
-if (!is_dir($release_path)) {
-    mkdir($release_path);
-    echo("Directory {$release_path} created!\n");
+if (!is_dir($releasePath)) {
+    mkdir($releasePath);
+    echo("Directory {$releasePath} created!\n");
 } else {
-    throw new Exception("The selected release '{$release_name}' does already exist on the server");
+    throw new Exception("The selected release '{$releaseName}' does already exist on the server");
 }
 
 //copy directories which should get copied from old to new releases
-if (!is_dir($current_path)) {
-    foreach ($copy_dirs as $dir) {
-        mkdir($release_path . DIRECTORY_SEPARATOR . $dir);
+if (!is_dir($currentPath)) {
+    foreach ($copyDirs as $dir) {
+        mkdir($releasePath . DIRECTORY_SEPARATOR . $dir);
         echo("Directory {$dir} created!\n");
     }
 } else {
-    foreach ($copy_dirs as $dir) {
-        $dst = $release_path . DIRECTORY_SEPARATOR . $dir;
-        $src = $current_path . DIRECTORY_SEPARATOR . $dir;
+    foreach ($copyDirs as $dir) {
+        $dst = $releasePath . DIRECTORY_SEPARATOR . $dir;
+        $src = $currentPath . DIRECTORY_SEPARATOR . $dir;
         recurseCopy($src, $dst);
         echo("Directory {$dir} copied!\n");
     }    
 }
 
 //creating symlinks to shared directories
-chdir($release_path);
-foreach($shared_dirs as $dir) {
-    $target_pointer = $shared_path . DIRECTORY_SEPARATOR . $dir;
+chdir($releasePath);
+foreach($sharedDirs as $dir) {
+    $target_pointer = $sharedPath . DIRECTORY_SEPARATOR . $dir;
     $test = symlink($target_pointer, $dir);
     if (! $test)
     {
@@ -84,20 +84,20 @@ foreach($shared_dirs as $dir) {
 
 //extract archive
 echo("Extracting archive ...\n");
-chdir($release_path);
+chdir($releasePath);
 extractArchive();
 echo("Archive extracted!\n");
 
 //copy needed app configs, if not already exist
-if (is_dir($base_config_path)) {
-    foreach($config_files as $file) {
-        if(!file_exists($config_path . DIRECTORY_SEPARATOR . $file)) {
-            copy($base_config_path . DIRECTORY_SEPARATOR . $file, $config_path . DIRECTORY_SEPARATOR . $file);
+if (is_dir($baseConfigPath)) {
+    foreach($configFiles as $file) {
+        if(!file_exists($configPath . DIRECTORY_SEPARATOR . $file)) {
+            copy($baseConfigPath . DIRECTORY_SEPARATOR . $file, $configPath . DIRECTORY_SEPARATOR . $file);
             echo("Base config {$file} copied!\n");
         }
     }
-    deleteDirectory($base_config_path);
-    echo("Directory {$base_config_path} removed!\n");
+    deleteDirectory($baseConfigPath);
+    echo("Directory {$baseConfigPath} removed!\n");
 }
 
 //permissions
@@ -106,25 +106,25 @@ if (is_dir($base_config_path)) {
 //echo("Permissions set!\n");
 
 //create 'current' symlink to new release
-chdir($deploy_path);
-if (is_dir($current_path)) {
-    rmdir($current_path);
+chdir($deployPath);
+if (is_dir($currentPath)) {
+    rmdir($currentPath);
 }
-$target_pointer = $release_path;
-$test = symlink($target_pointer, $relative_current_path);
+$target_pointer = $releasePath;
+$test = symlink($target_pointer, $relativeCurrentPath);
 if (!$test)
 {
-    throw new Exception("Symlink to {$relative_current_path} could not be created");
+    throw new Exception("Symlink to {$relativeCurrentPath} could not be created");
 } else {
-    echo("Symlink to {$relative_current_path} created!\n");
+    echo("Symlink to {$relativeCurrentPath} created!\n");
 }
 
 //create 'exface' symlink to 'current'
-chdir($basic_deploy_path);
-if (is_dir($basic_deploy_path . DIRECTORY_SEPARATOR . 'exface')) {
-    rmdir($basic_deploy_path . DIRECTORY_SEPARATOR . 'exface');
+chdir($basicDeployPath);
+if (is_dir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface')) {
+    rmdir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface');
 }
-$target_pointer = $current_path;
+$target_pointer = $currentPath;
 $test = symlink($target_pointer, 'exface');
 if (!$test)
 {
@@ -137,13 +137,13 @@ if (!$test)
 //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
 
-$path = $basic_deploy_path . DIRECTORY_SEPARATOR . 'exface';
+$path = $basicDeployPath . DIRECTORY_SEPARATOR . 'exface';
 if (substr(php_uname(), 0, 7) == "Windows"){
-    $command = "cd {$path} && {$php_path} composer.phar run-script post-install-cmd";
+    $command = "cd {$path} && {$phpPath} composer.phar run-script post-install-cmd";
 }
 else {
     //TODO not tested yet on Linux!
-    $command = "cd {$path} && {$php_path} composer.phar run-script post-install-cmd";
+    $command = "cd {$path} && {$phpPath} composer.phar run-script post-install-cmd";
 }
 echo ("Installing apps...\n");
 $cmdarray = [];
