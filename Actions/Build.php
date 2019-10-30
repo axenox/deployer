@@ -88,16 +88,17 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 // Save to log
                 $log .= $msg;
             }
-            if ($success === false) {
+            $buildData->setCellValue('log', 0, $log);         
+            if ($process->isSuccessful() === false) {
                 $buildData->setCellValue('status', 0, 90); // failed
             } else {
                 $buildData->setCellValue('status', 0, 99); // completed
             }
-            // TODO Save Log to $buildData
-
-            // Update build with actual build results
+            
             $buildData->dataUpdate(false, $transaction);
             
+            // Update build with actual build results
+           
             $this->cleanupFiles($buildFolder);
             $seconds = time() - $seconds;
             yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
