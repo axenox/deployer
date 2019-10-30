@@ -79,7 +79,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             //$cwd = 'c:\\wamp\\www\\exface\\exface';
             // Beispiel - s. WebConsoleFacade ab Zeile 124
             $log = '';
-            $seconds = 0;
+            $seconds = time();
             $process = Process::fromShellCommandline($cmd, null, null, null, 600);
             $process->start();
             foreach ($process as $msg) {
@@ -98,8 +98,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Update build with actual build results
             $buildData->dataUpdate(false, $transaction);
             
-            //$this->cleanupFiles($buildFolder);
-
+            $this->cleanupFiles($buildFolder);
+            $seconds = time() - $seconds;
             yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
 
             // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
@@ -198,7 +198,10 @@ PHP;
      */
     protected function createBuildPhp(TaskInterface $task, string $recipePath, string $buildFolder, string $buildName) : string
     {
-      
+        $builds_archives_path = DIRECTORY_SEPARATOR . $this->getBuildsFolderName();
+        $base_config_path = DIRECTORY_SEPARATOR . $this->getBaseConfigFolderName();
+
+        
         $content = <<<PHP
 <?php
 namespace Deployer;
@@ -212,8 +215,8 @@ set('release_name', \$releaseName);
 // === Path definitions ===
 \$builds_archives_path = __DIR__ . '\\\' . '{$this->getBuildsFolderName()}';
 \$base_config_path = __DIR__ . '\\\' . '{$this->getBaseConfigFolderName()}';
-set('builds_archives_path', \$builds_archives_path);
-set('base_config_path', \$base_config_path);
+set('builds_archives_path', __DIR__ . '{$builds_archives_path}');
+set('base_config_path', __DIR__ . '{$base_config_path}');
 
 require '{$recipePath}';
 
@@ -482,13 +485,32 @@ PHP;
     
     
     /**
-     * delete all files created in the build process
-     * @param string $buildFolder
+     * deletes all directories and files created in the building process, except the actual build (-directory)
+     * 
+     * @param string $src
+     * @param bool $calledRecursive
      */
-    protected function cleanupFiles(string $buildFolder)
+    protected function cleanupFiles(string $src, bool $calledRecursive = false)
     {
-        unlink($buildFolder . DIRECTORY_SEPARATOR . 'deploy.php');
-        
-        // TODO alles löschen außer deployer\[project_alias]\builds
+        $dir = opendir($src);
+        while(false !== ( $file = readdir($dir)) ) {
+            if (( $file != '.' ) && ( $file != '..' )) {
+                $full = $src . DIRECTORY_SEPARATOR . $file;
+                if ($full == $src . DIRECTORY_SEPARATOR . $this->getBuildsFolderName()){
+                    continue;
+                }
+                if (is_dir($full)) {
+                    $this->cleanupFiles($full, true);
+                }
+                else {
+                    unlink($full);
+                }
+            }
+        }
+        closedir($dir);
+        if ($calledRecursive){
+            rmdir($src);
+        }
     }
+
 }
