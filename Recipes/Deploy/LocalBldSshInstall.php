@@ -28,8 +28,8 @@ task('LocalBldSshInstall', [
     'deploy:create_shared_links',
     'install:install_current_packages',
     'install:uninstall_unused_packages',
-    'deploy:show_release_names',
     'self_extractor:delete_remote_file',
     'self_extractor:delete_local_file',
+    'deploy:show_release_names',
     'deploy:success'
 ]);
