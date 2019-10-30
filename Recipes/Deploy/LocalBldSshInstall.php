@@ -3,7 +3,8 @@ namespace Deployer;
 
 use Symfony\Component\Console\Input\InputOption;
 
-require 'vendor/axenox/deployer/Recipes/DeployConfig.php';
+require 'vendor/deployer/deployer/recipe/deploy/shared.php';
+require 'vendor/axenox/deployer/Recipes/Config.php';
 require 'vendor/axenox/deployer/Recipes/Build.php';
 require 'vendor/axenox/deployer/Recipes/RemoteWindows.php';
 require 'vendor/axenox/deployer/Recipes/SelfExtractor.php';
@@ -13,6 +14,7 @@ require 'vendor/axenox/deployer/Recipes/Install.php';
 option('build', null, InputOption::VALUE_OPTIONAL, 'test option.');
 
 task('LocalBldSshInstall', [
+    'config:setup_deploy_config',
     'build:find',
     'remote_windows:use_native_symlinks',
     'deploy:prepare',
