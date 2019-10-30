@@ -10,7 +10,7 @@ task('build:find', function () {
         if (input()->getOption('build') != null) {
             $releaseName = input()->getOption('build');
             $archivName = $releaseName . '.tar.gz';
-            set('release_name', $releaseName );
+            set('release_name', $releaseName);
             set('archiv_name', $archivName);
         } else {
             $directory = get('builds_archives_path');
@@ -48,8 +48,6 @@ task('build:create_from_local', function() {
     if (!is_dir($buildsPath)) {
         mkdir($buildsPath);
     }
-    $buildsPathRelative = strstr($buildsPath , 'deployer');
-    set('builds_archives_relative_path', $buildsPathRelative);
     try {
         $baseConfigPath = get('base_config_path');
     } catch (ConfigurationException $e) {
@@ -60,13 +58,33 @@ task('build:create_from_local', function() {
             mkdir($baseConfigPath);
         }
         $directory_name = substr($baseConfigPath, strrpos($baseConfigPath, '\\') + 1);
-        runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $directory_name);
+        runLocally('tar -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $directory_name);
     } else {
-        runLocally('tar -czf {{builds_archives_relative_path}}\{{archiv_name}} {{source_files}}');        
+        runLocally('tar -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}}');        
     }
 });
 
 //TODO
 task('build:create_from_composer', function() {
+    $buildsPath = get('builds_archives_path');
+    if (!is_dir($buildsPath)) {
+        mkdir($buildsPath);
+    }
+    runLocally('cd {{builds_archives_path}}\.. && php composer.phar install');
+    try {
+        $baseConfigPath = get('base_config_path');
+    } catch (ConfigurationException $e) {
+        $baseConfigPath = null;
+    }
+    if ($baseConfigPath !=='' && $baseConfigPath !== null) {
+        if (!is_dir($baseConfigPath)) {
+            mkdir($baseConfigPath);
+        }
+        $directory_name = substr($baseConfigPath, strrpos($baseConfigPath, '\\') + 1);
+        runLocally('tar -C {{builds_archives_path}}\.. -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $directory_name);
+    } else {
+        runLocally('tar -C {{builds_archives_path}}\.. -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}}');
+    }
+    runLocally('rm -rf {{builds_archives_path}}\..\vendor');
     
 });

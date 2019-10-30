@@ -2,10 +2,11 @@
 
 namespace Deployer;
 
-require 'vendor/axenox/deployer/Recipes/BuildConfig.php';
+require 'vendor/axenox/deployer/Recipes/Config.php';
 require 'vendor/axenox/deployer/Recipes/Build.php';
 
-task('CloneLocal', [
+task('ComposerInstall', [
+    'config:setup_build_config',
     'build:generate_release_name',
     'build:create_from_composer',
 ]); 
