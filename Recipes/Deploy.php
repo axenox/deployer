@@ -5,37 +5,6 @@ namespace Deployer;
 use Deployer\Exception\Exception;
 use function Deployer\Support\str_contains;
 
-task('deploy:copy_directories', function () {
-    $copyDirArray = get('copy_dirs');
-    $hasPreviousRelease = false;
-    set('target_dir_cygwin', get('basic_deploy_path_cygwin') . '/' . get('relative_deploy_path') . '/' . get('release_path') );
-    set('target_dir', get('deploy_path'). '/'. get('release_path'));
-    //check if symlink 'curent' exists, if so, set path to it as previous_release
-    if (test("[ -L {{deploy_path}}/current ]")) {        
-        set('cygwin_path_previous_release', get('basic_deploy_path_cygwin') . '/' . get('relative_deploy_path') . '/current');
-        $hasPreviousRelease = true;
-    }        
-    foreach ($copyDirArray as $dirToCopy) {
-        set('current_copy_dir' , $dirToCopy );
-        run('cd {{target_dir}} && mkdir -p {{current_copy_dir}}');
-        if ($hasPreviousRelease === true) {
-            if(test( '[ -d {{cygwin_path_previous_release}}/{{current_copy_dir}} ]')) {
-                run('cp -rf {{cygwin_path_previous_release}}/{{current_copy_dir}}/. {{target_dir}}/{{current_copy_dir}}/');
-            }
-        }
-    }  
-    
-    // make sure config dir exists and copy files form base-config folder that dont already exist
-    if (!test('[ -d {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/{{config_dir}} ]')) {        
-        run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/ && chmod +w ./ && mkdir -p {{config_dir}}');
-    }
-    
-    run('cp -rn {{target_dir}}/base-config/*.* {{target_dir}}/{{config_dir}}/');
-    run('rm -rf {{target_dir}}/base-config');
-    
-    writeln('Generated initial configuration files.');
-});
-
 desc('Preparing host for deploy');
 task('deploy:prepare', function () {
     // Check if shell is POSIX-compliant
@@ -74,6 +43,47 @@ task('deploy:prepare', function () {
     }
 });
 
+task('deploy:fix_permissions', function() {
+    run('chmod +x {{deploy_path}}/{{release_path}}');
+    run('chmod +x {{deploy_path}}/{{release_path}}/vendor/bin');
+});
+
+task('deploy:copy_directories', function () {
+    $copyDirArray = get('copy_dirs');
+    $hasPreviousRelease = false;
+    set('target_dir_cygwin', get('basic_deploy_path_cygwin') . '/' . get('relative_deploy_path') . '/' . get('release_path') );
+    set('target_dir', get('deploy_path'). '/'. get('release_path'));
+    //check if symlink 'curent' exists, if so, set path to it as previous_release
+    if (test("[ -L {{deploy_path}}/current ]")) {        
+        set('cygwin_path_previous_release', get('basic_deploy_path_cygwin') . '/' . get('relative_deploy_path') . '/current');
+        $hasPreviousRelease = true;
+    }        
+    foreach ($copyDirArray as $dirToCopy) {
+        set('current_copy_dir' , $dirToCopy );
+        run('cd {{target_dir}} && mkdir -p {{current_copy_dir}}');
+        if ($hasPreviousRelease === true) {
+            if(test( '[ -d {{cygwin_path_previous_release}}/{{current_copy_dir}} ]')) {
+                run('cp -rf {{cygwin_path_previous_release}}/{{current_copy_dir}}/. {{target_dir}}/{{current_copy_dir}}/');
+            }
+        }
+    }  
+    
+    // make sure config dir exists and copy files form base-config folder that dont already exist
+    if (!test('[ -d {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/{{config_dir}} ]')) {        
+        run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/ && chmod +w ./ && mkdir -p {{config_dir}}');
+    }
+    
+    run('cp -rn {{target_dir}}/base-config/*.* {{target_dir}}/{{config_dir}}/');
+    run('rm -rf {{target_dir}}/base-config');
+    
+    writeln('Generated initial configuration files.');
+});
+
+task('deploy:create_symlinks', function() {
+    run("cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}  && {{bin/symlink}} {{release_path}} current");
+    run("cd {{basic_deploy_path_cygwin}} && {{bin/symlink}} {{relative_deploy_path}}/current exface");
+});
+
 task('deploy:create_shared_links', function() {
     foreach (get('shared_dirs') as $dir) {
         $shared_dir = get('deploy_path') .'/shared';
@@ -86,21 +96,6 @@ task('deploy:show_release_names', function () {
     /*if(has('previous_release')) {
         writeln('Previous release: {{previous_release}}');
     }*/
-});
-    
-task('deploy:create_paths', function() {
-    run('mkdir -p {{host_deploy_path}}');
-    run('mkdir -p {{host_deploy_path}}/releases');
-});
-    
-task('deploy:create_symlinks', function() {
-    run("cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}  && {{bin/symlink}} {{release_path}} current");
-    run("cd {{basic_deploy_path_cygwin}} && {{bin/symlink}} {{relative_deploy_path}}/current exface");
-});
-
-task('deploy:fix_permissions', function() {
-    run('chmod +x {{deploy_path}}/{{release_path}}');
-    run('chmod +x {{deploy_path}}/{{release_path}}/vendor/bin');
 });
 
 task('deploy:success', function () {
