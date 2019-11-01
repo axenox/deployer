@@ -55,9 +55,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
 
         $generator = function () use ($task, $buildData, $result, $transaction) {
 
-            // TODO generate build name
             $buildName = $this->generateBuildName($task);
-            // e.g. '0.1-beta+20191024115900';
 
             yield 'Building ' . $buildName;
 
@@ -72,14 +70,11 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildPhp = $this->createBuildPhp($task, $buildRecipe, $buildFolder, $buildName);
             $deployPhp = $this->createDeployPhp($task, $buildRecipe, $buildFolder);
 
-            // TODO run the deployer recipe for building and see if it is successfull!
-            // Use symfony process? 
-            //chdir('c:\\wamp\\www\\exface\\exface');
             $cmd = "vendor\\bin\\dep -f=deployer\\" . $this->getProjectData($task, 'alias')  . "\\build.php CloneLocal";
-            //$cwd = 'c:\\wamp\\www\\exface\\exface';
-            // Beispiel - s. WebConsoleFacade ab Zeile 124
+
             $log = '';
             $seconds = time();
+
             $process = Process::fromShellCommandline($cmd, null, null, null, 600);
             $process->start();
             foreach ($process as $msg) {
@@ -95,10 +90,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 $buildData->setCellValue('status', 0, 99); // completed
             }
             
-            $buildData->dataUpdate(false, $transaction);
-            
             // Update build with actual build results
-           
+            $buildData->dataUpdate(false, $transaction);
+
             $this->cleanupFiles($buildFolder);
             $seconds = time() - $seconds;
             yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
@@ -250,44 +244,29 @@ PHP;
      //   $hostName = $connection->getHostName();
      //   $customOptions = $connection->getSshConfig();
      //   $privateKey = $connection->getSshPrivateKey();
-        
+     
         $fm = $this->getWorkbench()->filemanager();
-        $buildsFolderPath = $fm->getPathToBaseFolder() 
-            . DIRECTORY_SEPARATOR . 'deployer' 
-            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias') 
+        
+        $buildFolder = $fm->getPathToBaseFolder()
+            . DIRECTORY_SEPARATOR . 'deployer'
+            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias');
+        
+        $buildsFolderPath = $buildFolder 
             . DIRECTORY_SEPARATOR . $this->getBuildsFolderName();
         Filemanager::pathConstruct($buildsFolderPath);
         
-        $hostsFolderPath = $fm->getPathToBaseFolder()
-            . DIRECTORY_SEPARATOR . 'deployer'
-            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias')
+        $hostsFolderPath = $buildFolder
             . DIRECTORY_SEPARATOR . $this->gethostsFolderName()
             . DIRECTORY_SEPARATOR . 'host_name';
-        
         Filemanager::pathConstruct($hostsFolderPath);
         
-        $baseConfigFolderPath = $fm->getPathToBaseFolder()
-            . DIRECTORY_SEPARATOR . 'deployer'
-            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias')
-            . DIRECTORY_SEPARATOR . $this->getBaseConfigFolderName();
-            
+        $baseConfigFolderPath = $buildFolder
+            . DIRECTORY_SEPARATOR . $this->getBaseConfigFolderName();   
         Filemanager::pathConstruct($baseConfigFolderPath);
-
-        /*
-         * TODO
-         * 
-         * deployer
-            	[project_alias]
-            		builds -> leerer ordner
-            		deploy.php
-         */
         
         // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
         
-        return $fm->getPathToBaseFolder()
-        . DIRECTORY_SEPARATOR . 'deployer'
-            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias') ;
-        //'deployer\sfc_koenig';
+        return $buildFolder;
     }
     
     /**
