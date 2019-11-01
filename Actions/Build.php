@@ -68,7 +68,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildFolder = $this->createBuildFolder($task);
             
             $buildPhp = $this->createBuildPhp($task, $buildRecipe, $buildFolder, $buildName);
-            $deployPhp = $this->createDeployPhp($task, $buildRecipe, $buildFolder);
+       //     $deployPhp = $this->createDeployPhp($task, $buildRecipe, $buildFolder);
 
             $cmd = "vendor\\bin\\dep -f=deployer\\" . $this->getProjectData($task, 'alias')  . "\\build.php CloneLocal";
 
@@ -128,59 +128,6 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
 
         return $recipeFile;
     }
-    
-    /**
-     * generates deploy data and creates deploy.php file
-     * 
-     * @param TaskInterface $task
-     * @param string $recipePath
-     * @param string $buildFolder
-     * @return string
-     */
-    
-    protected function createDeployPhp(TaskInterface $task, string $recipePath, string $buildFolder) : string
-    {
-        
-        $stage = "test"; // $this->getHostData($task, 'stage');
-        $name = "testbuild"; //$this->getHostData($task, 'name');
-        
-        
-        $content = <<<PHP
-
-<?php
-namespace Deployer;
-
-ini_set('memory_limit', '-1'); // deployment may exceed 128MB internal memory limit
-
-require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
-require 'vendor/deployer/deployer/recipe/common.php';
-
-// === Host ===
-set('stage', '{$stage}'); 
-\$host_short = '{$name}';
-set('host_short', \$name);
-\$host_ssh_config = __DIR__ . '\\hosts\\' . \$host_short . '\\ssh_config';
-set('host_ssh_config', \host_ssh_config); 
-
-// === Path definitions ===
-set('basic_deploy_path', 'C:\\wamp\\www\\powerui');
-set('relative_deploy_path', 'powerui');
-\$builds_archives_path = __DIR__ . '\\' . '{$this->getBuildsFolderName()}';
-set('builds_archives_path', \$builds_archives_path);
-
-require '{$recipePath}';
-
-PHP;
-        
-        $content_php = fopen($buildFolder . DIRECTORY_SEPARATOR . 'deploy.php', 'w');
-        fwrite($content_php, $content);
-        fclose($content_php);
-        
-        
-
-        return $buildFolder . DIRECTORY_SEPARATOR . 'deploy.php';
-    }
-    
     
     /**
      * generates build data and creates build.php file
@@ -319,54 +266,6 @@ PHP;
             */
         ];
     }
-    
-    /**
-     * function for getting a value out of the hosts data
-     * 
-     * @param TaskInterface $task
-     * @param string $option
-     * @throws ActionInputMissingError
-     * @return string
-     */
-    protected function getHostData(TaskInterface $task, string $option) : string
-    {
-        if ($this->hostData === null) {
-            $inputData = $this->getInputDataSheet($task);
-            if ($col = $inputData->getColumns()->get('host')) {
-                $hostUid = $col->getCellValue(0);
-            } else {
-                throw new ActionInputMissingError($this, 'TODO: not host!');
-            }
-            
-            $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
-            $ds->getColumns()->addMultiple([
-                'data_connection',
-                'last_build_deployed',
-                'name',
-                'operating_system',
-                'path_abs_to_api',
-                'path_rel_to_releases',
-                'php_cli',
-                'project',
-                'stage'
-            ]);
-            $ds->addFilterFromString('UID', $hostUid, ComparatorDataType::EQUALS);
-            $ds->dataRead();
-            $this->hostData = $ds;
-        }
-        return $this->hostData->getCellValue($option, 0);
-    }
-    
-    /**
-     * 
-     * @param TaskInterface $task
-     * @return DeployerSshConnector
-     */
-    protected function getSshConnection(TaskInterface $task) : DeployerSshConnector
-    {
-        $connectionUid = $this->getHostData($task, 'data_connection');
-        return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
-    }    
     
     /**
      * function for getting a value out of the projects data
