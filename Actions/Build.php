@@ -29,6 +29,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
 {
 
     private $projectData = null;
+    
+    private $timeout = 600;
 
     /**
      *
@@ -50,6 +52,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
      */
     protected function perform(TaskInterface $task, DataTransactionInterface $transaction): ResultInterface
     {
+        // $buildData based on object axenox.Deployer.build
         $buildData = $this->getInputDataSheet($task);
         $result = new ResultMessageStream($task);
 
@@ -58,24 +61,21 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildName = $this->generateBuildName($task);
 
             yield 'Building ' . $buildName;
-
+    
+            // Create build entry and mark it as "in progress"
             $buildData->setCellValue('status', 0, 50);
             $buildData->setCellValue('name', 0, $buildName);
             $buildData->dataCreate(false, $transaction);
 
-            $buildRecipe = $this->getBuildRecipeFile($task);
-            
-            $buildFolder = $this->createBuildFolder($task);
-            
-            $buildPhp = $this->createBuildPhp($task, $buildRecipe, $buildFolder, $buildName);
-       //     $deployPhp = $this->createDeployPhp($task, $buildRecipe, $buildFolder);
+            $projectFolder = $this->prepareDeployerProjectFolder($task);
+            $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
 
-            $cmd = "vendor\\bin\\dep -f=deployer\\" . $this->getProjectData($task, 'alias')  . "\\build.php CloneLocal";
+            $cmd = "vendor\\bin\\dep {$buildTask}";
 
             $log = '';
             $seconds = time();
 
-            $process = Process::fromShellCommandline($cmd, null, null, null, 600);
+            $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
             $process->start();
             foreach ($process as $msg) {
                 // Live output
@@ -83,17 +83,20 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 // Save to log
                 $log .= $msg;
             }
+            
+            // Update build entry in data source with log and state
             $buildData->setCellValue('log', 0, $log);         
             if ($process->isSuccessful() === false) {
                 $buildData->setCellValue('status', 0, 90); // failed
             } else {
                 $buildData->setCellValue('status', 0, 99); // completed
             }
-            
-            // Update build with actual build results
             $buildData->dataUpdate(false, $transaction);
-
-            $this->cleanupFiles($buildFolder);
+            
+            // Delete temporary files
+            $this->cleanupFiles($projectFolder);
+            
+            // Send success message
             $seconds = time() - $seconds;
             yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
 
@@ -106,7 +109,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     }
 
     /**
-     *
+     * Returns the path to the deployer recipe file relative to the base installation folder.
+     * 
+     * E.g. for built-in recipes it's "vendor/axenox/deployer/Recipes..."
      * 
      * @param TaskInterface $task
      * @return string
@@ -114,113 +119,100 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     protected function getBuildRecipeFile(TaskInterface $task): string
     {
         $recipe = $this->getProjectData($task, 'build_recipe');
-        $recipeFile = '';
-        $recipiesBasePath = Filemanager::FOLDER_NAME_VENDOR . DIRECTORY_SEPARATOR . $this->getApp()->getDirectory() . DIRECTORY_SEPARATOR . 'Recipes' . DIRECTORY_SEPARATOR . 'Build' . DIRECTORY_SEPARATOR;
-
+        
         switch ($recipe) {
-            case BuildRecipeDataType::COMPOSER_INSTALL:
-                // TODO füllen von $recipeFile
-                break;
-            case BuildRecipeDataType::CLONE_LOCAL:
-                $recipeFile = $recipiesBasePath . 'CloneLocal.php';
-                break;
+            case BuildRecipeDataType::CUSTOM_BUILD:
+                return $this->getProjectData($task, 'build_recipe_custom_path');
+            default:
+                $recipiesBasePath = Filemanager::FOLDER_NAME_VENDOR . DIRECTORY_SEPARATOR . $this->getApp()->getDirectory() . DIRECTORY_SEPARATOR . 'Recipes' . DIRECTORY_SEPARATOR . 'Build' . DIRECTORY_SEPARATOR;
+                return $recipiesBasePath . $recipe . '.php';
         }
-
-        return $recipeFile;
     }
     
     /**
-     * generates build data and creates build.php file
+     * Generates a deployer task file and returns the CLI parameters to run it
      * 
      * @param TaskInterface $task
-     * @param string $recipePath
      * @param string $buildFolder
      * @param string $buildName
      * @return string
      */
-    protected function createBuildPhp(TaskInterface $task, string $recipePath, string $buildFolder, string $buildName) : string
+    protected function prepareDeployerTask(TaskInterface $task, string $buildFolder, string $buildName) : string
     {
-        $builds_archives_path = DIRECTORY_SEPARATOR . $this->getBuildsFolderName();
-        $base_config_path = DIRECTORY_SEPARATOR . $this->getBaseConfigFolderName();
+        $slash = DIRECTORY_SEPARATOR;
+        $builds_archives_path = $slash . $this->getFolderNameForBuilds();
+        $base_config_path = $slash . $this->getFolderNameForBaseConfig();
 
+        // Get deployer recipe file path
+        $recipePath = $this->getBuildRecipeFile($task);
+        $deployerTaskName = basename($recipePath, '.php');
         
         $content = <<<PHP
 <?php
 namespace Deployer;
 
-require 'vendor/autoload.php'; // Or move it to deployer and automatically detect
+require 'vendor/autoload.php';
 require 'vendor/deployer/deployer/recipe/common.php';
 
-\$releaseName = '{$buildName}';
-set('release_name', \$releaseName);
+set('release_name', '{$buildName}');
 
 // === Path definitions ===
-\$builds_archives_path = __DIR__ . '\\\' . '{$this->getBuildsFolderName()}';
-\$base_config_path = __DIR__ . '\\\' . '{$this->getBaseConfigFolderName()}';
 set('builds_archives_path', __DIR__ . '{$builds_archives_path}');
 set('base_config_path', __DIR__ . '{$base_config_path}');
 
 require '{$recipePath}';
 
 PHP;
-        
-        $content_php = fopen($buildFolder . DIRECTORY_SEPARATOR . 'build.php', 'w');
+        // Save to file
+        $content_php = fopen($this->getWorkbench()->filemanager()->getPathToBaseFolder() . $slash . $buildFolder . $slash . 'build.php', 'w');
         fwrite($content_php, $content);
         fclose($content_php);
         
-        
-        
-        return $buildFolder . DIRECTORY_SEPARATOR . 'build.php';
+        // Return the deployer CLI parameters to run the task
+        return "-f={$buildFolder}{$slash}build.php {$deployerTaskName}";
     }
     
-    
-    
-    
-    
-    
     /**
-     * creates the folder structure needed for the building process
+     * Prepares the folder structure needed to run the deployer command and 
+     * returns it's path relative to installation root.
+     * 
+     * ```
+     * project_folder
+     * - builds
+     * - base-config
+     * 
+     * ```
      * 
      * @param TaskInterface $task
      * @return string
      */
-    protected function createBuildFolder(TaskInterface $task) : string
+    protected function prepareDeployerProjectFolder(TaskInterface $task) : string
     {
-     //   $connection = $this->getSshConnection($task);
+        $projectFolder = $this->getProjectFolderRelativePath($task);
         
-     //   $hostName = $connection->getHostName();
-     //   $customOptions = $connection->getSshConfig();
-     //   $privateKey = $connection->getSshPrivateKey();
-     
-        $fm = $this->getWorkbench()->filemanager();
-        
-        $buildFolder = $fm->getPathToBaseFolder()
-            . DIRECTORY_SEPARATOR . 'deployer'
-            . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias');
-        
-        $buildsFolderPath = $buildFolder 
-            . DIRECTORY_SEPARATOR . $this->getBuildsFolderName();
+        // Make sure, folder project/builds exists
+        $buildsFolderPath = $projectFolder 
+            . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
         Filemanager::pathConstruct($buildsFolderPath);
         
-        $hostsFolderPath = $buildFolder
-            . DIRECTORY_SEPARATOR . $this->gethostsFolderName()
-            . DIRECTORY_SEPARATOR . 'host_name';
-        Filemanager::pathConstruct($hostsFolderPath);
         
-        $baseConfigFolderPath = $buildFolder
-            . DIRECTORY_SEPARATOR . $this->getBaseConfigFolderName();   
+        $baseConfigFolderPath = $projectFolder
+            . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();   
         Filemanager::pathConstruct($baseConfigFolderPath);
         
-        // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
-        
-        return $buildFolder;
+        return $projectFolder;
+    }
+    
+    protected function getProjectFolderRelativePath(TaskInterface $task) : string
+    {
+        return 'deployer' . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias');
     }
     
     /**
      * 
      * @return string
      */
-    protected function getBuildsFolderName() : string
+    protected function getFolderNameForBuilds() : string
     {
         return 'builds';
     }
@@ -229,42 +221,9 @@ PHP;
      * 
      * @return string
      */
-    protected function getHostsFolderName() : string
-    {
-        return 'hosts';
-    }
-    
-    /**
-     * 
-     * @return string
-     */
-    protected function getBaseConfigFolderName() : string
+    protected function getFolderNameForBaseConfig() : string
     {
         return 'base-config';
-    }
-    
-    /**
-     * 
-     * @param string $pathToHostFolder
-     * @param string $hostName
-     * @param string $user
-     * @param string $port
-     * @return array
-     */
-    protected function getDefaultSshConfig(string $pathToHostFolder, string $hostName, string $user, string $port) : array
-    {
-
-        return [
-            /*
-            HostName: $hostName, // 10.57.2.40 // Kommt aus Dataconnection
-            User: $user, //SFCKOENIG\ITSaltBI // Kommt aus DataConnection
-            port: port, //22 // Kommt aus DataConnection
-            PreferredAuthentications: publickey,
-            StrictHostKeyChecking: no,
-            IdentityFile: pathToHostFolder . DIRECTORY_SEPERATOR . "id_rsa", //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
-            UserKnownHostsFile: pathToHostFolder . DIRECTORY_SEPERATOR . "known_hosts" //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
-            */
-        ];
     }
     
     /**
@@ -371,11 +330,12 @@ PHP;
      */
     protected function cleanupFiles(string $src, bool $calledRecursive = false)
     {
+        // TODO nur das löschen, was diese Aktion temporär erstellt hat
         $dir = opendir($src);
         while(false !== ( $file = readdir($dir)) ) {
             if (( $file != '.' ) && ( $file != '..' )) {
                 $full = $src . DIRECTORY_SEPARATOR . $file;
-                if ($full == $src . DIRECTORY_SEPARATOR . $this->getBuildsFolderName()){
+                if ($full == $src . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds()){
                     continue;
                 }
                 if (is_dir($full)) {
@@ -390,6 +350,27 @@ PHP;
         if ($calledRecursive){
             rmdir($src);
         }
+    }
+    
+    protected function getTimeout() : int
+    {
+        return $this->timeout;
+    }
+    
+    /**
+     * Timeout for the build command.
+     * 
+     * @uxon-property timeout
+     * @uxon-type integer
+     * @uxon-default 600
+     * 
+     * @param int $seconds
+     * @return Build
+     */
+    public function setTimeout(int $seconds) : Build
+    {
+        $this->timeout = $seconds;
+        return $this;
     }
 
 }
