@@ -375,8 +375,27 @@ PHP;
      * @param string $src
      * @param bool $calledRecursive
      */
-    protected function cleanupFiles(string $src, bool $calledRecursive = false)
+    protected function cleanupFiles(string $projectFolder)
     {
+        $stagedFiles = [
+            $projectFolder . DIRECTORY_SEPARATOR . 'build.php'
+        ];
+        
+        $stagedDirectories = [
+            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig()
+        ];   
+        
+        //delete files first
+        foreach($stagedFiles as $file){
+            unlink($file);
+        }
+        
+        //delete directories last
+        foreach($stagedDirectories as $dir){
+            rmdir($dir);
+        }
+        
+/*        
         if (! Filemanager::pathIsAbsolute($src)) {
             $src = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR . $src;
         }
@@ -400,6 +419,8 @@ PHP;
         if ($calledRecursive){
             rmdir($src);
         }
+        
+*/        
     }
     
     protected function getTimeout() : int
