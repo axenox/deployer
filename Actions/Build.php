@@ -18,6 +18,7 @@ use exface\Core\CommonLogic\Filemanager;
 use axenox\Deployer\DeployerSshConnector\DeployerSshConnector;
 use exface\Core\Factories\DataConnectionFactory;
 use Symfony\Component\Process\Process;
+use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 
 /**
  * Creates a build from the passed data.
@@ -53,28 +54,41 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     protected function perform(TaskInterface $task, DataTransactionInterface $transaction): ResultInterface
     {
         // $buildData based on object axenox.Deployer.build
-        $buildData = $this->getInputDataSheet($task);
+        try {
+            $buildData = $this->getInputDataSheet($task);
+        } catch (ActionInputMissingError $e) {
+            $buildData = DataSheetFactory::createFromObject($this->getInputObjectExpected());
+            $buildData->addRow([
+                'version' => $this->getVersion($task),
+                'project' => $this->getProjectData($task, 'UID')
+            ]);
+        }
         $result = new ResultMessageStream($task);
 
         $generator = function () use ($task, $buildData, $result, $transaction) {
 
             $buildName = $this->generateBuildName($task);
 
-            yield 'Building ' . $buildName;
+            
+            yield 'Building ' . $buildName . PHP_EOL;
     
             // Create build entry and mark it as "in progress"
             $buildData->setCellValue('status', 0, 50);
             $buildData->setCellValue('name', 0, $buildName);
             $buildData->dataCreate(false, $transaction);
 
+            // Prepare project folder and deployer task file
             $projectFolder = $this->prepareDeployerProjectFolder($task);
             $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
 
-            $cmd = "vendor\\bin\\dep {$buildTask}";
-
+            // run the deployer task via CLI
+            if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
+                chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
+            }
+            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
             $log = '';
             $seconds = time();
-
+            
             $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
             $process->start();
             foreach ($process as $msg) {
@@ -189,16 +203,17 @@ PHP;
     protected function prepareDeployerProjectFolder(TaskInterface $task) : string
     {
         $projectFolder = $this->getProjectFolderRelativePath($task);
+        $basePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
         
         // Make sure, folder project/builds exists
         $buildsFolderPath = $projectFolder 
             . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
-        Filemanager::pathConstruct($buildsFolderPath);
+        Filemanager::pathConstruct($basePath . $buildsFolderPath);
         
         
         $baseConfigFolderPath = $projectFolder
             . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();   
-        Filemanager::pathConstruct($baseConfigFolderPath);
+        Filemanager::pathConstruct($basePath . $baseConfigFolderPath);
         
         return $projectFolder;
     }
@@ -237,11 +252,17 @@ PHP;
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->projectData === null) {
-            $inputData = $this->getInputDataSheet($task);
-            if ($col = $inputData->getColumns()->get('project')) {
-                $projectUid = $col->getCellValue(0);
+            if ($task->hasParameter('project')) {
+                $projectAlias = $task->getParameter('project');
             } else {
-                throw new ActionInputMissingError($this, 'TODO: not project!');
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('project')) {
+                    $projectUid = $col->getCellValue(0);
+                }
+            } 
+            
+            if (! $projectUid && $projectAlias === null) {
+                throw new ActionInputMissingError($this, 'Cannot create build: missing project reference!', '784EI40');
             }
 
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
@@ -258,6 +279,7 @@ PHP;
                 'project_group'
             ]);
             $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
+            $ds->addFilterFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->projectData = $ds;
         }
@@ -287,13 +309,21 @@ PHP;
      */
     protected function getVersion(TaskInterface $task) : string 
     {
-        
-        $inputData = $this->getInputDataSheet($task);
-        if ($col = $inputData->getColumns()->get('version')) {
-            $version = $col->getCellValue(0);
+        if ($task->hasParameter('version')) {
+            $version = $task->getParameter('version');
         } else {
-            throw new ActionInputMissingError($this, 'TODO: no version');
+            $inputData = $this->getInputDataSheet($task);
+            if ($col = $inputData->getColumns()->get('version')) {
+                $version = $col->getCellValue(0);
+            }
         }
+        
+        if ($version === null) {
+            throw new ActionInputMissingError($this, 'Cannot create build: No version number provided!', '784EENG');
+        } else if ($version === '') {
+            throw new ActionInputMissingError($this, 'Cannot create build: Invalid/empty version number provided!', '784EENG');
+        }
+        
         return $version;        
     }
     
@@ -306,8 +336,14 @@ PHP;
     public function getCliArguments(): array
     {
         return [
-            (new ServiceParameter($this))->setName('project')->setDescription('Alias of the project to build'),
-            (new ServiceParameter($this))->setName('version')->setDescription('Version number - e.g. 1.0.12 or 2.0-beta. Use sematic versioning!')
+            (new ServiceParameter($this))
+                ->setName('project')
+                ->setDescription('Alias of the project to build')
+                ->setRequired(true),
+            (new ServiceParameter($this))
+                ->setName('version')
+                ->setDescription('Version number - e.g. 1.0.12 or 2.0-beta. Use sematic versioning!')
+                ->setRequired(true)
         ];
     }
 
@@ -330,6 +366,9 @@ PHP;
      */
     protected function cleanupFiles(string $src, bool $calledRecursive = false)
     {
+        if (! Filemanager::pathIsAbsolute($src)) {
+            $src = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR . $src;
+        }
         // TODO nur das löschen, was diese Aktion temporär erstellt hat
         $dir = opendir($src);
         while(false !== ( $file = readdir($dir)) ) {
