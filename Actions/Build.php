@@ -68,9 +68,12 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         $generator = function () use ($task, $buildData, $result, $transaction) {
 
             $buildName = $this->generateBuildName($task);
-
             
-            yield 'Building ' . $buildName . PHP_EOL;
+            $log = '';
+            
+            $msg = 'Building ' . $buildName . '...' . PHP_EOL;
+            yield $msg;
+            $log .= $msg;
     
             // Create build entry and mark it as "in progress"
             $buildData->setCellValue('status', 0, 50);
@@ -86,7 +89,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
             }
             $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
-            $log = '';
+
             $seconds = time();
             
             $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
@@ -98,22 +101,30 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 $log .= $msg;
             }
             
-            // Update build entry in data source with log and state
-            $buildData->setCellValue('log', 0, $log);         
+  
             if ($process->isSuccessful() === false) {
-                $buildData->setCellValue('status', 0, 90); // failed
+                $buildData->setCellValue('status', 0, 90); // failed                
+                $msg = 'Building of ' . $buildName . ' failed.'; 
             } else {
-                $buildData->setCellValue('status', 0, 99); // completed
+                $buildData->setCellValue('status', 0, 99); // completed                
+                $seconds = time() - $seconds;
+                $msg = 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds.';
             }
-            $buildData->dataUpdate(false, $transaction);
+
             
             // Delete temporary files
             $this->cleanupFiles($projectFolder);
             
-            // Send success message
-            $seconds = time() - $seconds;
-            yield 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds';
+            // Send success/failure message
+            yield $msg;
+            $log .= $msg;
+            
 
+            $buildData->setCellValue('log', 0, $log); 
+            
+            // Update build entry's state and save log to data source 
+            $buildData->dataUpdate(false, $transaction);
+            
             // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
             $this->performAfterDeferred($result, $transaction);
         };
