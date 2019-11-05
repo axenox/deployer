@@ -60,7 +60,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildData = DataSheetFactory::createFromObject($this->getInputObjectExpected());
             $buildData->addRow([
                 'version' => $this->getVersion($task),
-                'project' => $this->getProjectData($task, 'UID')
+                'project' => $this->getProjectData($task, 'UID'),
+                'comment' => $this->getComment($task),
+                'notes' => $this->getNotes($task)
             ]);
         }
         $result = new ResultMessageStream($task);
@@ -111,6 +113,11 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 $msg = 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds.';
             }
 
+            $buildComment = $this->getComment($task);
+            $buildData->setCellValue('comment', 0, $buildComment);
+            
+            $buildNotes = $this->getNotes($task);
+            $buildData->setCellValue('notes', 0, $buildNotes);
             
             // Delete temporary files
             $this->cleanupFiles($projectFolder);
@@ -337,6 +344,54 @@ PHP;
         
         return $version;        
     }
+  
+    /**
+     * gets comment from task
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function getComment(TaskInterface $task) : string
+    {
+        $comment = '';
+        if ($task->hasParameter('comment')) {
+            $comment = $task->getParameter('comment');
+        } else {
+            try {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('comment')) {
+                    $comment = $col->getCellValue(0);
+                }
+            } catch (ActionInputMissingError $e) {
+                $comment = '';
+            }
+        }     
+        return $comment;
+    }
+    
+    /**
+     * gets notes from task
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function getNotes(TaskInterface $task) : string
+    {
+        $notes = '';
+        if ($task->hasParameter('notes')) {
+            $notes = $task->getParameter('notes');
+        } else {
+            try {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('notes')) {
+                    $notes = $col->getCellValue(0);
+                }
+            } catch (ActionInputMissingError $e) {
+                $notes = '';
+            }
+        }
+        return $notes;
+    }
     
     
     /**
@@ -365,7 +420,14 @@ PHP;
      */
     public function getCliOptions(): array
     {
-        return [];
+        return [
+            (new ServiceParameter($this))
+                ->setName('comment')
+                ->setDescription('Comment to give a short description about the build.'),
+            (new ServiceParameter($this))
+                ->setName('notes')
+                ->setDescription('You can save a note to the build to give further information.')
+        ];
     }
     
     
