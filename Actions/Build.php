@@ -103,7 +103,6 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 $log .= $msg;
             }
             
-  
             if ($process->isSuccessful() === false) {
                 $buildData->setCellValue('status', 0, 90); // failed                
                 $msg = 'Building of ' . $buildName . ' failed.'; 
@@ -125,8 +124,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Send success/failure message
             yield $msg;
             $log .= $msg;
-            
-
+           
             $buildData->setCellValue('log', 0, $log); 
             
             // Update build entry's state and save log to data source 
@@ -315,8 +313,7 @@ PHP;
         
         return $this->getVersion($task) . '+' . $timestamp;
 
-    }
-       
+    } 
     
     /**
      * gets version from task
@@ -393,7 +390,6 @@ PHP;
         return $notes;
     }
     
-    
     /**
      *
      * {@inheritdoc}
@@ -430,7 +426,6 @@ PHP;
         ];
     }
     
-    
     /**
      * deletes all directories and files created in the building process, except the actual build (-directory)
      * 
@@ -456,33 +451,7 @@ PHP;
         foreach($stagedDirectories as $dir){
             rmdir($dir);
         }
-        
-/*        
-        if (! Filemanager::pathIsAbsolute($src)) {
-            $src = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR . $src;
-        }
-        // TODO nur das löschen, was diese Aktion temporär erstellt hat
-        $dir = opendir($src);
-        while(false !== ( $file = readdir($dir)) ) {
-            if (( $file != '.' ) && ( $file != '..' )) {
-                $full = $src . DIRECTORY_SEPARATOR . $file;
-                if ($full == $src . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds()){
-                    continue;
-                }
-                if (is_dir($full)) {
-                    $this->cleanupFiles($full, true);
-                }
-                else {
-                    unlink($full);
-                }
-            }
-        }
-        closedir($dir);
-        if ($calledRecursive){
-            rmdir($src);
-        }
-        
-*/        
+   
     }
     
     protected function getTimeout() : int
