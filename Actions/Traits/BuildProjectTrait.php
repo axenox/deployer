@@ -66,4 +66,24 @@ trait BuildProjectTrait{
     
     
     
+    /**
+     *
+     * @return string
+     */
+    protected function getFolderNameForBuilds() : string
+    {
+        return 'builds';
+    }
+    
+    /**
+     *
+     * @return string
+     */
+    protected function getFolderNameForBaseConfig() : string
+    {
+        return 'base-config';
+    }
+    
+    
+    
 }

@@ -237,26 +237,6 @@ PHP;
         return $projectFolder;
     }
 
-    
-    /**
-     * 
-     * @return string
-     */
-    protected function getFolderNameForBuilds() : string
-    {
-        return 'builds';
-    }
-    
-    /**
-     * 
-     * @return string
-     */
-    protected function getFolderNameForBaseConfig() : string
-    {
-        return 'base-config';
-    }
-    
-
     /**
      * Generates buildname from buildversion and current time
      * @param TaskInterface $task
