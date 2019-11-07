@@ -58,6 +58,12 @@ task('config:setup_deploy_config', function () {
     set('shared_files', []);
     set('shared_dirs', ['backup', 'cache', 'export', 'UserData', 'logs']);
     set('copy_dirs', ['config']);
+    try {
+        $keepReleases = get('keep_releases');
+    } catch (ConfigurationException $e) {
+        $keepReleases = 2;
+    }
+    set('keep_releases', $keepReleases);
     
     
     // === connection parameters
