@@ -6,6 +6,7 @@ $basicDeployPath = '[#basic#]'; //placeholder for string
 $relativeDeployPath = '[#relative#]'; //placeholder for string
 $sharedDirs = [#shared#]; //placeholder for array
 $copyDirs = [#copy#]; //placeholder for array
+$keepReleases = [#releases#]; //placeholder for integer
 $phpPath = '[#php#]'; //placeholder for string
 $relativeReleasesPath = 'releases';
 $relativeSharedPath = 'shared';
@@ -101,9 +102,9 @@ if (is_dir($baseConfigPath)) {
 }
 
 //permissions
-//chmod($release_path, 0777);
-//chmod($release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
-//echo("Permissions set!\n");
+chmod($releasePath, 0777);
+chmod($releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
+echo("Permissions set!\n");
 
 //create 'current' symlink to new release
 chdir($deployPath);
@@ -152,6 +153,30 @@ foreach($cmdarray as $line) {
     echo ($line . "\n");
 }
 
+//create/append release list file
+if (!file_exists ($releasesPath . DIRECTORY_SEPARATOR . "releases.txt")) {
+    file_put_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", $releaseName . "\r\n");
+    echo ("Release list file created!\n");
+} else {
+    file_put_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", $releaseName . "\r\n", FILE_APPEND);
+    echo ("Release added to list file!\n");
+}
+
+//delete old releases
+$dirList =file($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", FILE_IGNORE_NEW_LINES);
+$releaseCount = count($dirList);
+if ($releaseCount > $keepReleases) {
+    echo ("Deleting old releases...\n");
+    for ($i = 0; $i < $releaseCount - $keepReleases; $i++) {
+        $dir = $releasesPath . DIRECTORY_SEPARATOR . $dirList[$i];
+        deleteDirectory($dir);
+        $contents = file_get_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt");
+        $contents = str_replace($dirList[$i] . "\r\n", '', $contents);
+        file_put_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", $contents);
+        echo ("Deleted directory: " . $dir . "\n");
+    }
+}
+
 //delete this file
 unlink(__FILE__);
 echo ("Self deployment file deleted!\n");
@@ -181,6 +206,7 @@ function deleteDirectory(string $dir) {
     }
     
     if (!is_dir($dir)) {
+        chmod($dir, 0777);
         return unlink($dir);
     }
     
