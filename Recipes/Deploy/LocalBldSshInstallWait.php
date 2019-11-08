@@ -31,6 +31,7 @@ task('LocalBldSshInstallWait', [
     'network:wait',
     'install:install_current_packages',
     'install:uninstall_unused_packages',
+    'deploy:cleanup_old_releases',
     'self_extractor:delete_remote_file',
     'self_extractor:delete_local_file',
     'deploy:show_release_names',
