@@ -15,6 +15,7 @@ $deployPath = $basicDeployPath .  DIRECTORY_SEPARATOR . $relativeDeployPath;
 $releasesPath = $deployPath . DIRECTORY_SEPARATOR . $relativeReleasesPath;
 $sharedPath = $deployPath . DIRECTORY_SEPARATOR . $relativeSharedPath;
 $currentPath = $deployPath . DIRECTORY_SEPARATOR . $relativeCurrentPath;
+$exfacePath = $basicDeployPath . DIRECTORY_SEPARATOR . 'exface';
 
 $releaseName = pathinfo(__FILE__,  PATHINFO_FILENAME);
 $releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
@@ -101,6 +102,37 @@ if (is_dir($baseConfigPath)) {
     echo("Directory {$baseConfigPath} removed!\n");
 }
 
+//copy old apps to new vendor folder
+$vendorBase = $currentPath . DIRECTORY_SEPARATOR . 'vendor';
+foreach (glob($vendorBase . '/*' , GLOB_ONLYDIR) as $vendorPath) {
+    foreach (glob($vendorPath . '/*' , GLOB_ONLYDIR) as $packagePath) {
+        if (file_exists($packagePath . DIRECTORY_SEPARATOR . 'composer.json')) {
+            $composerJson = json_decode(file_get_contents($packagePath . DIRECTORY_SEPARATOR . 'composer.json'), true);
+            if (is_array($composerJson) === false) {
+                continue;
+            }            
+            if (array_key_exists('extra', $composerJson) && array_key_exists('app', $composerJson['extra']) && $alias = $composerJson['extra']['app']['app_alias']) {
+                echo ("Package Path: " . $packagePath . "\n");
+                $arr = explode('vendor', $packagePath);
+                $relativePackagePath = $arr[1];
+                $src = $packagePath;
+                $dst = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . $relativePackagePath;
+                if (!is_dir($dst)) {
+                    $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
+                    $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
+                    $cmdarray = [];
+                    echo ("Command: '" . $command . "\n");
+                    echo exec("{$command}", $cmdarray);
+                    foreach($cmdarray as $line) {
+                        echo ($line . "\n");
+                    }
+                    echo ("App '" . $alias . "' uninstalled!\n");
+                }                               
+            }
+        }
+    }
+}
+
 //permissions
 chmod($releasePath, 0777);
 chmod($releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
@@ -138,13 +170,12 @@ if (!$test)
 //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
 
-$path = $basicDeployPath . DIRECTORY_SEPARATOR . 'exface';
 if (substr(php_uname(), 0, 7) == "Windows"){
-    $command = "cd {$path} && {$phpPath} composer.phar run-script post-install-cmd";
+    $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
 }
 else {
     //TODO not tested yet on Linux!
-    $command = "cd {$path} && {$phpPath} composer.phar run-script post-install-cmd";
+    $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
 }
 echo ("Installing apps...\n");
 $cmdarray = [];
@@ -155,20 +186,6 @@ foreach($cmdarray as $line) {
 
 //create/append release list file, deleting old releases
 cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases);
-
-/*$releaseCount = count($logList);
-if ($releaseCount > $keepReleases) {
-    echo ("Deleting old releases...\n");
-    for ($i = 0; $i < $releaseCount - $keepReleases; $i++) {
-        $dir = $releasesPath . DIRECTORY_SEPARATOR . $logList[$i];
-        deleteDirectory($dir);
-        $contents = file_get_contents($depPath . DIRECTORY_SEPARATOR . "releases");
-        $contents = str_replace($logList[$i] . "\r\n", '', $contents);
-        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $contents);
-        echo ("Deleted directory: " . $dir . "\n");
-    }
-}
-*/
 
 //delete this file
 unlink(__FILE__);
