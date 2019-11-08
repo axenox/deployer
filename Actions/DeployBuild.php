@@ -55,13 +55,13 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
      */
     protected function perform(TaskInterface $task, DataTransactionInterface $transaction): ResultInterface
     {
-        // $buildData based on object axenox.Deployer.build
+        // $buildData based on object axenox.Deployer.deployment
         try {
             $deployData = $this->getInputDataSheet($task);
         } catch (ActionInputMissingError $e) {
             $deployData = DataSheetFactory::createFromObject($this->getInputObjectExpected());
             $deployData->addRow([
-                'build' => $this->getProjectData($task, 'version'),
+                'build' => $this->getBuildData($task, 'name'),
                 'host' => $this->getHostData($task, 'name')
             ]);
         }
@@ -74,13 +74,18 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
             
             // Create deploy entry and mark it as "in progress"
             $deployData->setCellValue('status', 0, 50);
-            $deployData->setCellValue('host', 0, $this->getHostUid($task));
-            $deployData->setCellValue('build', 0, $this->getBuildUid($task));
+            $deployData->setCellValue('host', 0, $this->getHostData($task, 'UID'));
+            $deployData->setCellValue('build', 0, $this->getBuildData($task, 'UID'));
             $deployData->setCellValue('started_on', 0, $seconds);
             $deployData->dataCreate(false, $transaction);
             
             $buildName = $this->getBuildData($task, 'name');
             $hostName = $this->getHostData($task, 'name');
+            
+            // run the deployer task via CLI
+            if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
+                chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
+            }
             
             //create directories
             $projectFolder = $this->getProjectFolderRelativePath($task);
@@ -174,7 +179,11 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     {
         if ($this->hostData === null) {
             // TODO host name aus CLI-Parameter
-            $hostUid = $this->getHostUid($task);
+            if ($task->hasParameter('host')) {
+                $hostName = $task->getParameter('host');
+            } else {
+                $hostUid = $this->getHostUid($task);
+            }
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
             $ds->getColumns()->addMultiple([
@@ -189,6 +198,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
                 'stage'
             ]);
             $ds->addFilterFromString('UID', $hostUid, ComparatorDataType::EQUALS);
+            $ds->addFilterFromString('name', $hostName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->hostData = $ds;
         }
@@ -205,9 +215,16 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     protected function getBuildData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->buildData === null) {
+            if ($task->hasParameter('build')) {
+                $buildName = $task->getParameter('build');
+            } else {
+                $buildUid = $this->getBuildUid($task);
+            }
             
-            $buildUid = $this->getBuildUid($task);
-                       
+            if (! $buildUid && $buildName === null) {
+                throw new ActionInputMissingError($this, 'Cannot deploy build: missing build reference!', '784EI40');
+            }
+            
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
             $ds->getColumns()->addMultiple([
                 'build_datatime',
@@ -223,8 +240,10 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
                 'version'
             ]);
             $ds->addFilterFromString('UID', $buildUid, ComparatorDataType::EQUALS);
+            $ds->addFilterFromString('name', $buildName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->buildData = $ds;
+            $test = $this->buildData->getCellValue('name', 0);
         }
         return $this->buildData->getCellValue($projectAttributeAlias, 0);
     }
