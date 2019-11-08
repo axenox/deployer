@@ -36,8 +36,8 @@ task('deploy:prepare', function () {
     run("cd {{deploy_path}} && if [ ! -d shared ]; then mkdir shared; fi");
     
     // Create .dep dir and releases log file.
-    run("cd {{deploy_path}} && if [ ! -d .dep ]; then mkdir dep; fi");
-    run("cd {{deploy_path}} && if [ ! -f .dep/releases ]; then touch .dep/release; fi");
+    run("cd {{deploy_path}} && if [ ! -d .dep ]; then mkdir .dep; fi");
+    run("cd {{deploy_path}} && if [ ! -f .dep/releases ]; then touch .dep/releases; fi");
     
     //test if the release already exists on server, if not, create folder
     $result = test('[ -d {{deploy_path}}/{{release_path}} ] ');
