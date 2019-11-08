@@ -161,8 +161,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
         }
         return $this->projectData->getCellValue($projectAttributeAlias, 0);
     }
-    
-    
+
     /**
      * Function for getting a value out of the host's data
      *
@@ -263,9 +262,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
         }
         return $buildUid;
     }
-    
-    
-    
+ 
     /**
      *
      * @param TaskInterface $task
@@ -276,8 +273,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
         $connectionUid = $this->getHostData($task, 'data_connection');
         return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
     }    
-    
-    
+ 
     /**
      * generates deploy data and creates deploy.php file
      *
@@ -288,9 +284,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
      */
     protected function createDeployPhp(TaskInterface $task, string $basepath, string $buildFolder, string $sshConfigFilePath) : string
     {
-        
-        //parameter anpassen!
-        
+
         $stage = $this->getHostData($task, 'stage');
         $name = $this->getHostData($task, 'name');
         $absoluteSshConfigFilePath = $basepath . $sshConfigFilePath;
@@ -514,9 +508,7 @@ PHP;
         
         return;
     }
-    
-    
-    
+       
     /**
      * 
      * @param string $hostAliasFolderPath
@@ -551,7 +543,6 @@ PHP;
         
         return $sshConfigFileDirectory;
     }
-    
     
     /**
      *
@@ -700,7 +691,6 @@ PHP;
         //delete directories last
         foreach($stagedDirectories as $dir){
             rmdir($dir);
-        }
-        
+        } 
     }
 }
