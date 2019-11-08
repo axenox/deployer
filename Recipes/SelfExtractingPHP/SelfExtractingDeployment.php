@@ -153,29 +153,22 @@ foreach($cmdarray as $line) {
     echo ($line . "\n");
 }
 
-//create/append release list file
-if (!file_exists ($releasesPath . DIRECTORY_SEPARATOR . "releases.txt")) {
-    file_put_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", $releaseName . "\r\n");
-    echo ("Release list file created!\n");
-} else {
-    file_put_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", $releaseName . "\r\n", FILE_APPEND);
-    echo ("Release added to list file!\n");
-}
+//create/append release list file, deleting old releases
+cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases);
 
-//delete old releases
-$dirList =file($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", FILE_IGNORE_NEW_LINES);
-$releaseCount = count($dirList);
+/*$releaseCount = count($logList);
 if ($releaseCount > $keepReleases) {
     echo ("Deleting old releases...\n");
     for ($i = 0; $i < $releaseCount - $keepReleases; $i++) {
-        $dir = $releasesPath . DIRECTORY_SEPARATOR . $dirList[$i];
+        $dir = $releasesPath . DIRECTORY_SEPARATOR . $logList[$i];
         deleteDirectory($dir);
-        $contents = file_get_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt");
-        $contents = str_replace($dirList[$i] . "\r\n", '', $contents);
-        file_put_contents($releasesPath . DIRECTORY_SEPARATOR . "releases.txt", $contents);
+        $contents = file_get_contents($depPath . DIRECTORY_SEPARATOR . "releases");
+        $contents = str_replace($logList[$i] . "\r\n", '', $contents);
+        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $contents);
         echo ("Deleted directory: " . $dir . "\n");
     }
 }
+*/
 
 //delete this file
 unlink(__FILE__);
@@ -197,6 +190,7 @@ function recurseCopy(string $src, string $dst) {
         }
     }
     closedir($dir);
+    return;
 }
 
 //removing dir that is not empty
@@ -224,6 +218,82 @@ function deleteDirectory(string $dir) {
     return rmdir($dir);
 }
 
+//deletin old releases, adding new release to logfile
+function cleanupReleases(string $deployPath, string $releaseName, string $releasesPath, int $keepReleases) {
+    $depPath = $deployPath . DIRECTORY_SEPARATOR . '.dep';
+    
+    //creating .dep directory
+    if (!is_dir($depPath)) {
+        mkdir($depPath);
+    }
+    $date = date('YmdHis');
+    $line = $date . ',' . $releaseName;
+    
+    //adding new release to logfile
+    if (!file_exists ($depPath . DIRECTORY_SEPARATOR . "releases")) {
+        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $line . "\n");
+        echo ("Releases log file created!\n");
+    } else {
+        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $line . "\n", FILE_APPEND);
+        echo ("Release added to log file!\n");
+    }
+    
+    if ($keepReleases === -1) {
+        // Keep unlimited releases.
+        return;
+    }
+    
+    //reading logfile into array, maximum of last n*2+5 lines
+    $logList = [];
+    $fp = fopen($depPath . DIRECTORY_SEPARATOR . "releases", "r");
+    while (!feof($fp))
+    {
+        $line = fgets($fp, 4096);
+        if ($line == '' || $line == "\n" || $line == "\r\n") {
+            continue;
+        }
+        $line = trim(preg_replace('/\s\s+/', '', $line));
+        array_push($logList, $line);
+        if (count($logList) > (2 * $keepReleases + 5)) {
+            array_shift($logList);
+        }
+    }
+    
+    //reading directory in $releasesPath into array
+    $tmp = getcwd();
+    chdir($releasesPath);
+    $dirList = glob('*' , GLOB_ONLYDIR);
+    chdir($tmp);
+
+    //checking if release in $logList still exists as directory, if so adding it to $releaseList array
+    $releasesList = [];
+    for ($i = count($logList) - 1; $i >= 0; $i--) {
+        $arr = explode(',', $logList[$i]);
+        $name = $arr[1];
+        $index = array_search($name, $dirList, true);
+        if ($index !== false) {
+            $releasesList[] = $name;
+            unset($dirList[$index]);
+        }
+    }
+
+    //deleting number of to be kept releases from $releasesList
+    $keep = $keepReleases;
+    while ($keep > 0) {
+        array_shift($releasesList);
+        --$keep;
+    }
+    
+    //deleting all folders from releases still in $releasesList
+    foreach ($releasesList as $release){
+        echo ("Deleting release: " . $release . "\n");
+        $dir = $releasesPath . DIRECTORY_SEPARATOR . $release;
+        deleteDirectory($dir);
+        echo ("Deleted release: " . $release . "\n");
+    }    
+    return;
+}
+
 //extracting archive that is appended to this php file
 function extractArchive()
 {
@@ -247,6 +317,7 @@ function extractArchive()
     } catch (Exception $e) {
         printf("Error:<br/>%s<br>%s>",$e->getMessage(),$e->getTraceAsString());
     };
+    return;
 }
 //IMPORTANT: no empty lines after "____HALT_COMPILER();" else archive extraction wont work!
 __HALT_COMPILER();
