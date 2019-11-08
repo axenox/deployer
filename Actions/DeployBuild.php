@@ -33,6 +33,8 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     
     private $projectData = null;
     
+    private $timeout = 600;
+    
     /**
      *
      * {@inheritdoc}
@@ -68,18 +70,32 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
         
         $generator = function () use ($task, $deployData, $result, $transaction) {
             
+            $seconds = time();
+            
+            // Create deploy entry and mark it as "in progress"
+            $deployData->setCellValue('status', 0, 50);
+            $deployData->setCellValue('host', 0, $this->getHostUid($task));
+            $deployData->setCellValue('build', 0, $this->getBuildUid($task));
+            $deployData->setCellValue('started_on', 0, $seconds);
+            $deployData->dataCreate(false, $transaction);
+            
+            $buildName = $this->getBuildData($task, 'name');
+            $hostName = $this->getHostData($task, 'name');
+            
+            
             //TODO magic happens here
-            $projectFolder = $this->prepareDeployerProjectFolder($task);
+            $projectFolder = $this->getProjectFolderRelativePath($task);
+            $hostAliasFolderPath = $this->prepareDeployerProjectFolder($task);
             
            
             
             
-            $deployTask = $this->prepareDeployerTask($task, $projectFolder, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+            $deployTask = $this->prepareDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
             
             $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
 
             $log = '';
-            $seconds = time();
+
             
             $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
             $process->start();
@@ -90,8 +106,28 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
                 $log .= $msg;
             }
             
+            if ($process->isSuccessful() === false) {
+                $deployData->setCellValue('status', 0, 90); // failed
+                $msg = 'Deployment of ' . $buildName . ' on ' . $hostName . ' failed.';
+            } else {
+                $deployData->setCellValue('status', 0, 99); // completed
+                $seconds = time() - $seconds;
+                $msg = 'Deployment of ' . $buildName . ' on ' . $hostName . ' completed in ' . $seconds . ' seconds.';
+            }
+            yield $msg;
+            $log .= $msg;
             
-            yield "finished!";
+            $deployData->setCellValue('completed_on', 0, time());
+            $deployData->setCellValue('log', 0, $log); 
+            // Update deployment entry's state and save log to data source
+            
+            
+            $deployData->dataUpdate(false, $transaction);
+            
+            //$this->cleanupFiles($projectFolder, $hostAliasFolderPath);
+
+            // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
+            $this->performAfterDeferred($result, $transaction);
         };
         
         $result->setMessageStreamGenerator($generator);
@@ -144,12 +180,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     {
         if ($this->hostData === null) {
             // TODO host name aus CLI-Parameter
-            $inputData = $this->getInputDataSheet($task);
-            if ($col = $inputData->getColumns()->get('host')) {
-                $hostUid = $col->getCellValue(0);
-            } else {
-                throw new ActionInputMissingError($this, 'TODO: not host!');
-            }
+            $hostUid = $this->getHostUid($task);
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
             $ds->getColumns()->addMultiple([
@@ -173,13 +204,9 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     protected function getBuildData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->buildData === null) {
-            $inputData = $this->getInputDataSheet($task);
-            if ($col = $inputData->getColumns()->get('build')) {
-                $buildUid = $col->getCellValue(0);
-            } else {
-                throw new ActionInputMissingError($this, 'TODO: not build!');
-            }
             
+            $buildUid = $this->getBuildUid($task);
+                       
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
             $ds->getColumns()->addMultiple([
                 'build_datatime',
@@ -200,6 +227,30 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
         }
         return $this->buildData->getCellValue($projectAttributeAlias, 0);
     }
+    
+    protected function getHostUid(Taskinterface $task) : string
+    {
+        $inputData = $this->getInputDataSheet($task);
+        if ($col = $inputData->getColumns()->get('host')) {
+            $hostUid = $col->getCellValue(0);
+        } else {
+            throw new ActionInputMissingError($this, 'TODO: no host given!');
+        }
+        return $hostUid;
+    }
+    
+    protected function getBuildUid(TaskInterface $task) : string
+    {
+        $inputData = $this->getInputDataSheet($task);
+        if ($col = $inputData->getColumns()->get('build')) {
+            $buildUid = $col->getCellValue(0);
+        } else {
+            throw new ActionInputMissingError($this, 'TODO: no build given!');
+        }
+        return $buildUid;
+    }
+    
+    
     
     /**
      *
@@ -308,6 +359,7 @@ PHP;
         $user = $connection->getUser();
         $port = $connection->getPort();
         $host = $this->getHostData($task, 'name');
+        $hostOperatingSystem = $this->getHostData($task, 'operating_system');
         
         //create /hosts/alias directory 
         $hostAliasFolderPath = $this->createHostFolderPath($task, $hostAlias);
@@ -316,6 +368,7 @@ PHP;
         
         // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
         $privateKeyFilePath = $this->createPrivateKeyFile($hostAliasFolderPath, $privateKey);
+        $this->setPrivateKeyFilePermissions($privateKeyFilePath, $hostOperatingSystem);
         
         //create known_hosts file
         $knownHostsFilePath = $this->createKnownHostsFile($hostAliasFolderPath);
@@ -400,20 +453,45 @@ PHP;
      */
     protected function createPrivateKeyFile(string $hostAliasFolderPath, string $privateKey) :string
     {
-        $content = <<<PHP
------BEGIN RSA PRIVATE KEY-----
-{$privateKey}
------END RSA PRIVATE KEY-----
-PHP;
-        
+   
         $privateKeyFileDirectory = $hostAliasFolderPath . DIRECTORY_SEPARATOR . $this->getFileNamePrivateKey();
         
         $privateKeyFile = fopen($privateKeyFileDirectory, 'w');
-        fwrite($privateKeyFile, $content);
+        fwrite($privateKeyFile, $privateKey);
         fclose($privateKeyFile);
-        
+
         return $privateKeyFileDirectory;
     }
+    
+    protected function setPrivateKeyFilePermissions(string $privateKeyFileDirectory, string $hostOperatingSystem)
+    {
+        switch ($hostOperatingSystem){
+            case 'winserv2012':
+                //TODO: may or may not work
+            case 'windows' :
+                $commandList = [
+                    'icacls ' . $privateKeyFileDirectory . ' /c /t /inheritance:d',
+                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant %username%:F',
+                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant SYSTEM:WRX',
+                    'icacls ' . $privateKeyFileDirectory . ' /c /t /remove Administrator "Authenticated Users" BUILTIN Everyone System Users',
+                    'icacls ' . $privateKeyFileDirectory . ' /verify'
+                ];
+                
+                foreach($commandList as $cmd){
+                    $process = Process::fromShellCommandline($cmd);
+                    $process->start();
+                }
+                break;
+                
+            case 'linux':
+                chmod($privateKeyFileDirectory, 0600);
+                break;
+        }
+        
+        return;
+    }
+    
+    
     
     /**
      * 
@@ -444,7 +522,7 @@ PHP;
         $sshConfigString = $this->stringifySshConfigArray($sshConfig);
 
         $sshConfigFile = fopen($sshConfigFileDirectory, 'w');
-        fwrite($sshConfigFile, ($sshConfigString));
+        fwrite($sshConfigFile, $sshConfigString);
         fclose($sshConfigFile);
         
         return $sshConfigFileDirectory;
@@ -533,9 +611,40 @@ PHP;
         return $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
     }
     
+    protected function getTimeout() : int
+    {
+        return $this->timeout;
+    }
+    
     public function setTimeout(int $seconds) : Build
     {
         $this->timeout = $seconds;
         return $this;
+    }
+    
+    protected function cleanupFiles(string $projectFolder, string $hostAliasFolderPath)
+    {
+        $stagedFiles = [
+            $projectFolder . DIRECTORY_SEPARATOR . 'deploy.php',
+            $hostAliasFolderPath . DIRECTORY_SEPARATOR . $this->getFileNameKnownHosts(),
+            $hostAliasFolderPath . DIRECTORY_SEPARATOR . $this->getFileNamePrivateKey(),
+            $hostAliasFolderPath . DIRECTORY_SEPARATOR . $this->getFileNameSshConfig()
+        ];
+        
+        $stagedDirectories = [
+            $hostAliasFolderPath,
+            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForHosts()
+        ];
+        
+        //delete files first
+        foreach($stagedFiles as $file){
+            unlink($file);
+        }
+        
+        //delete directories last
+        foreach($stagedDirectories as $dir){
+            rmdir($dir);
+        }
+        
     }
 }
