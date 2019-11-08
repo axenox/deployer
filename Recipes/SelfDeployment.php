@@ -32,7 +32,7 @@ task('self_deployment:upload', function () {
 });
     
 task('self_deployment:run', function () {
-    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=400M {{release_name}}.php');;
+    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=400M {{release_name}}.php', ['timeout' => null]);;
     write($composerOutput);
     writeln('');
 });
