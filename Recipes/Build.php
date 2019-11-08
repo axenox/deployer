@@ -76,6 +76,23 @@ task('build:create_from_composer', function() {
     } catch (ConfigurationException $e) {
         $baseConfigPath = null;
     }
+    $inp = file_get_contents($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR. 'composer.json');
+    $tempArray = json_decode($inp, true);
+    $tmp1 = [];
+    $tmp1["axenox\\PackageManager"] = "vendor/";
+    $tmp2 = [];
+    $tmp2["psr-0"] = $tmp1;
+    $tempArray["autoload"] = $tmp2;
+    $tempArray["optimize-autoloader"] = true;
+    $tmp3 = [];
+    $tmp3["post-update-cmd"] = array("axenox\\PackageManager\\StaticInstaller::composerFinishUpdate");
+    $tmp3["post-install-cmd"] = array("axenox\\PackageManager\\StaticInstaller::composerFinishInstall");
+    $tmp3["post-package-install"] = array("axenox\\PackageManager\\StaticInstaller::composerFinishPackageInstall");
+    $tmp3["post-package-update"] = array("axenox\\PackageManager\\StaticInstaller::composerFinishPackageUpdate");
+    $tempArray["scripts"] = $tmp3;
+    $jsonData = json_encode($tempArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    file_put_contents($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR. 'composer.json', $jsonData);
+    
     if ($baseConfigPath !=='' && $baseConfigPath !== null) {
         if (!is_dir($baseConfigPath)) {
             mkdir($baseConfigPath);
