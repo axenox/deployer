@@ -1,5 +1,5 @@
 <?php
-namespace axenox\Deployer\DeployerSshConnector;
+namespace axenox\Deployer\DataConnectors;
 
 use exface\Core\CommonLogic\AbstractDataConnectorWithoutTransactions;
 use exface\Core\Interfaces\DataSources\DataQueryInterface;
