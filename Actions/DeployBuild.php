@@ -22,8 +22,28 @@ use exface\Core\DataTypes\StringDataType;
 use Symfony\Component\Process\Process;
 
 /**
- * Creates a build from the passed data.
- *
+ * Deploys a build to a specific host.
+ * 
+ * This action requires an instance of a build and an instance of a host as parameters.
+ * The action may either be called via the PowerUI frontend or via CLI-command.
+ * The parameters for the CLI-call are the names of the host and build, which have to be existing instances of
+ * axenox.Deployer.host and axenox.Deployer.build objects.
+ * This action will then extract the data, required for the deployment, from the given objects, create a working directory
+ * and call the actual command for the deployment process. 
+ * Upon finishing the deployment process, the action will delete every temporary file / directories created.
+ * 
+ * ## Commandline Usage:
+ * 
+ * ```
+ * action axenox.Deployer:Deploy [BuildName] [HostName]
+ * ```
+ * 
+ * For example:
+ * ```
+ * action axenox.Deployer:Deploy 1.1.2+20191108145134 sdrexf2
+ * ```
+ * 
+ * 
  * @author Andrej Kabachnik
  *
  */
