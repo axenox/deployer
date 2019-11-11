@@ -47,7 +47,7 @@ use Symfony\Component\Process\Process;
  * @author Andrej Kabachnik
  *
  */
-class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
+class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
 {
     use Traits\BuildProjectTrait;
     
