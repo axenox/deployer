@@ -185,6 +185,10 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
                 $hostUid = $this->getHostUid($task);
             }
             
+            if (! $hostUid && $hostName === null) {
+                throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
+            }
+            
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
             $ds->getColumns()->addMultiple([
                 'data_connection',
@@ -222,7 +226,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
             }
             
             if (! $buildUid && $buildName === null) {
-                throw new ActionInputMissingError($this, 'Cannot deploy build: missing build reference!', '784EI40');
+                throw new ActionInputMissingError($this, 'Cannot deploy build: missing build reference!', '7880ZT2');
             }
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
