@@ -174,7 +174,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'default_composer_auth_json',
                 'default_config',
                 'deployment_recipe',
-                'deployment_receipe_custom_path',
+                'deployment_recipe_custom_path',
                 'name',
                 'project_group'
             ]);

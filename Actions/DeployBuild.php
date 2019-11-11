@@ -156,7 +156,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
                 'default_composer_auth_json',
                 'default_config',
                 'deployment_recipe',
-                'deployment_receipe_custom_path',
+                'deployment_recipe_custom_path',
                 'name',
                 'project_group'
             ]);
