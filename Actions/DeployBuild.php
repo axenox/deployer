@@ -243,7 +243,6 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
             $ds->addFilterFromString('name', $buildName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->buildData = $ds;
-            $test = $this->buildData->getCellValue('name', 0);
         }
         return $this->buildData->getCellValue($projectAttributeAlias, 0);
     }
