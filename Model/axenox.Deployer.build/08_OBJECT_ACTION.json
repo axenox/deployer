@@ -1,0 +1,103 @@
+{
+    "object_alias": "exface.Core.OBJECT_ACTION",
+    "columns": [
+        {
+            "name": "CREATED_ON",
+            "attribute_alias": "CREATED_ON"
+        },
+        {
+            "name": "MODIFIED_ON",
+            "attribute_alias": "MODIFIED_ON"
+        },
+        {
+            "name": "CREATED_BY_USER",
+            "attribute_alias": "CREATED_BY_USER"
+        },
+        {
+            "name": "MODIFIED_BY_USER",
+            "attribute_alias": "MODIFIED_BY_USER"
+        },
+        {
+            "name": "UID",
+            "attribute_alias": "UID"
+        },
+        {
+            "name": "OBJECT",
+            "attribute_alias": "OBJECT"
+        },
+        {
+            "name": "ACTION_PROTOTYPE",
+            "attribute_alias": "ACTION_PROTOTYPE"
+        },
+        {
+            "name": "ALIAS",
+            "attribute_alias": "ALIAS"
+        },
+        {
+            "name": "NAME",
+            "attribute_alias": "NAME"
+        },
+        {
+            "name": "SHORT_DESCRIPTION",
+            "attribute_alias": "SHORT_DESCRIPTION"
+        },
+        {
+            "name": "CONFIG_UXON",
+            "attribute_alias": "CONFIG_UXON"
+        },
+        {
+            "name": "APP",
+            "attribute_alias": "APP"
+        },
+        {
+            "name": "USE_IN_OBJECT_BASKET_FLAG",
+            "attribute_alias": "USE_IN_OBJECT_BASKET_FLAG"
+        },
+        {
+            "name": "DOCS",
+            "attribute_alias": "DOCS"
+        }
+    ],
+    "rows": [
+        {
+            "CREATED_ON": "2019-11-04 12:07:07",
+            "MODIFIED_ON": "2019-11-08 14:21:19",
+            "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "UID": "0x11e9fef33e544e21822b847beb3e34e8",
+            "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
+            "ACTION_PROTOTYPE": "exface\/Core\/Actions\/ShowDialog.php",
+            "ALIAS": "ShowBuildDialog",
+            "NAME": "Create Build",
+            "SHORT_DESCRIPTION": "",
+            "CONFIG_UXON": "{\"icon\":\"cogs\",\"widget\":{\"widget_type\":\"Dialog\",\"widgets\":[{\"widget_type\":\"Tabs\",\"tabs\":[{\"caption\":\"General\",\"widgets\":[{\"attribute_alias\":\"version\"},{\"attribute_alias\":\"project\",\"widget_type\":\"InputComboTable\",\"id\":\"project_selector\",\"table\":{\"object_alias\":\"axenox.Deployer.project\",\"columns\":[{\"attribute_group_alias\":\"~DEFAULT_DISPLAY\"},{\"attribute_alias\":\"default_composer_json\",\"hidden\":true},{\"attribute_alias\":\"alias\",\"hidden\":true},{\"attribute_alias\":\"default_composer_auth_json\",\"hidden\":true}]}},{\"attribute_alias\":\"project__alias\",\"widget_type\":\"InputHidden\",\"value\":\"=project_selector!alias\"},{\"attribute_alias\":\"comment\",\"width\":\"max\"},{\"attribute_alias\":\"notes\",\"widget_type\":\"InputText\",\"width\":\"max\",\"height\":8}]},{\"caption\":\"composer.json\",\"widgets\":[{\"attribute_alias\":\"composer_json\",\"widget_type\":\"InputJson\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true,\"value\":\"=project_selector!default_composer_json\"}]},{\"caption\":\"auth.json\",\"widgets\":[{\"attribute_alias\":\"composer_auth_json\",\"widget_type\":\"InputJson\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true,\"value\":\"=project_selector!default_composer_auth_json\"}]},{\"caption\":\"Log\",\"widgets\":[{\"attribute_alias\":\"log\",\"widget_type\":\"InputText\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true}]}]}],\"buttons\":[{\"caption\":\"Build\",\"align\":\"opposite\",\"visibility\":\"promoted\",\"action\":{\"alias\":\"exface.Core.ShowDialog\",\"widget\":{\"widgets\":[{\"widget_type\":\"Console\",\"disabled\":true,\"start_commands\":[\"action axenox.Deployer:Build [#project__alias#] [#version#] --comment \\\"[#comment#]\\\" --notes \\\"[#notes#]\\\"\"],\"working_directory_path\":\"vendor\\\/bin\"}]}}}]}}",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "USE_IN_OBJECT_BASKET_FLAG": "0",
+            "DOCS": ""
+        }
+    ],
+    "totals_rows": [],
+    "filters": {
+        "operator": "AND",
+        "conditions": [
+            {
+                "expression": "APP",
+                "comparator": "=",
+                "value": "0x11e9e072016ba0dd8afae4b318306b9a",
+                "object_alias": "exface.Core.OBJECT_ACTION"
+            }
+        ]
+    },
+    "rows_limit": null,
+    "rows_offset": 0,
+    "sorters": [
+        {
+            "attribute_alias": "CREATED_ON",
+            "direction": "ASC"
+        },
+        {
+            "attribute_alias": "UID",
+            "direction": "ASC"
+        }
+    ]
+}

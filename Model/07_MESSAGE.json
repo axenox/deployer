@@ -1,0 +1,107 @@
+{
+    "object_alias": "exface.Core.MESSAGE",
+    "columns": [
+        {
+            "name": "CREATED_ON",
+            "attribute_alias": "CREATED_ON"
+        },
+        {
+            "name": "MODIFIED_ON",
+            "attribute_alias": "MODIFIED_ON"
+        },
+        {
+            "name": "CREATED_BY_USER",
+            "attribute_alias": "CREATED_BY_USER"
+        },
+        {
+            "name": "MODIFIED_BY_USER",
+            "attribute_alias": "MODIFIED_BY_USER"
+        },
+        {
+            "name": "UID",
+            "attribute_alias": "UID"
+        },
+        {
+            "name": "APP",
+            "attribute_alias": "APP"
+        },
+        {
+            "name": "CODE",
+            "attribute_alias": "CODE"
+        },
+        {
+            "name": "TITLE",
+            "attribute_alias": "TITLE"
+        },
+        {
+            "name": "DESCRIPTION",
+            "attribute_alias": "DESCRIPTION"
+        },
+        {
+            "name": "HINT",
+            "attribute_alias": "HINT"
+        },
+        {
+            "name": "TYPE",
+            "attribute_alias": "TYPE"
+        },
+        {
+            "name": "DOCS",
+            "attribute_alias": "DOCS"
+        }
+    ],
+    "rows": [
+        {
+            "CREATED_ON": "2019-11-04 10:27:19",
+            "MODIFIED_ON": "2019-11-04 10:27:19",
+            "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "UID": "0x11e9fee54d0ffb71822b847beb3e34e8",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "CODE": "784EENG",
+            "TITLE": "Cannot create build without a version number",
+            "DESCRIPTION": "Either provide a version number directly or use input data with `axenox.Deployer.build` object.",
+            "HINT": "",
+            "TYPE": "ERROR",
+            "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2019-11-04 10:34:47",
+            "MODIFIED_ON": "2019-11-04 10:34:47",
+            "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "UID": "0x11e9fee658538d49822b847beb3e34e8",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "CODE": "784EI40",
+            "TITLE": "Cannot create build without a project reference",
+            "DESCRIPTION": "Either set input parameter `project` (e.g. command line argument) or provide input data based on the meta object `axenox.Deployer.build`.",
+            "HINT": "",
+            "TYPE": "ERROR",
+            "DOCS": ""
+        }
+    ],
+    "totals_rows": [],
+    "filters": {
+        "operator": "AND",
+        "conditions": [
+            {
+                "expression": "APP",
+                "comparator": "=",
+                "value": "0x11e9e072016ba0dd8afae4b318306b9a",
+                "object_alias": "exface.Core.MESSAGE"
+            }
+        ]
+    },
+    "rows_limit": null,
+    "rows_offset": 0,
+    "sorters": [
+        {
+            "attribute_alias": "CREATED_ON",
+            "direction": "ASC"
+        },
+        {
+            "attribute_alias": "UID",
+            "direction": "ASC"
+        }
+    ]
+}
