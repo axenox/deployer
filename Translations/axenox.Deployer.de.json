@@ -1,4 +1,4 @@
 {
 	"ACTION.BUILD.NAME": "Neues Build",
-	"ACTION.DEPLOYBUILD.NAME": "Build Deployen"
+	"ACTION.DEPLOY.NAME": "Build Deployen"
 }
