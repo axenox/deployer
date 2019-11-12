@@ -1,0 +1,93 @@
+{
+    "object_alias": "exface.Core.UXON_PRESET",
+    "columns": [
+        {
+            "name": "CREATED_ON",
+            "attribute_alias": "CREATED_ON"
+        },
+        {
+            "name": "MODIFIED_ON",
+            "attribute_alias": "MODIFIED_ON"
+        },
+        {
+            "name": "CREATED_BY_USER",
+            "attribute_alias": "CREATED_BY_USER"
+        },
+        {
+            "name": "MODIFIED_BY_USER",
+            "attribute_alias": "MODIFIED_BY_USER"
+        },
+        {
+            "name": "UID",
+            "attribute_alias": "UID"
+        },
+        {
+            "name": "APP",
+            "attribute_alias": "APP"
+        },
+        {
+            "name": "NAME",
+            "attribute_alias": "NAME"
+        },
+        {
+            "name": "DESCRIPTION",
+            "attribute_alias": "DESCRIPTION"
+        },
+        {
+            "name": "PROTOTYPE",
+            "attribute_alias": "PROTOTYPE"
+        },
+        {
+            "name": "UXON",
+            "attribute_alias": "UXON"
+        },
+        {
+            "name": "WRAP_PATH",
+            "attribute_alias": "WRAP_PATH"
+        },
+        {
+            "name": "UXON_SCHEMA",
+            "attribute_alias": "UXON_SCHEMA"
+        }
+    ],
+    "rows": [
+        {
+            "CREATED_ON": "2019-11-12 11:24:24",
+            "MODIFIED_ON": "2019-11-12 11:24:24",
+            "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "UID": "0x11ea053698d4b6ad85d7847beb3e34e8",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "Deployer SSH connection",
+            "DESCRIPTION": "Place the entire contents of the SSH key file (typically id_rsa) in ssh_private_key.",
+            "PROTOTYPE": "axenox\/deployer\/DataConnectors\/DeployerSshConnector.php",
+            "UXON": "{\"host_name\":\"\",\"user\":\"\",\"ssh_private_key\":\"-----BEGIN RSA PRIVATE KEY-----\\n...\\n-----END RSA PRIVATE KEY-----\"}",
+            "WRAP_PATH": "",
+            "UXON_SCHEMA": "connection"
+        }
+    ],
+    "totals_rows": [],
+    "filters": {
+        "operator": "AND",
+        "conditions": [
+            {
+                "expression": "APP",
+                "comparator": "=",
+                "value": "0x11e9e072016ba0dd8afae4b318306b9a",
+                "object_alias": "exface.Core.UXON_PRESET"
+            }
+        ]
+    },
+    "rows_limit": null,
+    "rows_offset": 0,
+    "sorters": [
+        {
+            "attribute_alias": "CREATED_ON",
+            "direction": "ASC"
+        },
+        {
+            "attribute_alias": "UID",
+            "direction": "ASC"
+        }
+    ]
+}
