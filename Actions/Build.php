@@ -22,8 +22,27 @@ use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 
 /**
- * Creates a build from the passed data.
- *
+ * Creates a build from an instance of a project and a version number.
+ * 
+ * The parameters of this action are an instance of a existing `axenox.Deployer.project` object, a version number
+ * and a comment or notes to the build, which are optional. The action might be either called via the UI, or with use of an CLI-command.
+ * The action creates a build, named after a comination of the verison number and current time, seperated by a '+' character.
+ * The name of the resulting build is as following: `[version]+yyyymmddhhmmss`, e.g. `1.0-beta+20191108145134`
+ * In the building process the action will create some temporary files and directories, and saves the 
+ * crated build at `/deployer/[hostname]/[buildfolder]/[buildname].tar.gz`. After completing the building process,
+ * you might deploy the build to a host of your choice, using the action `axenox.Deployer:Deploy`. 
+ * 
+ * ## Commandline Usage:
+ * 
+ * ```
+ * action axenox.Deployer:Build [Project] [Version] <--comment Comment> <--notes Notes>
+ * ```
+ * 
+ * For example:
+ * ```
+ * action axenox.Deployer:Build testProject 1.0-beta
+ * ```
+ * 
  * @author Andrej Kabachnik
  *        
  */

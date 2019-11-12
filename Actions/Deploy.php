@@ -27,7 +27,7 @@ use Symfony\Component\Process\Process;
  * This action requires an instance of a build and an instance of a host as parameters.
  * The action may either be called via the PowerUI frontend or via CLI-command.
  * The parameters for the CLI-call are the names of the host and build, which have to be existing instances of
- * axenox.Deployer.host and axenox.Deployer.build objects.
+ * `axenox.Deployer.host` and `axenox.Deployer.build` objects.
  * This action will then extract the data, required for the deployment, from the given objects, create a working directory
  * and call the actual command for the deployment process. 
  * Upon finishing the deployment process, the action will delete every temporary file / directories created.
