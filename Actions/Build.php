@@ -428,8 +428,7 @@ PHP;
     /**
      * deletes all directories and files created in the building process, except the actual build (-directory)
      * 
-     * @param string $src
-     * @param bool $calledRecursive
+     * @param string $projectFolder
      */
     protected function cleanupFiles(string $projectFolder)
     {
@@ -453,6 +452,10 @@ PHP;
    
     }
     
+    /**
+     * 
+     * @return int
+     */
     protected function getTimeout() : int
     {
         return $this->timeout;

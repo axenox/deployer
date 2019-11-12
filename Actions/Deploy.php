@@ -368,7 +368,11 @@ PHP;
     }
     
     
-    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Interfaces\Actions\iCanBeCalledFromCLI::getCliArguments()
+     */
     public function getCliArguments(): array
     {
         return [
@@ -383,6 +387,11 @@ PHP;
         ];
     }
 
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Interfaces\Actions\iCanBeCalledFromCLI::getCliOptions()
+     */
     public function getCliOptions(): array
     {
         return [];
