@@ -102,33 +102,21 @@ if (is_dir($baseConfigPath)) {
     echo("Directory {$baseConfigPath} removed!\n");
 }
 
-//copy old apps to new vendor folder
-$vendorBase = $currentPath . DIRECTORY_SEPARATOR . 'vendor';
-foreach (glob($vendorBase . '/*' , GLOB_ONLYDIR) as $vendorPath) {
-    foreach (glob($vendorPath . '/*' , GLOB_ONLYDIR) as $packagePath) {
-        if (file_exists($packagePath . DIRECTORY_SEPARATOR . 'composer.json')) {
-            $composerJson = json_decode(file_get_contents($packagePath . DIRECTORY_SEPARATOR . 'composer.json'), true);
-            if (is_array($composerJson) === false) {
-                continue;
-            }            
-            if (array_key_exists('extra', $composerJson) && array_key_exists('app', $composerJson['extra']) && $alias = $composerJson['extra']['app']['app_alias']) {
-                echo ("Package Path: " . $packagePath . "\n");
-                $arr = explode('vendor', $packagePath);
-                $relativePackagePath = $arr[1];
-                $src = $packagePath;
-                $dst = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . $relativePackagePath;
-                if (!is_dir($dst)) {
-                    $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
-                    $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
-                    $cmdarray = [];
-                    echo ("Command: '" . $command . "\n");
-                    echo exec("{$command}", $cmdarray);
-                    foreach($cmdarray as $line) {
-                        echo ($line . "\n");
-                    }
-                    echo ("App '" . $alias . "' uninstalled!\n");
-                }                               
-            }
+//uninstall old apps
+if (is_dir($currentPath)) {
+    echo("Uninstalling old apps...\n");
+    require $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+    $oldVendorPath = $currentPath . DIRECTORY_SEPARATOR . 'vendor';
+    $newAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($releasePath . DIRECTORY_SEPARATOR . 'vendor');
+    $oldAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($oldVendorPath);
+    $uninstallAppsAliases = array_diff($oldAppsAliases, $newAppsAliases);
+    $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
+    foreach ($uninstallAppsAliases as $alias) {        
+        $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
+        $cmdarray = [];
+        echo exec("{$command}", $cmdarray);
+        foreach($cmdarray as $line) {
+            echo ($line . "\n");
         }
     }
 }
