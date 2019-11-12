@@ -11,7 +11,7 @@ require 'vendor/axenox/deployer/Recipes/SelfExtractor.php';
 require 'vendor/axenox/deployer/Recipes/Deploy.php';
 require 'vendor/axenox/deployer/Recipes/Install.php';
 
-option('build', null, InputOption::VALUE_OPTIONAL, 'test option.');
+option('build', null, InputOption::VALUE_REQUIRED, 'Build name to deploy');
 
 task('LocalBldSshInstall', [
     'config:setup_deploy_config',
