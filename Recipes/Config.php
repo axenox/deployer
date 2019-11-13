@@ -7,6 +7,7 @@ set('git_tty', false);
 set('allow_anonymous_stats', false);
 set('ssh_multiplexing', false);
 
+//set parameters needed to create build archive
 task('config:setup_build_config', function() {
     $source_files = 'vendor composer.json composer.lock composer.phar';
     set('source_files', $source_files);
@@ -16,6 +17,7 @@ task('config:setup_build_config', function() {
     set('time_zone', $time_zone);
 });
 
+//set paramters needed to deploy build archive
 task('config:setup_deploy_config', function () {
     $configDir = 'config';
     

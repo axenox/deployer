@@ -6,9 +6,9 @@ use Deployer\Exception\Exception;
 use Deployer\Type\Csv;
 use function Deployer\Support\str_contains;
 
-desc('Preparing host for deploy');
+//preparing remotehost for deployment, creating directories
 task('deploy:prepare', function () {
-    // Check if shell is POSIX-compliant
+    //Check if shell is POSIX-compliant
     $result = run('echo $0');
     
     if (!str_contains($result, 'bash') && !str_contains($result, 'sh')) {
@@ -20,22 +20,19 @@ task('deploy:prepare', function () {
     //create deploy path folder
     run('if [ ! -d {{deploy_path}} ]; then mkdir -p {{deploy_path}}; fi');
     
-    // Check for existing /current directory (not symlink)
+    //Check for existing /current directory (not symlink)
     $result = test('[ ! -L {{deploy_path}}/current ] && [ -d {{deploy_path}}/current ]');
     if ($result) {
         throw new Exception('There already is a directory (not symlink) named "current" in ' . get('deploy_path') . '. Remove this directory so it can be replaced with a symlink for atomic deployments.');
     }
     
-    // Create metadata .dep dir.
-    //run("cd {{deploy_path}} && if [ ! -d .dep ]; then mkdir .dep; fi");
-    
-    // Create releases dir.
+    //Create releases dir.
     run("cd {{deploy_path}} && if [ ! -d releases ]; then mkdir releases; fi");
     
-    // Create shared dir.
+    //Create shared dir.
     run("cd {{deploy_path}} && if [ ! -d shared ]; then mkdir shared; fi");
     
-    // Create .dep dir and releases log file.
+    //Create .dep dir and releases log file.
     run("cd {{deploy_path}} && if [ ! -d .dep ]; then mkdir .dep; fi");
     run("cd {{deploy_path}} && if [ ! -f .dep/releases ]; then touch .dep/releases; fi");
     
@@ -48,11 +45,13 @@ task('deploy:prepare', function () {
     }
 });
 
+//fix permissions for directories
 task('deploy:fix_permissions', function() {
     run('chmod +x {{deploy_path}}/{{release_path}}');
     run('chmod +x {{deploy_path}}/{{release_path}}/vendor/bin');
 });
 
+//copy directories given in 'copy_dirs' array
 task('deploy:copy_directories', function () {
     $copyDirArray = get('copy_dirs');
     $hasPreviousRelease = false;
@@ -84,11 +83,13 @@ task('deploy:copy_directories', function () {
     writeln('Generated initial configuration files.');
 });
 
+//create 'current' and 'exface' symlink to new release
 task('deploy:create_symlinks', function() {
     run("cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}  && {{bin/symlink}} {{release_path}} current");
     run("cd {{basic_deploy_path_cygwin}} && {{bin/symlink}} {{relative_deploy_path}}/current exface");
 });
 
+//create links to shared directories
 task('deploy:create_shared_links', function() {
     foreach (get('shared_dirs') as $dir) {
         $shared_dir = get('deploy_path') .'/shared';
@@ -96,6 +97,7 @@ task('deploy:create_shared_links', function() {
     };
 });
 
+//delete old releases
 task('deploy:cleanup_old_releases', function() {
     cd('{{deploy_path}}');
     
@@ -171,9 +173,9 @@ task('deploy:cleanup_old_releases', function() {
     foreach ($releases as $release) {
         run("rm -rf {{deploy_path}}/releases/{$release}");
     }
-    
-    
 });
+
+//show new release path
 task('deploy:show_release_names', function () {
     writeln('Deployed to new release: {{deploy_path}}/{{release_path}}');
     /*if(has('previous_release')) {
@@ -181,6 +183,7 @@ task('deploy:show_release_names', function () {
     }*/
 });
 
+//show success message
 task('deploy:success', function () {
     writeln('<info>Successfully deployed!</info>');
 })
