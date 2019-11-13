@@ -89,7 +89,6 @@ foreach($sharedDirs as $dir) {
 echo("Extracting archive ...\n");
 chdir($releasePath);
 extractArchive();
-echo("Archive extracted!\n");
 
 //copy needed app configs, if not already exist
 if (is_dir($baseConfigPath)) {
@@ -192,7 +191,6 @@ foreach($cmdarray as $line) {
 }
 
 //copy Apps from local vendors
-echo("Copying local vendor apps...\n");
 if ($oldReleasePath !== null) {
     foreach ($localVendors as $local) {
         foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
@@ -216,7 +214,8 @@ echo ("Self deployment file deleted!\n");
 
 //Functions
 //copy whole directory (with subdirectories)
-function recurseCopy(string $src, string $dst) {
+function recurseCopy(string $src, string $dst) : void
+{
     $dir = opendir($src);
     mkdir($dst);
     while(false !== ( $file = readdir($dir)) ) {
@@ -234,7 +233,8 @@ function recurseCopy(string $src, string $dst) {
 }
 
 //removing dir that is not empty
-function deleteDirectory(string $dir) {
+function deleteDirectory(string $dir) : bool
+{
     if (!file_exists($dir)) {
         return true;
     }
@@ -259,7 +259,8 @@ function deleteDirectory(string $dir) {
 }
 
 //deletin old releases, adding new release to logfile
-function cleanupReleases(string $deployPath, string $releaseName, string $releasesPath, int $keepReleases) {
+function cleanupReleases(string $deployPath, string $releaseName, string $releasesPath, int $keepReleases) : void
+{
     $depPath = $deployPath . DIRECTORY_SEPARATOR . '.dep';
     
     //creating .dep directory
@@ -335,7 +336,7 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
 }
 
 //extracting archive that is appended to this php file
-function extractArchive()
+function extractArchive() : void
 {
     try {
         $pharfilename = md5(time()).'archive.tar'; //remove with tempname()
@@ -350,6 +351,7 @@ function extractArchive()
         try {
             $phar = new PharData($pharfilename);
             $phar->extractTo('.');
+            echo("Archive extracted!\n");
         } catch (Exception $e) {
             throw new Exception('extraction failed!');
         }
