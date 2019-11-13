@@ -113,12 +113,12 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             
             //build the command used for the actual deployment
             $deployTask = $this->prepareDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
-            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
+            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}" . " -vvv";
 
             $log = '';
 
             //execute deploy command
-            $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
+            $process = Process::fromShellCommandline($cmd, null, ['ProgramData' => 'C:\\ProgramData'], null, $this->getTimeout());
             $process->start();
             foreach ($process as $msg) {
                 // Live output
@@ -165,7 +165,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->projectData === null) {
-            $projectUid = $this->getHostData($task, 'project');
+            $projectUid = $this->getBuildData($task, 'project');
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
             $ds->getColumns()->addMultiple([
@@ -259,7 +259,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'log',
                 'name',
                 'notes',
-                'project_oid',
+                'project',
                 'status',
                 'version'
             ]);
@@ -330,11 +330,11 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         $stage = $this->getHostData($task, 'stage');
         $name = $this->getHostData($task, 'name');
         $absoluteSshConfigFilePath = $basepath . $sshConfigFilePath;
-        $basicDeployPath = 'C:' . DIRECTORY_SEPARATOR . 'wamp' . DIRECTORY_SEPARATOR . $name;
+        $basicDeployPath = $this->getHostData($task, 'path_abs_to_api');
         $buildsArchivesPath = $basepath . $buildFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
         $phpPath = $this->getHostData($task, 'php_cli');
         $recipePath = $this->getDeployRecipeFile($task);
-        
+        $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
         
         $content = <<<PHP
 <?php
@@ -349,10 +349,11 @@ require 'vendor/deployer/deployer/recipe/common.php';
 set('stage', '{$stage}');
 set('host_short', '{$name}');
 set('host_ssh_config', '{$absoluteSshConfigFilePath}');
+host('{$name}');
 
 // === Path definitions ===
 set('basic_deploy_path', '{$basicDeployPath}');
-set('relative_deploy_path', 'powerui');
+set('relative_deploy_path', '{$relativeDeployPath}');
 set('builds_archives_path', '{$buildsArchivesPath}');
 set('php_path', '{$phpPath}');
 
@@ -537,17 +538,29 @@ PHP;
         switch ($hostOperatingSystem){
             // running on windows:
             case (strtoupper(substr($hostOperatingSystem, 0, 3)) === 'WIN') :
+                $process = Process::fromShellCommandline('whoami');
+                $process->start();
+                foreach ($process as $msg) {
+                    $user = $msg;
+                }
+                // replace CRLF
+                $user = trim(preg_replace('/\s\s+/', ' ', $user));
+                
+                //                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant ' . "\"$user\"" . ':F',
                 $commandList = [
                     'icacls ' . $privateKeyFileDirectory . ' /c /t /inheritance:d',
-                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant %username%:F',
-                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant SYSTEM:WRX',
                     'icacls ' . $privateKeyFileDirectory . ' /c /t /remove Administrator "Authenticated Users" BUILTIN Everyone System Users',
-                    'icacls ' . $privateKeyFileDirectory . ' /verify'
+                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant "'. $user .'":F',
+                    'icacls ' . $privateKeyFileDirectory
                 ];
                 
                 foreach($commandList as $cmd){
                     $process = Process::fromShellCommandline($cmd);
                     $process->start();
+                    foreach ($process as $msg) {
+                        $output = $msg;
+                    }
+                    $msg = '';
                 }
                 break;
                 
@@ -676,7 +689,7 @@ PHP;
         
         $cmd .= ' ' . $deployerTaskName;
 
-        $cmd .= ' --build=' . $this->getBuildData($task, 'name') . '.tar.gz';
+        $cmd .= ' --build=' . $this->getBuildData($task, 'name');
         
         return $cmd; // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
     }
