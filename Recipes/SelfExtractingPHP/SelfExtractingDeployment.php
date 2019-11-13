@@ -6,6 +6,7 @@ $basicDeployPath = '[#basic#]'; //placeholder for string
 $relativeDeployPath = '[#relative#]'; //placeholder for string
 $sharedDirs = [#shared#]; //placeholder for array
 $copyDirs = [#copy#]; //placeholder for array
+$localVendors = [#localvendors#]; //placeholder for array
 $keepReleases = [#releases#]; //placeholder for integer
 $phpPath = '[#php#]'; //placeholder for string
 $relativeReleasesPath = 'releases';
@@ -103,18 +104,36 @@ if (is_dir($baseConfigPath)) {
 }
 
 //uninstall old apps
+$oldReleasePath = null;
 if (is_dir($currentPath)) {
-    echo("Uninstalling old apps...\n");
+    chdir($currentPath);
+    $oldReleasePath = getcwd();
+    chdir($basicDeployPath);
     require $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
     $oldVendorPath = $currentPath . DIRECTORY_SEPARATOR . 'vendor';
+    chdir($deployPath);
     $newAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($releasePath . DIRECTORY_SEPARATOR . 'vendor');
     $oldAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($oldVendorPath);
     $uninstallAppsAliases = array_diff($oldAppsAliases, $newAppsAliases);
+    $uninstallAppsAliases = array_values($uninstallAppsAliases);
+    for ($i = 0; $i < count($uninstallAppsAliases); $i++) {
+        $arr = explode('.', $uninstallAppsAliases[$i]);
+        $appsVendor = $arr[0];
+        foreach ($localVendors as $vendor) {
+            if (strpos($vendor, $appsVendor) !== FALSE) {                
+                unset ($uninstallAppsAliases[$i]);
+            }
+        }
+    }
+    $uninstallAppsAliases = array_values($uninstallAppsAliases);
     $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
-    foreach ($uninstallAppsAliases as $alias) {        
+    if (count($uninstallAppsAliases) > 0) {
+        echo("Uninstalling old apps...\n");
+    }
+    foreach ($uninstallAppsAliases as $alias) {
         $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
         $cmdarray = [];
-        echo exec("{$command}", $cmdarray);
+        exec("{$command}", $cmdarray);
         foreach($cmdarray as $line) {
             echo ($line . "\n");
         }
@@ -170,6 +189,22 @@ $cmdarray = [];
 echo exec("{$command}", $cmdarray);
 foreach($cmdarray as $line) {
     echo ($line . "\n");
+}
+
+//copy Apps from local vendors
+echo("Copying local vendor apps...\n");
+if ($oldReleasePath !== null) {
+    foreach ($localVendors as $local) {
+        foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
+            $tmp = explode($local, $appPath);
+            $appPathRelative = array_pop($tmp);
+            $appPathNew = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . $appPathRelative;
+            if ( !is_dir($appPathNew)) {
+                echo ("Copying local app: " . $appPathRelative . "\n");
+                recurseCopy($appPath, $appPathNew);
+            }
+        }
+    }
 }
 
 //create/append release list file, deleting old releases

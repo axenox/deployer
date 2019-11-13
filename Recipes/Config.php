@@ -47,11 +47,17 @@ task('config:setup_deploy_config', function () {
     set('release_name', $releaseName);
     
     try {
-        $php_path = get('php_path');
+        $phpPath = get('php_path');
     } catch (ConfigurationException $e) {
-        $php_path = 'php';
+        $phpPath = 'php';
     }
-    set('php_path', $php_path);
+    set('php_path', $phpPath);
+    try {
+        $localVendors = get('local_vendors');
+    } catch (ConfigurationException $e) {
+        $localVendors = [];
+    }
+    set('local_vendors', $localVendors);
     
     // === Deployer specific parameters ===
     set('config_dir', $configDir);

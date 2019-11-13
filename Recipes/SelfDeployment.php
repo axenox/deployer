@@ -14,12 +14,14 @@ task('self_deployment:create', function () {
     $replaceRelativeDeployPath = get('relative_deploy_path');
     $replaceSharedDirs = "['" . implode("', '", get('shared_dirs')) . "']";
     $replaceCopyDirs = "['" . implode("', '", get('copy_dirs')) . "']";
+    $replaceLocalVendors = "['" . implode("', '", get('local_vendors')) . "']";
     $replacePhpPath = get('php_path');
     $replaceKeepReleases = get('keep_releases');
     $str=str_replace('[#basic#]', $replaceBasicDeployPath, $str);
     $str=str_replace('[#relative#]', $replaceRelativeDeployPath, $str);
     $str=str_replace('[#shared#]', $replaceSharedDirs, $str);
     $str=str_replace('[#copy#]', $replaceCopyDirs, $str);
+    $str=str_replace('[#localvendors#]', $replaceLocalVendors, $str);
     $str=str_replace('[#php#]', $replacePhpPath, $str);
     $str=str_replace('[#releases#]', $replaceKeepReleases, $str);
     file_put_contents($temp_php, $str);
@@ -32,7 +34,7 @@ task('self_deployment:upload', function () {
 });
     
 task('self_deployment:run', function () {
-    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=400M {{release_name}}.php', ['timeout' => null]);;
+    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=500M {{release_name}}.php', ['timeout' => null]);;
     write($composerOutput);
     writeln('');
 });
