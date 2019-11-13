@@ -39,7 +39,9 @@ namespace Deployer;
     set('base_config_path', $baseConfigPath);
     
     require 'vendor/axenox/deployer/Recipes/Build/CloneLocal.php'; 
-    
+ 
+ * The tasks are named by the file they are written in, means the task
+ * 'config:setup_deploy_config' is located in the 'Config.php' file.   
  */
 
 require 'vendor/axenox/deployer/Recipes/Config.php';

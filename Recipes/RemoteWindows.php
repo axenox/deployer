@@ -2,7 +2,9 @@
 
 namespace Deployer;
 
-// use native symlinks if remote host has Windows OS
+/**
+ * use native symlinks if remote host has Windows OS
+ */
 task('remote_windows:use_native_symlinks' , function () {
     set('symlink_prefix' , 'export set CYGWIN=winsymlinks:nativestrict && ');
     set('bin/symlink', function () {

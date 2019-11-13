@@ -2,7 +2,9 @@
 
 namespace Deployer;
 
-//run installer for new release
+/**
+ * run installer for new release
+ */
 task('install:install_current_packages', function(){
     within('{{deploy_path}}', function() {
         $composerOutput =  run('cd ../exface && {{php_path}} composer.phar run-script post-install-cmd');
@@ -12,7 +14,9 @@ task('install:install_current_packages', function(){
 });
 
 //TODO
-//uninstall apps that are not in new release anymore
+/**
+ * uninstall apps that are not in new release anymore
+ */
 task('install:uninstall_old_packages', function(){
     /*within('{{deploy_path}}', function() {
         $runOutput =  run('for d in ../exface/vendor/*; do

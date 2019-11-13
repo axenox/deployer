@@ -56,6 +56,8 @@ namespace Deployer;
     
     require 'vendor/axenox/deployer/Recipes/Deploy/LocalBldSshSelfExtractor.php';
     
+ * The tasks are named by the file they are written in, means the task
+ * 'config:setup_deploy_config' is located in the 'Config.php' file.
  */
 
 use Symfony\Component\Console\Input\InputOption;

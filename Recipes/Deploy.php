@@ -6,7 +6,9 @@ use Deployer\Exception\Exception;
 use Deployer\Type\Csv;
 use function Deployer\Support\str_contains;
 
-//preparing remotehost for deployment, creating directories
+/**
+ * preparing remotehost for deployment, creating directories
+ */
 task('deploy:prepare', function () {
     //Check if shell is POSIX-compliant
     $result = run('echo $0');
@@ -45,13 +47,17 @@ task('deploy:prepare', function () {
     }
 });
 
-//fix permissions for directories
+/**
+ * fix permissions for directories
+ */
 task('deploy:fix_permissions', function() {
     run('chmod +x {{deploy_path}}/{{release_path}}');
     run('chmod +x {{deploy_path}}/{{release_path}}/vendor/bin');
 });
 
-//copy directories given in 'copy_dirs' array
+/**
+ * copy directories given in 'copy_dirs' array
+ */
 task('deploy:copy_directories', function () {
     $copyDirArray = get('copy_dirs');
     $hasPreviousRelease = false;
@@ -83,13 +89,17 @@ task('deploy:copy_directories', function () {
     writeln('Generated initial configuration files.');
 });
 
-//create 'current' and 'exface' symlink to new release
+/**
+ * create 'current' and 'exface' symlink to new release
+ */
 task('deploy:create_symlinks', function() {
     run("cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}  && {{bin/symlink}} {{release_path}} current");
     run("cd {{basic_deploy_path_cygwin}} && {{bin/symlink}} {{relative_deploy_path}}/current exface");
 });
 
-//create links to shared directories
+/**
+ * create links to shared directories
+ */
 task('deploy:create_shared_links', function() {
     foreach (get('shared_dirs') as $dir) {
         $shared_dir = get('deploy_path') .'/shared';
@@ -97,7 +107,9 @@ task('deploy:create_shared_links', function() {
     };
 });
 
-//delete old releases
+/**
+ * delete old releases
+ */
 task('deploy:cleanup_old_releases', function() {
     cd('{{deploy_path}}');
     
@@ -175,7 +187,9 @@ task('deploy:cleanup_old_releases', function() {
     }
 });
 
-//show new release path
+/**
+ * show new release path
+ */
 task('deploy:show_release_names', function () {
     writeln('Deployed to new release: {{deploy_path}}/{{release_path}}');
     /*if(has('previous_release')) {
@@ -183,7 +197,9 @@ task('deploy:show_release_names', function () {
     }*/
 });
 
-//show success message
+/**
+ * show success message
+ */
 task('deploy:success', function () {
     writeln('<info>Successfully deployed!</info>');
 })
