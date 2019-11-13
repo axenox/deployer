@@ -75,14 +75,9 @@ task('config:setup_deploy_config', function () {
     // === connection parameters
     $hostDeployPath = str_replace('\\', '/', $basicDeployPath) . '/' . $relativeDeployPath;
     set('host_deploy_path', $hostDeployPath);
-    //set('git_tty', false);
-    //set('allow_anonymous_stats', false);
-    //set('ssh_multiplexing', false);
-    $hostShort = get('host_short');
-    $hostDeployPath = get('host_deploy_path');
-    echo('DeployPath: ' . $hostDeployPath);
-    $hostSshConfig = get('host_ssh_config');
     if ($hostShort !== null) {
+        $hostShort = get('host_short');
+        $hostSshConfig = get('host_ssh_config');
         $host = host($hostShort);
         $host
             ->set('deploy_path', $hostDeployPath)
