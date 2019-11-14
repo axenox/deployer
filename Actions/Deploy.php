@@ -144,7 +144,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             // Update deployment entry's state and save log to data source
             $deployData->dataUpdate(false, $transaction);
             
-            //$this->cleanupFiles($projectFolder, $hostAliasFolderPath);
+            $this->cleanupFiles($projectFolder, $hostAliasFolderPath);
 
             // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
             $this->performAfterDeferred($result, $transaction);
@@ -198,7 +198,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function getHostData(TaskInterface $task, string $option) : string
     {
         if ($this->hostData === null) {
-            // TODO host name aus CLI-Parameter
             if ($task->hasParameter('host')) {
                 $hostName = $task->getParameter('host');
             } else {
