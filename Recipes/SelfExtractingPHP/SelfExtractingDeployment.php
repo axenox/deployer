@@ -6,6 +6,8 @@ $basicDeployPath = '[#basic#]'; //placeholder for string
 $relativeDeployPath = '[#relative#]'; //placeholder for string
 $sharedDirs = [#shared#]; //placeholder for array
 $copyDirs = [#copy#]; //placeholder for array
+$localVendors = [#localvendors#]; //placeholder for array
+$keepReleases = [#releases#]; //placeholder for integer
 $phpPath = '[#php#]'; //placeholder for string
 $relativeReleasesPath = 'releases';
 $relativeSharedPath = 'shared';
@@ -14,6 +16,7 @@ $deployPath = $basicDeployPath .  DIRECTORY_SEPARATOR . $relativeDeployPath;
 $releasesPath = $deployPath . DIRECTORY_SEPARATOR . $relativeReleasesPath;
 $sharedPath = $deployPath . DIRECTORY_SEPARATOR . $relativeSharedPath;
 $currentPath = $deployPath . DIRECTORY_SEPARATOR . $relativeCurrentPath;
+$exfacePath = $basicDeployPath . DIRECTORY_SEPARATOR . 'exface';
 
 $releaseName = pathinfo(__FILE__,  PATHINFO_FILENAME);
 $releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
@@ -86,7 +89,6 @@ foreach($sharedDirs as $dir) {
 echo("Extracting archive ...\n");
 chdir($releasePath);
 extractArchive();
-echo("Archive extracted!\n");
 
 //copy needed app configs, if not already exist
 if (is_dir($baseConfigPath)) {
@@ -100,10 +102,47 @@ if (is_dir($baseConfigPath)) {
     echo("Directory {$baseConfigPath} removed!\n");
 }
 
+//uninstall old apps
+$oldReleasePath = null;
+if (is_dir($currentPath)) {
+    chdir($currentPath);
+    $oldReleasePath = getcwd();
+    chdir($basicDeployPath);
+    require $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+    $oldVendorPath = $currentPath . DIRECTORY_SEPARATOR . 'vendor';
+    chdir($deployPath);
+    $newAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($releasePath . DIRECTORY_SEPARATOR . 'vendor');
+    $oldAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($oldVendorPath);
+    $uninstallAppsAliases = array_diff($oldAppsAliases, $newAppsAliases);
+    $uninstallAppsAliases = array_values($uninstallAppsAliases);
+    for ($i = 0; $i < count($uninstallAppsAliases); $i++) {
+        $arr = explode('.', $uninstallAppsAliases[$i]);
+        $appsVendor = $arr[0];
+        foreach ($localVendors as $vendor) {
+            if (strpos($vendor, $appsVendor) !== FALSE) {                
+                unset ($uninstallAppsAliases[$i]);
+            }
+        }
+    }
+    $uninstallAppsAliases = array_values($uninstallAppsAliases);
+    $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
+    if (count($uninstallAppsAliases) > 0) {
+        echo("Uninstalling old apps...\n");
+    }
+    foreach ($uninstallAppsAliases as $alias) {
+        $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
+        $cmdarray = [];
+        exec("{$command}", $cmdarray);
+        foreach($cmdarray as $line) {
+            echo ($line . "\n");
+        }
+    }
+}
+
 //permissions
-//chmod($release_path, 0777);
-//chmod($release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
-//echo("Permissions set!\n");
+chmod($releasePath, 0777);
+chmod($releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
+echo("Permissions set!\n");
 
 //create 'current' symlink to new release
 chdir($deployPath);
@@ -137,13 +176,12 @@ if (!$test)
 //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
 
-$path = $basicDeployPath . DIRECTORY_SEPARATOR . 'exface';
 if (substr(php_uname(), 0, 7) == "Windows"){
-    $command = "cd {$path} && {$phpPath} composer.phar run-script post-install-cmd";
+    $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
 }
 else {
     //TODO not tested yet on Linux!
-    $command = "cd {$path} && {$phpPath} composer.phar run-script post-install-cmd";
+    $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
 }
 echo ("Installing apps...\n");
 $cmdarray = [];
@@ -152,13 +190,32 @@ foreach($cmdarray as $line) {
     echo ($line . "\n");
 }
 
+//copy Apps from local vendors
+if ($oldReleasePath !== null) {
+    foreach ($localVendors as $local) {
+        foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
+            $tmp = explode($local, $appPath);
+            $appPathRelative = array_pop($tmp);
+            $appPathNew = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . $appPathRelative;
+            if ( !is_dir($appPathNew)) {
+                echo ("Copying local app: " . $appPathRelative . "\n");
+                recurseCopy($appPath, $appPathNew);
+            }
+        }
+    }
+}
+
+//create/append release list file, deleting old releases
+cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases);
+
 //delete this file
 unlink(__FILE__);
 echo ("Self deployment file deleted!\n");
 
 //Functions
 //copy whole directory (with subdirectories)
-function recurseCopy(string $src, string $dst) {
+function recurseCopy(string $src, string $dst) : void
+{
     $dir = opendir($src);
     mkdir($dst);
     while(false !== ( $file = readdir($dir)) ) {
@@ -172,15 +229,18 @@ function recurseCopy(string $src, string $dst) {
         }
     }
     closedir($dir);
+    return;
 }
 
 //removing dir that is not empty
-function deleteDirectory(string $dir) {
+function deleteDirectory(string $dir) : bool
+{
     if (!file_exists($dir)) {
         return true;
     }
     
     if (!is_dir($dir)) {
+        chmod($dir, 0777);
         return unlink($dir);
     }
     
@@ -198,8 +258,85 @@ function deleteDirectory(string $dir) {
     return rmdir($dir);
 }
 
+//deletin old releases, adding new release to logfile
+function cleanupReleases(string $deployPath, string $releaseName, string $releasesPath, int $keepReleases) : void
+{
+    $depPath = $deployPath . DIRECTORY_SEPARATOR . '.dep';
+    
+    //creating .dep directory
+    if (!is_dir($depPath)) {
+        mkdir($depPath);
+    }
+    $date = date('YmdHis');
+    $line = $date . ',' . $releaseName;
+    
+    //adding new release to logfile
+    if (!file_exists ($depPath . DIRECTORY_SEPARATOR . "releases")) {
+        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $line . "\n");
+        echo ("Releases log file created!\n");
+    } else {
+        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $line . "\n", FILE_APPEND);
+        echo ("Release added to log file!\n");
+    }
+    
+    if ($keepReleases === -1) {
+        // Keep unlimited releases.
+        return;
+    }
+    
+    //reading logfile into array, maximum of last n*2+5 lines
+    $logList = [];
+    $fp = fopen($depPath . DIRECTORY_SEPARATOR . "releases", "r");
+    while (!feof($fp))
+    {
+        $line = fgets($fp, 4096);
+        if ($line == '' || $line == "\n" || $line == "\r\n") {
+            continue;
+        }
+        $line = trim(preg_replace('/\s\s+/', '', $line));
+        array_push($logList, $line);
+        if (count($logList) > (2 * $keepReleases + 5)) {
+            array_shift($logList);
+        }
+    }
+    
+    //reading directory in $releasesPath into array
+    $tmp = getcwd();
+    chdir($releasesPath);
+    $dirList = glob('*' , GLOB_ONLYDIR);
+    chdir($tmp);
+
+    //checking if release in $logList still exists as directory, if so adding it to $releaseList array
+    $releasesList = [];
+    for ($i = count($logList) - 1; $i >= 0; $i--) {
+        $arr = explode(',', $logList[$i]);
+        $name = $arr[1];
+        $index = array_search($name, $dirList, true);
+        if ($index !== false) {
+            $releasesList[] = $name;
+            unset($dirList[$index]);
+        }
+    }
+
+    //deleting number of to be kept releases from $releasesList
+    $keep = $keepReleases;
+    while ($keep > 0) {
+        array_shift($releasesList);
+        --$keep;
+    }
+    
+    //deleting all folders from releases still in $releasesList
+    foreach ($releasesList as $release){
+        echo ("Deleting release: " . $release . "\n");
+        $dir = $releasesPath . DIRECTORY_SEPARATOR . $release;
+        deleteDirectory($dir);
+        echo ("Deleted release: " . $release . "\n");
+    }    
+    return;
+}
+
 //extracting archive that is appended to this php file
-function extractArchive()
+function extractArchive() : void
 {
     try {
         $pharfilename = md5(time()).'archive.tar'; //remove with tempname()
@@ -214,6 +351,7 @@ function extractArchive()
         try {
             $phar = new PharData($pharfilename);
             $phar->extractTo('.');
+            echo("Archive extracted!\n");
         } catch (Exception $e) {
             throw new Exception('extraction failed!');
         }
@@ -221,6 +359,7 @@ function extractArchive()
     } catch (Exception $e) {
         printf("Error:<br/>%s<br>%s>",$e->getMessage(),$e->getTraceAsString());
     };
+    return;
 }
 //IMPORTANT: no empty lines after "____HALT_COMPILER();" else archive extraction wont work!
 __HALT_COMPILER();
