@@ -537,15 +537,9 @@ PHP;
         switch ($hostOperatingSystem){
             // running on windows:
             case (strtoupper(substr($hostOperatingSystem, 0, 3)) === 'WIN') :
-                $process = Process::fromShellCommandline('whoami');
-                $process->start();
-                foreach ($process as $msg) {
-                    $user = $msg;
-                }
-                // replace CRLF
-                $user = trim(preg_replace('/\s\s+/', ' ', $user));
+
+                $user = $this->getCurrentWinCliUsername();
                 
-                //                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant ' . "\"$user\"" . ':F',
                 $commandList = [
                     'icacls ' . $privateKeyFileDirectory . ' /c /t /inheritance:d',
                     'icacls ' . $privateKeyFileDirectory . ' /c /t /remove Administrator "Authenticated Users" BUILTIN Everyone System Users',
@@ -553,13 +547,10 @@ PHP;
                     'icacls ' . $privateKeyFileDirectory
                 ];
                 
+                //execute all commands set in $commandList
                 foreach($commandList as $cmd){
                     $process = Process::fromShellCommandline($cmd);
                     $process->start();
-                    foreach ($process as $msg) {
-                        $output = $msg;
-                    }
-                    $msg = '';
                 }
                 break;
                 
@@ -755,5 +746,22 @@ PHP;
         foreach($stagedDirectories as $dir){
             rmdir($dir);
         } 
+    }
+    
+    /**
+     * Uses the windows commandline for getting the username which the server uses on the commandline.
+     * 
+     * @return string
+     */
+    protected function getCurrentWinCliUsername() :string
+    {
+        $process = Process::fromShellCommandline('whoami');
+        $process->start();
+        foreach ($process as $msg) {
+            $user = $msg;
+        }
+        // replace CRLF
+        $user = trim(preg_replace('/\s\s+/', ' ', $user));
+        return $user;
     }
 }
