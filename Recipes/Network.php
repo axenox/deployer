@@ -2,11 +2,16 @@
 
 namespace Deployer;
 
+/**
+ * wait time for remote hosts that cant handle to many ssh commands in a short time
+ */
 task('network:wait', function (){
     sleep(180);
 });
 
-desc('Creating symlinks for shared files and dirs');
+/**
+ * Creating symlinks for shared files and dirs with wait time added
+ */
 task('deploy:shared', function () {
     $sharedPath = "{{deploy_path}}/shared";
     

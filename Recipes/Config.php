@@ -7,6 +7,9 @@ set('git_tty', false);
 set('allow_anonymous_stats', false);
 set('ssh_multiplexing', false);
 
+/**
+ * set parameters needed to create build archive
+ */
 task('config:setup_build_config', function() {
     $source_files = 'vendor composer.json composer.lock composer.phar';
     set('source_files', $source_files);
@@ -16,6 +19,9 @@ task('config:setup_build_config', function() {
     set('time_zone', $time_zone);
 });
 
+/**
+ * set parameters needed to deploy build archive
+ */
 task('config:setup_deploy_config', function () {
     $configDir = 'config';
     
@@ -47,30 +53,37 @@ task('config:setup_deploy_config', function () {
     set('release_name', $releaseName);
     
     try {
-        $php_path = get('php_path');
+        $phpPath = get('php_path');
     } catch (ConfigurationException $e) {
-        $php_path = 'php';
+        $phpPath = 'php';
     }
-    set('php_path', $php_path);
+    set('php_path', $phpPath);
+    try {
+        $localVendors = get('local_vendors');
+    } catch (ConfigurationException $e) {
+        $localVendors = [];
+    }
+    set('local_vendors', $localVendors);
     
     // === Deployer specific parameters ===
     set('config_dir', $configDir);
     set('shared_files', []);
     set('shared_dirs', ['backup', 'cache', 'export', 'UserData', 'logs']);
-    set('copy_dirs', ['config']);
+    set('copy_dirs', ['config']);    
+    try {
+        $keepReleases = get('keep_releases');
+    } catch (ConfigurationException $e) {
+        $keepReleases = 4;
+    }
+    set('keep_releases', $keepReleases);
     
     
     // === connection parameters
     $hostDeployPath = str_replace('\\', '/', $basicDeployPath) . '/' . $relativeDeployPath;
     set('host_deploy_path', $hostDeployPath);
-    //set('git_tty', false);
-    //set('allow_anonymous_stats', false);
-    //set('ssh_multiplexing', false);
-    $hostShort = get('host_short');
-    $hostDeployPath = get('host_deploy_path');
-    echo('DeployPath: ' . $hostDeployPath);
-    $hostSshConfig = get('host_ssh_config');
     if ($hostShort !== null) {
+        $hostShort = get('host_short');
+        $hostSshConfig = get('host_ssh_config');
         $host = host($hostShort);
         $host
             ->set('deploy_path', $hostDeployPath)
