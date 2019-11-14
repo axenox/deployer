@@ -1,0 +1,85 @@
+{
+    "id": "0x6ff31d4a054411ea9432e4b318244bae",
+    "alias_with_namespace": "axenox.deployer.config-presets",
+    "menu_parent_page_alias": "axenox.deployer.home",
+    "menu_index": "4",
+    "menu_visible": true,
+    "name": "Config Presets",
+    "description": "",
+    "intro": "",
+    "replaces_page_alias": null,
+    "contents": {
+        "widget_type": "DataTable",
+        "id": "table_widget_presets",
+        "object_alias": "exface.Core.UXON_PRESET",
+        "filters": [
+            {
+                "attribute_alias": "NAME"
+            },
+            {
+                "attribute_alias": "APP"
+            },
+            {
+                "attribute_alias": "PROTOTYPE"
+            },
+            {
+                "attribute_alias": "WRAP_FLAG"
+            },
+            {
+                "attribute_alias": "UXON_SCHEMA",
+                "value": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema",
+                "comparator": "=="
+            }
+        ],
+        "columns": [
+            {
+                "attribute_alias": "NAME"
+            },
+            {
+                "attribute_alias": "DESCRIPTION",
+                "width_max": "800px"
+            },
+            {
+                "attribute_alias": "WRAP_FLAG"
+            },
+            {
+                "attribute_alias": "APP__LABEL"
+            },
+            {
+                "attribute_alias": "CREATED_ON"
+            }
+        ],
+        "sorters": [
+            {
+                "attribute_alias": "PROTOTYPE",
+                "direction": "desc"
+            }
+        ],
+        "buttons": [
+            {
+                "action": {
+                    "alias": "exface.Core.ShowObjectCreateDialog",
+                    "prefill_with_prefill_data": true,
+                    "prefill_data_sheet": {
+                        "object_alias": "exface.Core.UXON_PRESET",
+                        "rows": [
+                            {
+                                "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectEditDialog",
+                "bind_to_double_click": true
+            },
+            {
+                "action_alias": "exface.Core.ShowObjectCopyDialog"
+            },
+            {
+                "action_alias": "exface.Core.DeleteObject"
+            }
+        ]
+    }
+}

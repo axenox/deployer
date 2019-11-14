@@ -84,6 +84,21 @@
             "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"InputSelect\"}",
             "ALIAS": "BuildRecipe",
             "SHORT_DESCRIPTION": "Built-in type of build recipies"
+        },
+        {
+            "CREATED_ON": "2019-11-12 13:40:09",
+            "MODIFIED_ON": "2019-11-12 13:40:09",
+            "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "UID": "0x11ea05498fd86d0f85d7847beb3e34e8",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "UXON Deployment Configuration",
+            "PROTOTYPE": "exface\/Core\/DataTypes\/JsonDataType.php",
+            "CONFIG_UXON": "{\"schema\":\"\\\\\\\\axenox\\\\\\\\Deployer\\\\\\\\Uxon\\\\\\\\DeploymentConfigSchema\"}",
+            "VALIDATION_ERROR": "",
+            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"InputUxon\",\"width\":\"2\",\"height\":\"6\"}",
+            "ALIAS": "UxonDeploymentConfiguration",
+            "SHORT_DESCRIPTION": "UXON Schema for deployment configuration"
         }
     ],
     "totals_rows": [],
