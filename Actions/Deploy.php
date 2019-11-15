@@ -109,10 +109,10 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             
             //create directories
             $projectFolder = $this->getProjectFolderRelativePath($task);
-            $hostAliasFolderPath = $this->prepareDeployerProjectFolder($task);
+            $hostAliasFolderPath = $this->createDeployerProjectFolder($task);
             
             //build the command used for the actual deployment
-            $deployTask = $this->prepareDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+            $deployTask = $this->createDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
             $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}" . " -vvv";
 
             $log = '';
@@ -271,7 +271,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     }
     
     /**
-     *  
+     *  TODO zurück in getHostData()
      * @param Taskinterface $task
      * @throws ActionInputMissingError
      * @return string
@@ -334,6 +334,14 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         $phpPath = $this->getHostData($task, 'php_cli');
         $recipePath = $this->getDeployRecipeFile($task);
         $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
+        $projectConfig = json_decode('...');
+        if (empty($projectConfig['local_vendors']) !== false) {
+            $localVendors = "set('local_vendors', " . json_encode($projectConfig['local_vendors']) . ");";
+        } else {
+            $localVendors = '';
+        }
+        
+        
         
         $content = <<<PHP
 <?php
@@ -355,6 +363,8 @@ set('basic_deploy_path', '{$basicDeployPath}');
 set('relative_deploy_path', '{$relativeDeployPath}');
 set('builds_archives_path', '{$buildsArchivesPath}');
 set('php_path', '{$phpPath}');
+
+{$localVendors}
 
 require '{$recipePath}';
 
@@ -404,17 +414,13 @@ PHP;
      * @param TaskInterface $task
      * @return string
      */
-    protected function prepareDeployerProjectFolder(TaskInterface $task) : string
+    protected function createDeployerProjectFolder(TaskInterface $task) : string
     {
         $connection = $this->getSshConnection($task);
         
         //extract the data required for the SSH-connection
         $privateKey = $connection->getSshPrivateKey();
         $hostAlias = $connection->getAlias();
-        $customOptions = $connection->getSshConfig();
-        $hostName = $connection->getHostName();
-        $user = $connection->getUser();
-        $port = $connection->getPort();
         $host = $this->getHostData($task, 'name');
         
         //create /hosts/alias directory 
@@ -424,22 +430,16 @@ PHP;
         
         // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
         $privateKeyFilePath = $this->createPrivateKeyFile($hostAliasFolderPath, $privateKey);
-        $this->setPrivateKeyFilePermissions($privateKeyFilePath);
+        $this->createPrivateKeyFileSetPermissions($privateKeyFilePath);
         
         //create known_hosts file
         $knownHostsFilePath = $this->createKnownHostsFile($hostAliasFolderPath);
 
         //get default ssh-config
-        $defaultSshConfig = $this->getDefaultSshConfig($basePath, $host, $hostName, $user, $port, $privateKeyFilePath, $knownHostsFilePath);
-        
-        //merge the default options with the ones set in the dataconnection
-        $sshConfig = array_merge($defaultSshConfig, $customOptions);
-        
-        //save the options to a file 
-        $sshConfigFilePath = $this->createSshConfigFile($hostAliasFolderPath, $sshConfig);
-        
-        $this->createDeployPhp($task, $basePath, $this->getProjectFolderRelativePath($task), $sshConfigFilePath);
+        // TODO verschieben in createSshConfig()
+        $sshConfigFilePath = $this->createSshConfig($basePath, $host, $connection, $privateKeyFilePath, $knownHostsFilePath, $hostAliasFolderPath);
 
+        $this->createDeployPhp($task, $basePath, $this->getProjectFolderRelativePath($task), $sshConfigFilePath);
         
         return $hostAliasFolderPath;
     }
@@ -530,7 +530,7 @@ PHP;
      * @param string $privateKeyFileDirectory
      * @param string $hostOperatingSystem
      */
-    protected function setPrivateKeyFilePermissions(string $privateKeyFileDirectory)
+    protected function createPrivateKeyFileSetPermissions(string $privateKeyFileDirectory)
     {
         $hostOperatingSystem = PHP_OS;
         
@@ -606,10 +606,15 @@ PHP;
      * @param string $port
      * @return array
      */
-    protected function getDefaultSshConfig(string $basePath, string $host, string $hostName, string $user, string $port, string $privateKeyFilePath, string $knownHostsFilePath) : array
+    protected function createSshConfig(string $basePath, string $host, DeployerSshConnector $connection, string $privateKeyFilePath, string $knownHostsFilePath, string $hostAliasFolderPath) : string
     {
         
-        return [
+        $hostName = $connection->getHostName();
+        $user = $connection->getUser();
+        $port = $connection->getPort();
+        $customOptions = $connection->getSshConfig();
+        
+        $defaultSshConfig = [
              'Host' => $host,
              'HostName' => $hostName, // 10.57.2.40 // Kommt aus Dataconnection
              'User' => $user, //SFCKOENIG\ITSaltBI // Kommt aus DataConnection
@@ -619,6 +624,12 @@ PHP;
              'IdentityFile' => $basePath . $privateKeyFilePath, //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
              'UserKnownHostsFile' => $basePath . $knownHostsFilePath //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
         ];
+        
+        //merge the default options with the ones set in the dataconnection
+        $sshConfig = array_merge($defaultSshConfig, $customOptions);
+        
+        //save the options to a file
+        return $this->createSshConfigFile($hostAliasFolderPath, $sshConfig);
     }
     
     /**
@@ -669,7 +680,7 @@ PHP;
      * @param DataSheetInterface $deployData
      * @return string
      */
-    protected function prepareDeployerTask(TaskInterface $task, string $baseFolder, DataSheetInterface $deployData) : string
+    protected function createDeployerTask(TaskInterface $task, string $baseFolder, DataSheetInterface $deployData) : string
     {
         $cmd = " -f=" . $this->getProjectFolderRelativePath($task) . DIRECTORY_SEPARATOR . 'deploy.php';
         
@@ -694,7 +705,7 @@ PHP;
     }
     
     /**
-     * 
+     * TODO in trait auslagern
      * @return int
      */
     protected function getTimeout() : int
