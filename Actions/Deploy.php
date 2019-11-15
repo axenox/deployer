@@ -201,7 +201,10 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             if ($task->hasParameter('host')) {
                 $hostName = $task->getParameter('host');
             } else {
-                $hostUid = $this->getHostUid($task);
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('host')) {
+                    $hostUid = $col->getCellValue(0);
+                }
             }
             
             if (! $hostUid && $hostName === null) {
@@ -241,7 +244,10 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             if ($task->hasParameter('build')) {
                 $buildName = $task->getParameter('build');
             } else {
-                $buildUid = $this->getBuildUid($task);
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('build')) {
+                    $buildUid = $col->getCellValue(0);
+                }
             }
             
             if (! $buildUid && $buildName === null) {
@@ -268,40 +274,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             $this->buildData = $ds;
         }
         return $this->buildData->getCellValue($projectAttributeAlias, 0);
-    }
-    
-    /**
-     *  TODO zurück in getHostData()
-     * @param Taskinterface $task
-     * @throws ActionInputMissingError
-     * @return string
-     */
-    protected function getHostUid(Taskinterface $task) : string
-    {
-        $inputData = $this->getInputDataSheet($task);
-        if ($col = $inputData->getColumns()->get('host')) {
-            $hostUid = $col->getCellValue(0);
-        } else {
-            throw new ActionInputMissingError($this, 'TODO: no host given!');
-        }
-        return $hostUid;
-    }
-    
-    /**
-     * 
-     * @param TaskInterface $task
-     * @throws ActionInputMissingError
-     * @return string
-     */
-    protected function getBuildUid(TaskInterface $task) : string
-    {
-        $inputData = $this->getInputDataSheet($task);
-        if ($col = $inputData->getColumns()->get('build')) {
-            $buildUid = $col->getCellValue(0);
-        } else {
-            throw new ActionInputMissingError($this, 'TODO: no build given!');
-        }
-        return $buildUid;
     }
  
     /**
@@ -435,8 +407,7 @@ PHP;
         //create known_hosts file
         $knownHostsFilePath = $this->createKnownHostsFile($hostAliasFolderPath);
 
-        //get default ssh-config
-        // TODO verschieben in createSshConfig()
+        //get ssh-config
         $sshConfigFilePath = $this->createSshConfig($basePath, $host, $connection, $privateKeyFilePath, $knownHostsFilePath, $hostAliasFolderPath);
 
         $this->createDeployPhp($task, $basePath, $this->getProjectFolderRelativePath($task), $sshConfigFilePath);
@@ -703,9 +674,7 @@ PHP;
     {
         return $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
     }
-    
 
-    
     /**
      * Deletes every temporary file created in the deployment-process
      * @param string $projectFolder
