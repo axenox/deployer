@@ -37,6 +37,27 @@ trait BuildProjectTrait{
         return 'base-config';
     }
     
+    /**
+     * @return int
+     */
+    protected function getTimeout() : int
+    {
+        return $this->timeout;
+    }
     
+    /**
+     * Timeout for the Deploy/Build command.
+     *
+     * @uxon-property timeout
+     * @uxon-type integer
+     * @uxon-default 600
+     *
+     * @param int $seconds
+     */
+    public function setTimeout(int $seconds)
+    {
+        $this->timeout = $seconds;
+        return $this;
+    }
     
 }

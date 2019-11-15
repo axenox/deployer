@@ -49,7 +49,7 @@ use Symfony\Component\Process\Process;
  */
 class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
 {
-    use Traits\BuildProjectTrait;
+    use BuildProjectTrait;
     
     private $projectData = null;
     
@@ -704,30 +704,7 @@ PHP;
         return $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
     }
     
-    /**
-     * TODO in trait auslagern
-     * @return int
-     */
-    protected function getTimeout() : int
-    {
-        return $this->timeout;
-    }
-    
-    /**
-     * Timeout for the Deploy command.
-     *
-     * @uxon-property timeout
-     * @uxon-type integer
-     * @uxon-default 600
-     *
-     * @param int $seconds
-     * @return Build
-     */
-    public function setTimeout(int $seconds) : Build
-    {
-        $this->timeout = $seconds;
-        return $this;
-    }
+
     
     /**
      * Deletes every temporary file created in the deployment-process
