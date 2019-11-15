@@ -20,6 +20,7 @@ use exface\Core\Factories\DataConnectionFactory;
 use Symfony\Component\Process\Process;
 use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
+use exface\Core\Interfaces\Events\TaskEventInterface;
 
 /**
  * Creates a build from an instance of a project and a version number.
@@ -83,7 +84,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'version' => $this->getVersion($task),
                 'project' => $this->getProjectData($task, 'UID'),
                 'comment' => $this->getComment($task),
-                'notes' => $this->getNotes($task)
+                'notes' => $this->getNotes($task),
+                'composer_json' => $this->getComposerJson($task),
+                'composer_auth_json' => $this->getComposerAuthJson($task)
             ]);
         }
         $result = new ResultMessageStream($task);
@@ -138,6 +141,12 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             
             $buildNotes = $this->getNotes($task);
             $buildData->setCellValue('notes', 0, $buildNotes);
+            
+            $composerJson = $this->getComposerJson($task);
+            $buildData->setCellValue('composer_json', 0, $composerJson);
+
+            $composerAuthJson = $this->getComposerAuthJson($task);
+            $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
             
             // Delete temporary files
             $this->cleanupFiles($projectFolder);
@@ -396,6 +405,73 @@ PHP;
     }
     
     /**
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function getComposerJson(TaskInterface $task) : string
+    {
+        $defaultComposerJson = $this->getProjectData($task, 'default_composer_json');
+        
+        if ($task->hasParameter('composer_json')) {
+            $customComposerJson = $task->getParameter('composer_json');
+        } else {
+            try {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('composer_json')) {
+                    $customComposerJson = $col->getCellValue(0);
+                }
+            } catch (ActionInputMissingError $e) {
+                $customComposerJson = '';
+            }
+        }
+        
+        return $this->getMergedJsonFromString($defaultComposerJson, $customComposerJson);
+    }
+    
+    /**
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function getComposerAuthJson(TaskInterface $task) : string
+    {
+        $defaultComposerAuthJson = $this->getProjectData($task, 'default_composer_auth_json');
+        
+        if ($task->hasParameter('composer_auth_json')) {
+            $customComposerAuthJson = $task->getParameter('composer_auth_json');
+        } else {
+            try {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('composer_auth_json')) {
+                    $customComposerAuthJson = $col->getCellValue(0);
+                }
+            } catch (ActionInputMissingError $e) {
+                $customComposerAuthJson = '';
+            }
+        }
+        
+        return $this->getMergedJsonFromString($defaultComposerAuthJson, $customComposerAuthJson);
+    }
+    
+    /**
+     * This function merges two json-datastructures to one, using one as default and one to overwrite the defaults with.
+     * 
+     * @param string $jsonDefault
+     * @param string $jsonOptional
+     * @return string
+     */
+    protected function getMergedJsonFromString(string $jsonDefault, string $jsonOptional) : string
+    {
+        $jsonDefaultArray = json_decode($jsonDefault, true);
+        $jsonOptionalArray = json_decode($jsonOptional, true);
+        
+        $jsonMergedArray = array_merge($jsonDefaultArray, $jsonOptionalArray);
+        
+        return json_encode($jsonMergedArray);
+    }
+    
+    /**
      *
      * {@inheritdoc}
      * @see iCanBeCalledFromCLI::getCliArguments()
@@ -427,7 +503,13 @@ PHP;
                 ->setDescription('Comment to give a short description about the build.'),
             (new ServiceParameter($this))
                 ->setName('notes')
-                ->setDescription('You can save a note to the build to give further information.')
+                ->setDescription('You can save a note to the build to give further information.'),
+            (new ServiceParameter($this))
+                ->setName('composer_json')
+                ->setDescription('You can put in a custom composer.json.'),
+            (new ServiceParameter($this))
+                ->setName('composer_auth_json')
+                ->setDescription('You can put in a custom auth.json for composer.')
         ];
     }
     
