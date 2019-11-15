@@ -48,8 +48,7 @@ use axenox\Deployer\Actions\Traits\BuildProjectTrait;
  */
 class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
 {
-    
-    use Traits\BuildProjectTrait;
+    use BuildProjectTrait;
     
     private $projectData = null;
     
@@ -191,11 +190,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'build_recipe_custom_path',
                 'default_composer_json',
                 'default_composer_auth_json',
-                'default_config',
-                'deployment_recipe',
-                'deployment_recipe_custom_path',
-                'name',
-                'project_group'
+                'default_config'
             ]);
             $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
             $ds->addFilterFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
@@ -295,10 +290,21 @@ PHP;
         
         
         $baseConfigFolderPath = $projectFolder
-            . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();   
-        Filemanager::pathConstruct($basePath . $baseConfigFolderPath);
+            . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();
+        $this->createConfigFiles($basePath . $baseConfigFolderPath);
+        
         
         return $projectFolder;
+    }
+    
+    protected function createConfigFiles(TaskInterface $task, string $folderAbsolutePath) : Build
+    {
+        Filemanager::pathConstruct($folderAbsolutePath);
+        $projectConfig = json_decode($this->getProjectData($task, 'default_config'), true);
+        foreach ($projectConfig['default_app_config'] as $fileName => $config) {
+            file_put_contents($folderAbsolutePath . DIRECTORY_SEPARATOR . $fileName, json_encode($config));
+        }
+        return $this;
     }
 
     /**
