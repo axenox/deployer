@@ -291,7 +291,7 @@ PHP;
         
         $baseConfigFolderPath = $projectFolder
             . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();
-        $this->createConfigFiles($basePath . $baseConfigFolderPath);
+        $this->createConfigFiles($task, $basePath . $baseConfigFolderPath);
         
         
         return $projectFolder;
