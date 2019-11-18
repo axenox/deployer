@@ -4,7 +4,7 @@
         "exface/core": "~0.1",
         "deployer/deployer": "^6.5",
         "deployer/recipes": "^6.2.2",
-        "kabachello/composerapi" : "~0.3.2"
+        "kabachello/composerapi": "~0.3.2"
     },
     "support": {
         "issues": "https://github.com/axenox/deployer/issues"
@@ -23,8 +23,8 @@
         "app": {
             "app_uid": "0x11e9e072016ba0dd8afae4b318306b9a",
             "app_alias": "axenox.Deployer",
-            "model_md5": "4bdab397ec5266bedef4d6774727028a",
-            "model_timestamp": "2019-11-14 11:53:13"
+            "model_md5": "0f01a5191d6e61990c97159d74584867",
+            "model_timestamp": "2019-11-18 12:04:31"
         }
     }
 }
