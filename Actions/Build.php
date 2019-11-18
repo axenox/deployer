@@ -118,8 +118,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
 
             // run the deployer task via CLI
-            if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
-                chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
+            if (getcwd() !== $this->getBasePath()) {
+                chdir($this->getBasePath());
             }
             $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
 
@@ -565,7 +565,9 @@ PHP;
     protected function cleanupFiles(string $projectFolder)
     {
         $stagedFiles = [
-            $projectFolder . DIRECTORY_SEPARATOR . 'build.php'
+            $projectFolder . DIRECTORY_SEPARATOR . 'build.php'/*,
+            $projectFolder . DIRECTORY_SEPARATOR . 'composer.json',
+            $projectFolder . DIRECTORY_SEPARATOR . 'auth.json'*/
         ];
         
         $stagedDirectories = [
