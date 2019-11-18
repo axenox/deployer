@@ -21,6 +21,7 @@ use Symfony\Component\Process\Process;
 use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use exface\Core\Interfaces\Events\TaskEventInterface;
+use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
 
 /**
  * Creates a build from an instance of a project and a version number.
@@ -427,7 +428,7 @@ PHP;
                 $customComposerJson = '';
             }
         }
-        
+
         return $this->getMergedJsonFromString($defaultComposerJson, $customComposerJson);
     }
     
@@ -485,18 +486,33 @@ PHP;
     /**
      * This function merges two json-datastructures to one, using one as default and one to overwrite the defaults with.
      * 
+     * If one of the parameters is not a vaild JSON-object, the function will throw an error.
+     * 
      * @param string $jsonDefault
      * @param string $jsonOptional
      * @return string
      */
     protected function getMergedJsonFromString(string $jsonDefault, string $jsonOptional) : string
     {
+        switch (true){
+            case (!$jsonOptional):
+                return $jsonDefault;
+            case (!$jsonDefault):
+                return $jsonOptional;
+        }
+        
         $jsonDefaultArray = json_decode($jsonDefault, true);
         $jsonOptionalArray = json_decode($jsonOptional, true);
         
         $jsonMergedArray = array_merge($jsonDefaultArray, $jsonOptionalArray);
         
-        return json_encode($jsonMergedArray);
+        $jsonMerged = json_encode($jsonMergedArray);
+        
+        if ($jsonMerged == 'null'){
+            throw new ActionInputInvalidObjectError($this, 'Cannot create build: Invalid JSON structure given!', '78BMWZD');
+        }
+            
+        return $jsonMerged;
     }
     
     /**
