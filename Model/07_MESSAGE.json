@@ -106,6 +106,20 @@
             "HINT": "",
             "TYPE": "ERROR",
             "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2019-11-18 12:04:31",
+            "MODIFIED_ON": "2019-11-18 12:04:31",
+            "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "UID": "0x11ea09f3327a9821aa9d847beb3e34e8",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "CODE": "78BMWZD",
+            "TITLE": "Invalid JSON structure passed",
+            "DESCRIPTION": "This error occures when a invalid JSON is passed for the `build` action. This may be the JSON for the `composer.json` or `auth.json`, either the default values given in the `project` or the structures passed via parameter. ",
+            "HINT": "",
+            "TYPE": "ERROR",
+            "DOCS": ""
         }
     ],
     "totals_rows": [],
