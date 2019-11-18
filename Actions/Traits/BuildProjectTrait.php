@@ -10,6 +10,15 @@ use exface\Core\Interfaces\Tasks\TaskInterface;
 trait BuildProjectTrait{
     
     /**
+     *
+     * @return string
+     */
+    protected function getBasePath() : string
+    {
+        return $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
+    }
+    
+    /**
      * 
      * @param TaskInterface $task
      * @return string

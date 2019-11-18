@@ -667,15 +667,6 @@ PHP;
     }
     
     /**
-     * 
-     * @return string
-     */
-    protected function getBasePath() : string
-    {
-        return $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
-    }
-
-    /**
      * Deletes every temporary file created in the deployment-process
      * @param string $projectFolder
      * @param string $hostAliasFolderPath
