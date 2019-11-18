@@ -109,6 +109,12 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Prepare project folder and deployer task file
             $projectFolder = $this->prepareDeployerProjectFolder($task);
             $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
+            
+            $composerJson = $this->createComposerJson($task, $projectFolder);
+            $buildData->setCellValue('composer_json', 0, $composerJson);
+            
+            $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
+            $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
 
             // run the deployer task via CLI
             if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
@@ -142,11 +148,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildNotes = $this->getNotes($task);
             $buildData->setCellValue('notes', 0, $buildNotes);
             
-            $composerJson = $this->getComposerJson($task);
-            $buildData->setCellValue('composer_json', 0, $composerJson);
 
-            $composerAuthJson = $this->getComposerAuthJson($task);
-            $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
             
             // Delete temporary files
             $this->cleanupFiles($projectFolder);
@@ -432,6 +434,19 @@ PHP;
     /**
      * 
      * @param TaskInterface $task
+     * @param string $projectFolder
+     * @return string
+     */
+    protected function createComposerJson(TaskInterface $task, string $projectFolder) : string
+    {
+        $content = $this->getComposerJson($task);
+        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
+        return $content;
+    }
+    
+    /**
+     * 
+     * @param TaskInterface $task
      * @return string
      */
     protected function getComposerAuthJson(TaskInterface $task) : string
@@ -452,6 +467,19 @@ PHP;
         }
         
         return $this->getMergedJsonFromString($defaultComposerAuthJson, $customComposerAuthJson);
+    }
+    
+    /**
+     * 
+     * @param TaskInterface $task
+     * @param string $projectFolder
+     * @return string
+     */
+    protected function createComposerAuthJson(TaskInterface $task, string $projectFolder) : string
+    {
+        $content = $this->getComposerAuthJson($task);
+        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
+        return $content;
     }
     
     /**
