@@ -479,7 +479,7 @@ PHP;
     protected function createComposerAuthJson(TaskInterface $task, string $projectFolder) : string
     {
         $content = $this->getComposerAuthJson($task);
-        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
+        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'auth.json', $content);
         return $content;
     }
     
