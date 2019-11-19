@@ -125,7 +125,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
 
             $seconds = time();
             
-            $environmentVars = $this->getCmdEnvironmentVars();
+            $environmentVars = $this->getCmdEnvironmentVars($projectFolder);
             
             $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
             $process->start();
@@ -590,12 +590,18 @@ PHP;
    
     }
     
-    protected function getCmdEnvironmentVars() : array
+    protected function getCmdEnvironmentVars(string $projectFolder) : array
     {
+        $composerHomePath = $this->getComposerHomePath($projectFolder);
         return [
-            'COMPOSER_HOME' => 'C:\wamp\www\exface\exface\deployer\sdrexf2_test\.composer',
+            'COMPOSER_HOME' => $composerHomePath,
             //'HOME' => 'C:\wamp\www\exface\exface\deployer'
         ];
+    }
+    
+    protected function getComposerHomePath(string $projectFolder) : string
+    {
+        return $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . '.composer';
     }
     
     /**
