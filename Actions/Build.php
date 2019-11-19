@@ -295,7 +295,7 @@ PHP;
     protected function prepareDeployerProjectFolder(TaskInterface $task) : string
     {
         $projectFolder = $this->getProjectFolderRelativePath($task);
-        $basePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
+        $basePath = $this->getBasePath();
         
         // Make sure, folder project/builds exists
         $buildsFolderPath = $projectFolder 
