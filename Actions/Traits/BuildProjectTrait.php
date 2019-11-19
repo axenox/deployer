@@ -10,7 +10,13 @@ use exface\Core\Interfaces\Tasks\TaskInterface;
 trait BuildProjectTrait{
     
     /**
-     *
+     * Returns the absolute path to the basefolder, ending with a DIRECTORY_SEPERATOR.
+     * 
+     * Example:
+     * ```
+     *  C:\wamp\www\exface\exface\
+     * ```
+     * 
      * @return string
      */
     protected function getBasePath() : string
@@ -19,6 +25,12 @@ trait BuildProjectTrait{
     }
     
     /**
+     * Returns the path to the project folder, relative to the basefolder.
+     * 
+     * Example:
+     * ```
+     *  deployer\exampleHost
+     * ```
      * 
      * @param TaskInterface $task
      * @return string
@@ -55,7 +67,7 @@ trait BuildProjectTrait{
     }
     
     /**
-     * Timeout for the Deploy/Build command.
+     * Timeout for the Deploy/Build command in seconds.
      *
      * @uxon-property timeout
      * @uxon-type integer
