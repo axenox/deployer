@@ -613,30 +613,5 @@ PHP;
     {
         return $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . '.composer';
     }
-    
-    /**
-     * 
-     * @return int
-     */
-    protected function getTimeout() : int
-    {
-        return $this->timeout;
-    }
-    
-    /**
-     * Timeout for the build command.
-     * 
-     * @uxon-property timeout
-     * @uxon-type integer
-     * @uxon-default 600
-     * 
-     * @param int $seconds
-     * @return Build
-     */
-    public function setTimeout(int $seconds) : Build
-    {
-        $this->timeout = $seconds;
-        return $this;
-    }
 
 }
