@@ -31,13 +31,15 @@ use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
  * The action creates a build, named after a comination of the verison number and current time, seperated by a '+' character.
  * The name of the resulting build is as following: `[version]+yyyymmddhhmmss`, e.g. `1.0-beta+20191108145134`
  * In the building process the action will create some temporary files and directories, and saves the 
- * crated build at `/deployer/[hostname]/[buildfolder]/[buildname].tar.gz`. After completing the building process,
- * you might deploy the build to a host of your choice, using the action `axenox.Deployer:Deploy`. 
+ * crated build at `/deployer/[hostname]/[buildfolder]/[buildname].tar.gz`. Apart from the default json structures 
+ * you may set in the projects data, you can also pass the objects for `composer.json` and `auth.json` to the building action.
+ * The given objects will then overwrite the equivalent default object given in the project.
+ * After completing the building process, you might deploy the build to a host of your choice, using the action `axenox.Deployer:Deploy`. 
  * 
  * ## Commandline Usage:
  * 
  * ```
- * action axenox.Deployer:Build [Project] [Version] <--comment Comment> <--notes Notes>
+ * action axenox.Deployer:Build [Project] [Version] <--comment Comment> <--notes Notes> <--composer_json ComposerJson> <--composer_auth_json AuthJson>
  * ```
  * 
  * For example:
@@ -150,8 +152,6 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             
             $buildNotes = $this->getNotes($task);
             $buildData->setCellValue('notes', 0, $buildNotes);
-            
-
             
             // Delete temporary files
             $this->cleanupFiles($projectFolder);
