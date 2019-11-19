@@ -590,6 +590,12 @@ PHP;
    
     }
     
+    /**
+     * Returns the environment variables needed for the cli to work with symfony.
+     * 
+     * @param string $projectFolder
+     * @return array
+     */
     protected function getCmdEnvironmentVars(string $projectFolder) : array
     {
         $composerHomePath = $this->getComposerHomePath($projectFolder);
@@ -599,6 +605,11 @@ PHP;
         ];
     }
     
+    /**
+     * 
+     * @param string $projectFolder
+     * @return string
+     */
     protected function getComposerHomePath(string $projectFolder) : string
     {
         return $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . '.composer';
