@@ -311,6 +311,13 @@ PHP;
         return $projectFolder;
     }
     
+    /**
+     * This Function creates the configuration file, needed for the building process.
+     * 
+     * @param TaskInterface $task
+     * @param string $folderAbsolutePath
+     * @return Build
+     */
     protected function createConfigFiles(TaskInterface $task, string $folderAbsolutePath) : Build
     {
         Filemanager::pathConstruct($folderAbsolutePath);
@@ -544,10 +551,10 @@ PHP;
                 ->setDescription('You can save a note to the build to give further information.'),
             (new ServiceParameter($this))
                 ->setName('composer_json')
-                ->setDescription('You can put in a custom composer.json.'),
+                ->setDescription('You can put in a custom object for composer.json, which overwrites the default one from the project data.'),
             (new ServiceParameter($this))
                 ->setName('composer_auth_json')
-                ->setDescription('You can put in a custom auth.json for composer.')
+                ->setDescription('You can put in a custom object for auth.json used by the composer, which overwrites the default one from the project data.')
         ];
     }
     
