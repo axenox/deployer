@@ -114,11 +114,12 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             //build the command used for the actual deployment
             $deployTask = $this->createDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
             $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}" . " -vvv";
-
+            $environmentVars = $this->getCmdEnvirontmentVars();
+            
             $log = '';
 
             //execute deploy command
-            $process = Process::fromShellCommandline($cmd, null, ['ProgramData' => 'C:\\ProgramData'], null, $this->getTimeout());
+            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
             $process->start();
             foreach ($process as $msg) {
                 // Live output
@@ -664,6 +665,16 @@ PHP;
         $cmd .= ' --build=' . $this->getBuildData($task, 'name');
         
         return $cmd; // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+    }
+    
+    /**
+     * Returns an array of environment variables which may be required for commands executed via symfony.
+     * 
+     * @return array
+     */
+    protected function getCmdEnvirontmentVars() : array
+    {
+        return ['ProgramData' => 'C:\\ProgramData'];
     }
     
     /**
