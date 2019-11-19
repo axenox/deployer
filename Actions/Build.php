@@ -427,11 +427,11 @@ PHP;
                     $customComposerJson = $col->getCellValue(0);
                 }
             } catch (ActionInputMissingError $e) {
-                $customComposerJson = '';
+                $customComposerJson = null;
             }
         }
 
-        return $this->getMergedJsonFromString($defaultComposerJson, $customComposerJson);
+        return $this->getRelevantObject($defaultComposerJson, $customComposerJson);
     }
     
     /**
@@ -465,11 +465,11 @@ PHP;
                     $customComposerAuthJson = $col->getCellValue(0);
                 }
             } catch (ActionInputMissingError $e) {
-                $customComposerAuthJson = '';
+                $customComposerAuthJson = null;
             }
         }
         
-        return $this->getMergedJsonFromString($defaultComposerAuthJson, $customComposerAuthJson);
+        return $this->getRelevantObject($defaultComposerAuthJson, $customComposerAuthJson);
     }
     
     /**
@@ -486,35 +486,27 @@ PHP;
     }
     
     /**
-     * This function merges two json-datastructures to one, using one as default and one to overwrite the defaults with.
+     * This function returns takes two strings as parameters, one as default and one as option. If the option is null, it uses the default one.
+     * If both strings are null, it returns an empty string. Else it returns the optional string. 
      * 
-     * If one of the parameters is not a vaild JSON-object, the function will throw an error.
-     * 
-     * @param string $jsonDefault
-     * @param string $jsonOptional
+     * @param string $default
+     * @param string $optional
      * @return string
      */
-    protected function getMergedJsonFromString(string $jsonDefault, string $jsonOptional) : string
+    protected function getRelevantObject(string $default, string $optional) : string
     {
         switch (true){
-            case (!$jsonOptional):
-                return $jsonDefault;
-            case (!$jsonDefault):
-                return $jsonOptional;
+            case ($optional === null):
+                $result = $default;
+                break;
+            case ($optional === null && $default === null):
+                return '';
+            default:
+                $result = $optional;
+                break;
         }
-        
-        $jsonDefaultArray = json_decode($jsonDefault, true);
-        $jsonOptionalArray = json_decode($jsonOptional, true);
-        
-        $jsonMergedArray = array_merge($jsonDefaultArray, $jsonOptionalArray);
-        
-        $jsonMerged = json_encode($jsonMergedArray);
-        
-        if ($jsonMerged == 'null'){
-            throw new ActionInputInvalidObjectError($this, 'Cannot create build: Invalid JSON structure given!', '78BMWZD');
-        }
-            
-        return $jsonMerged;
+        $result = json_decode($result, true);
+        return json_encode($result);
     }
     
     /**
