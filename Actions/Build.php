@@ -125,7 +125,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
 
             $seconds = time();
             
-            $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
+            $environmentVars = $this->getCmdEnvironmentVars();
+            
+            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
             $process->start();
             foreach ($process as $msg) {
                 // Live output
@@ -565,13 +567,15 @@ PHP;
     protected function cleanupFiles(string $projectFolder)
     {
         $stagedFiles = [
-            $projectFolder . DIRECTORY_SEPARATOR . 'build.php'/*,
+            $projectFolder . DIRECTORY_SEPARATOR . 'build.php',
             $projectFolder . DIRECTORY_SEPARATOR . 'composer.json',
-            $projectFolder . DIRECTORY_SEPARATOR . 'auth.json'*/
+            $projectFolder . DIRECTORY_SEPARATOR . 'composer.lock',
+            $projectFolder . DIRECTORY_SEPARATOR . 'auth.json'
         ];
         
         $stagedDirectories = [
-            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig()
+            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig(),
+            $projectFolder . DIRECTORY_SEPARATOR . '.composer'
         ];   
         
         //delete files first
@@ -581,9 +585,17 @@ PHP;
         
         //delete directories last
         foreach($stagedDirectories as $dir){
-            rmdir($dir);
+            Filemanager::deleteDir($dir);
         }
    
+    }
+    
+    protected function getCmdEnvironmentVars() : array
+    {
+        return [
+            'COMPOSER_HOME' => 'C:\wamp\www\exface\exface\deployer\sdrexf2_test\.composer',
+            //'HOME' => 'C:\wamp\www\exface\exface\deployer'
+        ];
     }
     
     /**
