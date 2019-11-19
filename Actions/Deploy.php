@@ -113,7 +113,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             
             //build the command used for the actual deployment
             $deployTask = $this->createDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
-            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}" . " -vvv";
+            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
             $environmentVars = $this->getCmdEnvirontmentVars();
             
             $log = '';
