@@ -603,9 +603,13 @@ PHP;
              'UserKnownHostsFile' => $basePath . $knownHostsFilePath //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
         ];
         
-        //merge the default options with the ones set in the dataconnection
-        $sshConfig = array_merge($defaultSshConfig, $customOptions);
-        
+        //if there are no specific ssh options given, use the default ones from the project data.
+        if (!$customOptions){
+            $sshConfig = $customOptions;
+        } else {
+            $sshConfig = $defaultSshConfig;
+        }
+                
         //save the options to a file
         return $this->createSshConfigFile($hostAliasFolderPath, $sshConfig);
     }
