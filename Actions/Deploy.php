@@ -156,7 +156,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     }
      
     /**
-     * function for getting a value out of the projects data
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks project data, stored under the attribute passed as a parameter.
      *
      * @param TaskInterface $task
      * @param string $projectAttributeAlias
@@ -189,7 +190,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     }
 
     /**
-     * Function for getting a value out of the host's data
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks host data, stored under the attribute passed as a parameter.
      *
      * @param TaskInterface $task
      * @param string $option
@@ -233,8 +235,9 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     }
     
     /**
-     * Function for getting a value out of the build's data
-     * 
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks build data, stored under the attribute passed as a parameter.
+     *
      * @param TaskInterface $task
      * @param string $projectAttributeAlias
      * @return string
@@ -289,7 +292,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     }    
  
     /**
-     * generates deploy data and creates deploy.php file
+     * This function generates the contents of the `deploy.php` file, which is required for the depolyment process.
+     * It returns the path to the `deploy.php`, relative to the working directory (`.../exface/exface`).
      *
      * @param TaskInterface $task
      * @param string $recipePath
@@ -313,8 +317,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         } else {
             $localVendors = '';
         }
-        
-        
         
         $content = <<<PHP
 <?php
@@ -350,7 +352,6 @@ PHP;
         return $buildFolder . DIRECTORY_SEPARATOR . 'deploy.php';
     }
     
-    
     /**
      * 
      * {@inheritDoc}
@@ -380,7 +381,6 @@ PHP;
         return [];
     }
 
-    
     /**
      * Prepares the folder structure needed to run the deployer command.
      *
@@ -497,6 +497,8 @@ PHP;
     /**
      * This function sets the right permissions for the file containing the private ssh-key.
      * If the parameters are not set right, the ssh-call of the deployment process might not work.
+     * The permissions are set, so that only the user that calles this action and system administrators have the rights 
+     * to read, write and modify the file.
      * The actual functions to set the permissions are depending on the operating system the deployer is executed on.
      * 
      * @param string $privateKeyFileDirectory
@@ -536,6 +538,8 @@ PHP;
     }
        
     /**
+     * This function creates the known-hosts file which is needed for an ssh-connection.
+     * The file is created empty, date will be filled automatically when an ssh-connection is established.
      * 
      * @param string $hostAliasFolderPath
      * @return string
@@ -571,6 +575,8 @@ PHP;
     }
     
     /**
+     * This function creates the content for the ssh-connection file, returning them in form of an array.
+     * Teh settings array is created by merging the default ssh options with the custom ones in the 
      *
      * @param string $pathToHostFolder
      * @param string $hostName
@@ -628,6 +634,8 @@ PHP;
     }
     
     /**
+     * This function gets the recipe file required for the deployment. 
+     * The project contains data describing which recipe is to use. 
      * 
      * @param TaskInterface $task
      * @return string
@@ -646,6 +654,9 @@ PHP;
     }
     
     /**
+     * This function returns the cli-command, executing the deployment process.
+     * 
+     * Example: `- f=testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz`
      * 
      * @param TaskInterface $task
      * @param string $baseFolder
@@ -664,7 +675,7 @@ PHP;
 
         $cmd .= ' --build=' . $this->getBuildData($task, 'name');
         
-        return $cmd; // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+        return $cmd;
     }
     
     /**
