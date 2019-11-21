@@ -713,12 +713,16 @@ PHP;
         
         //delete files first
         foreach($stagedFiles as $file){
-            unlink($file);
+            if (file_exists($file)){
+                unlink($file);
+            }
         }
         
         //delete directories last
         foreach($stagedDirectories as $dir){
-            rmdir($dir);
+            if (file_exists($dir))
+                Filemanager::deleteDir($dir);
+            }
         } 
     }
     
