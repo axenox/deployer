@@ -175,7 +175,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     
     /**
      * This function takes an task, and an attribute as parameter, and returns the data of
-     * the tasks project data, stored under the parameter.
+     * the tasks project data, stored under the attribute passed as a parameter.
      *
      * @param TaskInterface $task
      * @param string $projectAttributeAlias
