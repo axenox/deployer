@@ -18,7 +18,7 @@ use exface\Core\DataTypes\ComparatorDataType;
  * @author Andrej Kabachnik
  *
  */
-class ComposerAuthSchema implements UxonSchemaInterface
+class ComposerAuthJsonSchema implements UxonSchemaInterface
 {
     private $parentSchema = null;
     private $workbench = null;
