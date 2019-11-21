@@ -174,7 +174,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     }
     
     /**
-     * function for getting a value out of the projects data
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks project data, stored under the parameter.
      *
      * @param TaskInterface $task
      * @param string $projectAttributeAlias
@@ -236,7 +237,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     }
     
     /**
-     * Generates a deployer task file and returns the CLI parameters to run it
+     * Generates a deployer task file named `build.php` and returns the CLI arguments to run the actual build command.
      * 
      * @param TaskInterface $task
      * @param string $buildFolder
@@ -329,7 +330,11 @@ PHP;
     }
 
     /**
-     * Generates buildname from buildversion and current time
+     * Generates buildname from buildversion and current time. 
+     * The returned buildname is the concatinaton of the versionnumber and a timestamp of the current time,
+     * formatted as `YYYYMMDDhhmmss`, seperated by a `+` character. 
+     * Example: `1.0-beta+201911210859`
+     * 
      * @param TaskInterface $task
      * @return string
      */
@@ -342,7 +347,11 @@ PHP;
     } 
     
     /**
-     * gets version from task
+     * This function gets the version for the current build, passed as an parameter for this action.
+     * Because of this Parameter being required for the build action, this function throws an `ActionInputMissingError` 
+     * if the version is missing or invalid.
+     * Any non-empty string is valid as parameter for the version.
+     * The version number is returned as a string. 
      * 
      * @param TaskInterface $task
      * @throws ActionInputMissingError
@@ -369,7 +378,7 @@ PHP;
     }
   
     /**
-     * gets comment from task
+     * This function gets the comment, possibly passed as an argument to the build action, and returns them as a string.
      * 
      * @param TaskInterface $task
      * @return string
@@ -393,7 +402,7 @@ PHP;
     }
     
     /**
-     * gets notes from task
+     * This function gets the notes, possibly passed as an argument to the build action, and returns them as a string.
      * 
      * @param TaskInterface $task
      * @return string
@@ -417,6 +426,10 @@ PHP;
     }
     
     /**
+     * This function retruns the valid `composer.json` for the current build action.
+     * The function achives this by getting the default `composer.json` from the project data of the current task,
+     * and an custom one, which may be passed as an argument for that specific build action.
+     * If there is a custom json passed for `composer.json` the function returns it, else it will return the default one. 
      * 
      * @param TaskInterface $task
      * @return string
@@ -442,6 +455,7 @@ PHP;
     }
     
     /**
+     * This function takes a stringifed json and saves it to the `composer.json` in the current projects working directory.
      * 
      * @param TaskInterface $task
      * @param string $projectFolder
@@ -455,6 +469,10 @@ PHP;
     }
     
     /**
+     * This function retruns the valid `auth.json` for the current build action.
+     * The function achives this by getting the default `auth.json` from the project data of the current task,
+     * and an custom one, which may be passed as an argument for that specific build action.
+     * If there is a custom json passed for `auth.json` the function returns it, else it will return the default one. 
      * 
      * @param TaskInterface $task
      * @return string
@@ -605,6 +623,9 @@ PHP;
     }
     
     /**
+     * Returns absolute path to .composer file in the projects working directory.
+     * 
+     * Example: `C:\wamp\www\exface\exface\deployer\testHost\.composer`
      * 
      * @param string $projectFolder
      * @return string
