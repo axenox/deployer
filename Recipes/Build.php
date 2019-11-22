@@ -3,7 +3,9 @@
 namespace Deployer;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Output\StreamOutput;
 use Deployer\Exception\ConfigurationException;
+use kabachello\ComposerAPI\ComposerAPI;
 
 /**
  * get the given name of the release, if none is give, take newest file in builds directory
@@ -38,7 +40,7 @@ task('build:generate_release_name', function(){
     } catch (ConfigurationException $e) {
         $releaseName = null;
     }
-    echo('Name: ' . $releaseName);
+    echo('Name: ' . $releaseName . PHP_EOL);
     if ($releaseName ==='' || $releaseName === null) {
         $currentDate = new \DateTime('now' , new \DateTimeZone(get('time_zone')));
         $currentDate = $currentDate->format('YmdHis');
@@ -81,7 +83,23 @@ task('build:create_from_composer', function() {
     if (!is_dir($buildsPath)) {
         mkdir($buildsPath);
     }
-    runLocally('cd {{builds_archives_path}}\.. && php composer.phar install');
+    
+    $composerOutput = runLocally('cd {{builds_archives_path}}\.. && php composer.phar install --prefer-dist');
+    write($composerOutput);
+    writeln('');
+    
+    /*
+    $composerApi = new ComposerAPI(get('builds_archives_path') . DIRECTORY_SEPARATOR . '..');
+    $composerApi->set_path_to_composer_home(get('builds_archives_path') . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '.composer');
+    $output = $composerApi->install();
+    if ($output instanceof StreamOutput) {
+        $stream = $output->getStream();
+        rewind($stream);
+        echo stream_get_contents($stream) . PHP_EOL;
+    } else {
+        echo $output . PHP_EOL;
+    }
+    */
     try {
         $baseConfigPath = get('base_config_path');
     } catch (ConfigurationException $e) {

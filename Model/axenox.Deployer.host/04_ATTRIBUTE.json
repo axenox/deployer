@@ -333,9 +333,9 @@
         },
         {
             "CREATED_ON": "2019-09-27 07:40:53",
-            "MODIFIED_ON": "2019-09-27 09:40:59",
+            "MODIFIED_ON": "2019-11-12 11:28:13",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
             "UID": "0x11e9e0fa22a85202bacde4b318306b9a",
             "SORTABLEFLAG": "1",
             "FILTERABLEFLAG": "1",
@@ -371,7 +371,7 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{\"show_values\":false,\"values\":{\"windows\":\"Windows\",\"winserv2012\":\"Windows Server 2012+\",\"linux\":\"Linux\"}}"
+            "CUSTOM_DATA_TYPE": "{\"show_values\":false,\"values\":{\"windows\":\"Windows\",\"windowsSsh\":\"Windows 10+ (built-in SSH)\",\"linux\":\"Linux\"}}"
         },
         {
             "CREATED_ON": "2019-09-27 09:33:21",
@@ -417,9 +417,9 @@
         },
         {
             "CREATED_ON": "2019-09-27 09:33:21",
-            "MODIFIED_ON": "2019-09-27 09:36:11",
+            "MODIFIED_ON": "2019-11-12 11:26:58",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
             "UID": "0x11e9e109d89516b9bacde4b318306b9a",
             "SORTABLEFLAG": "1",
             "FILTERABLEFLAG": "1",
@@ -434,7 +434,7 @@
             "DELETE_WITH_RELATED_OBJECT": "0",
             "DEFAULT_DISPLAY_UXON": null,
             "COMMENTS": "",
-            "NAME": "Rel. path to releases-folder",
+            "NAME": "Rel. path to deploy to",
             "RELATION_CARDINALITY": "",
             "ALIAS": "path_rel_to_releases",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -501,9 +501,9 @@
         },
         {
             "CREATED_ON": "2019-10-24 08:56:16",
-            "MODIFIED_ON": "2019-10-24 09:01:00",
+            "MODIFIED_ON": "2019-11-12 12:34:03",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
             "UID": "0x11e9f63c1a49b826b2ce0205857feb80",
             "SORTABLEFLAG": "1",
             "FILTERABLEFLAG": "1",
@@ -522,7 +522,7 @@
             "RELATION_CARDINALITY": "",
             "ALIAS": "last_build_deployed",
             "DATATYPE": "0x30000000000000000000000000000000",
-            "DATA_ADDRESS": "(SELECT \n\t[#~alias#]_lbb.name \nFROM axxdep_deployment [#~alias#]_lbd \n\tINNER JOIN axxdep_build [#~alias#]_lbb\tON [#~alias#]_lbd.build_oid = [#~alias#]_lbb.oid\nWHERE [#~alias#]_lbd.host_oid = [#~alias#].oid\nORDER BY [#~alias#]_lbd.started_on DESC\nLIMIT 1)",
+            "DATA_ADDRESS": "(SELECT \n\t[#~alias#]_lbb.name \nFROM axxdep_deployment [#~alias#]_lbd \n\tINNER JOIN axxdep_build [#~alias#]_lbb\tON [#~alias#]_lbd.build_oid = [#~alias#]_lbb.oid\nWHERE \n    [#~alias#]_lbd.host_oid = [#~alias#].oid\n    AND [#~alias#]_lbd.status = 99 \nORDER BY [#~alias#]_lbd.started_on DESC\nLIMIT 1)",
             "OBJECT": "0x11e9e0f798c74f73bacde4b318306b9a",
             "FORMATTER": "",
             "DISPLAYORDER": null,

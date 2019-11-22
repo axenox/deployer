@@ -20,17 +20,39 @@ use exface\Core\Factories\DataConnectionFactory;
 use Symfony\Component\Process\Process;
 use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
+use exface\Core\Interfaces\Events\TaskEventInterface;
+use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
 
 /**
- * Creates a build from the passed data.
- *
+ * Creates a build from an instance of a project and a version number.
+ * 
+ * The parameters of this action are an instance of a existing `axenox.Deployer.project` object, a version number
+ * and a comment or notes to the build, which are optional. The action might be either called via the UI, or with use of an CLI-command.
+ * The action creates a build, named after a comination of the verison number and current time, seperated by a '+' character.
+ * The name of the resulting build is as following: `[version]+yyyymmddhhmmss`, e.g. `1.0-beta+20191108145134`
+ * In the building process the action will create some temporary files and directories, and saves the 
+ * crated build at `/deployer/[hostname]/[buildfolder]/[buildname].tar.gz`. Apart from the default json structures 
+ * you may set in the projects data, you can also pass the objects for `composer.json` and `auth.json` to the building action.
+ * The given objects will then overwrite the equivalent default object given in the project.
+ * After completing the building process, you might deploy the build to a host of your choice, using the action `axenox.Deployer:Deploy`. 
+ * 
+ * ## Commandline Usage:
+ * 
+ * ```
+ * action axenox.Deployer:Build [Project] [Version] <--comment Comment> <--notes Notes> <--composer_json ComposerJson> <--composer_auth_json AuthJson>
+ * ```
+ * 
+ * For example:
+ * ```
+ * action axenox.Deployer:Build testProject 1.0-beta
+ * ```
+ * 
  * @author Andrej Kabachnik
  *        
  */
 class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
 {
-    
-    use Traits\BuildProjectTrait;
+    use BuildProjectTrait;
     
     private $projectData = null;
     
@@ -65,7 +87,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'version' => $this->getVersion($task),
                 'project' => $this->getProjectData($task, 'UID'),
                 'comment' => $this->getComment($task),
-                'notes' => $this->getNotes($task)
+                'notes' => $this->getNotes($task),
+                'composer_json' => $this->getComposerJson($task),
+                'composer_auth_json' => $this->getComposerAuthJson($task)
             ]);
         }
         $result = new ResultMessageStream($task);
@@ -88,16 +112,24 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Prepare project folder and deployer task file
             $projectFolder = $this->prepareDeployerProjectFolder($task);
             $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
+            
+            $composerJson = $this->createComposerJson($task, $projectFolder);
+            $buildData->setCellValue('composer_json', 0, $composerJson);
+            
+            $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
+            $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
 
             // run the deployer task via CLI
-            if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
-                chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
+            if (getcwd() !== $this->getBasePath()) {
+                chdir($this->getBasePath());
             }
             $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
 
             $seconds = time();
             
-            $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
+            $environmentVars = $this->getCmdEnvironmentVars($projectFolder);
+            
+            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
             $process->start();
             foreach ($process as $msg) {
                 // Live output
@@ -140,7 +172,49 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         $result->setMessageStreamGenerator($generator);
         return $result;
     }
-
+    
+    /**
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks project data, stored under the attribute passed as a parameter.
+     *
+     * @param TaskInterface $task
+     * @param string $projectAttributeAlias
+     * @throws ActionInputMissingError
+     * @return string
+     */
+    protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
+    {
+        if ($this->projectData === null) {
+            if ($task->hasParameter('project')) {
+                $projectAlias = $task->getParameter('project');
+            } else {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('project')) {
+                    $projectUid = $col->getCellValue(0);
+                }
+            }
+            
+            if (! $projectUid && $projectAlias === null) {
+                throw new ActionInputMissingError($this, 'Cannot create build: missing project reference!', '784EI40');
+            }
+            
+            $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
+            $ds->getColumns()->addMultiple([
+                'alias',
+                'build_recipe',
+                'build_recipe_custom_path',
+                'default_composer_json',
+                'default_composer_auth_json',
+                'default_config'
+            ]);
+            $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
+            $ds->addFilterFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
+            $ds->dataRead();
+            $this->projectData = $ds;
+        }
+        return $this->projectData->getCellValue($projectAttributeAlias, 0);
+    }
+    
     /**
      * Returns the path to the deployer recipe file relative to the base installation folder.
      * 
@@ -163,7 +237,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     }
     
     /**
-     * Generates a deployer task file and returns the CLI parameters to run it
+     * Generates a deployer task file named `build.php` and returns the CLI arguments to run the actual build command.
      * 
      * @param TaskInterface $task
      * @param string $buildFolder
@@ -222,7 +296,7 @@ PHP;
     protected function prepareDeployerProjectFolder(TaskInterface $task) : string
     {
         $projectFolder = $this->getProjectFolderRelativePath($task);
-        $basePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
+        $basePath = $this->getBasePath();
         
         // Make sure, folder project/builds exists
         $buildsFolderPath = $projectFolder 
@@ -231,14 +305,36 @@ PHP;
         
         
         $baseConfigFolderPath = $projectFolder
-            . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();   
-        Filemanager::pathConstruct($basePath . $baseConfigFolderPath);
+            . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();
+        $this->createConfigFiles($task, $basePath . $baseConfigFolderPath);
+        
         
         return $projectFolder;
     }
+    
+    /**
+     * This Function creates the configuration file, needed for the building process.
+     * 
+     * @param TaskInterface $task
+     * @param string $folderAbsolutePath
+     * @return Build
+     */
+    protected function createConfigFiles(TaskInterface $task, string $folderAbsolutePath) : Build
+    {
+        Filemanager::pathConstruct($folderAbsolutePath);
+        $projectConfig = json_decode($this->getProjectData($task, 'default_config'), true);
+        foreach ($projectConfig['default_app_config'] as $fileName => $config) {
+            file_put_contents($folderAbsolutePath . DIRECTORY_SEPARATOR . $fileName, json_encode($config));
+        }
+        return $this;
+    }
 
     /**
-     * Generates buildname from buildversion and current time
+     * Generates buildname from buildversion and current time. 
+     * The returned buildname is the concatinaton of the versionnumber and a timestamp of the current time,
+     * formatted as `YYYYMMDDhhmmss`, seperated by a `+` character. 
+     * Example: `1.0-beta+201911210859`
+     * 
      * @param TaskInterface $task
      * @return string
      */
@@ -251,7 +347,11 @@ PHP;
     } 
     
     /**
-     * gets version from task
+     * This function gets the version for the current build, passed as an parameter for this action.
+     * Because of this Parameter being required for the build action, this function throws an `ActionInputMissingError` 
+     * if the version is missing or invalid.
+     * Any non-empty string is valid as parameter for the version.
+     * The version number is returned as a string. 
      * 
      * @param TaskInterface $task
      * @throws ActionInputMissingError
@@ -278,7 +378,7 @@ PHP;
     }
   
     /**
-     * gets comment from task
+     * This function gets the comment, possibly passed as an argument to the build action, and returns them as a string.
      * 
      * @param TaskInterface $task
      * @return string
@@ -302,7 +402,7 @@ PHP;
     }
     
     /**
-     * gets notes from task
+     * This function gets the notes, possibly passed as an argument to the build action, and returns them as a string.
      * 
      * @param TaskInterface $task
      * @return string
@@ -323,6 +423,115 @@ PHP;
             }
         }
         return $notes;
+    }
+    
+    /**
+     * This function retruns the valid `composer.json` for the current build action.
+     * The function achives this by getting the default `composer.json` from the project data of the current task,
+     * and an custom one, which may be passed as an argument for that specific build action.
+     * If there is a custom json passed for `composer.json` the function returns it, else it will return the default one. 
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function getComposerJson(TaskInterface $task) : string
+    {
+        $defaultComposerJson = $this->getProjectData($task, 'default_composer_json');
+        
+        if ($task->hasParameter('composer_json')) {
+            $customComposerJson = $task->getParameter('composer_json');
+        } else {
+            try {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('composer_json')) {
+                    $customComposerJson = $col->getCellValue(0);
+                }
+            } catch (ActionInputMissingError $e) {
+                $customComposerJson = null;
+            }
+        }
+
+        return $this->getRelevantObject($defaultComposerJson, $customComposerJson);
+    }
+    
+    /**
+     * This function takes a stringifed json and saves it to the `composer.json` in the current projects working directory.
+     * 
+     * @param TaskInterface $task
+     * @param string $projectFolder
+     * @return string
+     */
+    protected function createComposerJson(TaskInterface $task, string $projectFolder) : string
+    {
+        $content = $this->getComposerJson($task);
+        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
+        return $content;
+    }
+    
+    /**
+     * This function retruns the valid `auth.json` for the current build action.
+     * The function achives this by getting the default `auth.json` from the project data of the current task,
+     * and an custom one, which may be passed as an argument for that specific build action.
+     * If there is a custom json passed for `auth.json` the function returns it, else it will return the default one. 
+     * 
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function getComposerAuthJson(TaskInterface $task) : string
+    {
+        $defaultComposerAuthJson = $this->getProjectData($task, 'default_composer_auth_json');
+        
+        if ($task->hasParameter('composer_auth_json')) {
+            $customComposerAuthJson = $task->getParameter('composer_auth_json');
+        } else {
+            try {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('composer_auth_json')) {
+                    $customComposerAuthJson = $col->getCellValue(0);
+                }
+            } catch (ActionInputMissingError $e) {
+                $customComposerAuthJson = null;
+            }
+        }
+        
+        return $this->getRelevantObject($defaultComposerAuthJson, $customComposerAuthJson);
+    }
+    
+    /**
+     * 
+     * @param TaskInterface $task
+     * @param string $projectFolder
+     * @return string
+     */
+    protected function createComposerAuthJson(TaskInterface $task, string $projectFolder) : string
+    {
+        $content = $this->getComposerAuthJson($task);
+        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'auth.json', $content);
+        return $content;
+    }
+    
+    /**
+     * This function returns takes two strings as parameters, one as default and one as option. If the option is null, it uses the default one.
+     * If both strings are null, it returns an empty string. Else it returns the optional string. 
+     * 
+     * @param string $default
+     * @param string $optional
+     * @return string
+     */
+    protected function getRelevantObject(string $default, string $optional) : string
+    {
+        switch (true){
+            case ($optional === null):
+                $result = $default;
+                break;
+            case ($optional === null && $default === null):
+                return '';
+            default:
+                $result = $optional;
+                break;
+        }
+        $result = json_decode($result, true);
+        return json_encode($result);
     }
     
     /**
@@ -357,57 +566,77 @@ PHP;
                 ->setDescription('Comment to give a short description about the build.'),
             (new ServiceParameter($this))
                 ->setName('notes')
-                ->setDescription('You can save a note to the build to give further information.')
+                ->setDescription('You can save a note to the build to give further information.'),
+            (new ServiceParameter($this))
+                ->setName('composer_json')
+                ->setDescription('You can put in a custom object for composer.json, which overwrites the default one from the project data.'),
+            (new ServiceParameter($this))
+                ->setName('composer_auth_json')
+                ->setDescription('You can put in a custom object for auth.json used by the composer, which overwrites the default one from the project data.')
         ];
     }
     
     /**
      * deletes all directories and files created in the building process, except the actual build (-directory)
      * 
-     * @param string $src
-     * @param bool $calledRecursive
+     * @param string $projectFolder
      */
     protected function cleanupFiles(string $projectFolder)
     {
         $stagedFiles = [
-            $projectFolder . DIRECTORY_SEPARATOR . 'build.php'
+            $projectFolder . DIRECTORY_SEPARATOR . 'build.php',
+            $projectFolder . DIRECTORY_SEPARATOR . 'composer.json',
+            $projectFolder . DIRECTORY_SEPARATOR . 'composer.lock',
+            $projectFolder . DIRECTORY_SEPARATOR . 'auth.json'
         ];
         
         $stagedDirectories = [
-            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig()
+            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig(),
+            $projectFolder . DIRECTORY_SEPARATOR . '.composer'
         ];   
         
         //delete files first
         foreach($stagedFiles as $file){
-            unlink($file);
+            if (file_exists($file)){
+                unlink($file);
+            }
         }
         
         //delete directories last
         foreach($stagedDirectories as $dir){
-            rmdir($dir);
+            if (file_exists($file)) {
+                Filemanager::deleteDir($dir);
+            }
         }
    
     }
     
-    protected function getTimeout() : int
+    /**
+     * Returns the environment variables needed for the cli to work with symfony.
+     * 
+     * @param string $projectFolder
+     * @return array
+     */
+    protected function getCmdEnvironmentVars(string $projectFolder) : array
     {
-        return $this->timeout;
+        $composerHomePath = $this->getComposerHomePath($projectFolder);
+        return [
+            'COMPOSER_HOME' => $composerHomePath,
+            //'HOME' => 'C:\wamp\www\exface\exface\deployer'
+        ];
     }
     
     /**
-     * Timeout for the build command.
+     * Returns absolute path to .composer file in the projects working directory.
      * 
-     * @uxon-property timeout
-     * @uxon-type integer
-     * @uxon-default 600
+     * Example: `C:\wamp\www\exface\exface\deployer\testHost\.composer`
      * 
-     * @param int $seconds
-     * @return Build
+     * @param string $projectFolder
+     * @return string
      */
-    public function setTimeout(int $seconds) : Build
+    protected function getComposerHomePath(string $projectFolder) : string
     {
-        $this->timeout = $seconds;
-        return $this;
+        return $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . '.composer';
     }
 
 }

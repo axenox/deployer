@@ -22,14 +22,34 @@ use exface\Core\DataTypes\StringDataType;
 use Symfony\Component\Process\Process;
 
 /**
- * Creates a build from the passed data.
- *
+ * Deploys a build to a specific host.
+ * 
+ * This action requires an instance of a build and an instance of a host as parameters.
+ * The action may either be called via the PowerUI frontend or via CLI-command.
+ * The parameters for the CLI-call are the names of the host and build, which have to be existing instances of
+ * `axenox.Deployer.host` and `axenox.Deployer.build` objects.
+ * This action will then extract the data, required for the deployment, from the given objects, create a working directory
+ * and call the actual command for the deployment process. 
+ * Upon finishing the deployment process, the action will delete every temporary file / directories created.
+ * 
+ * ## Commandline Usage:
+ * 
+ * ```
+ * action axenox.Deployer:Deploy [BuildName] [HostName]
+ * ```
+ * 
+ * For example:
+ * ```
+ * action axenox.Deployer:Deploy 1.1.2+20191108145134 sdrexf2
+ * ```
+ * 
+ * 
  * @author Andrej Kabachnik
  *
  */
-class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
+class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
 {
-    use Traits\BuildProjectTrait;
+    use BuildProjectTrait;
     
     private $projectData = null;
     
@@ -89,16 +109,17 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
             
             //create directories
             $projectFolder = $this->getProjectFolderRelativePath($task);
-            $hostAliasFolderPath = $this->prepareDeployerProjectFolder($task);
+            $hostAliasFolderPath = $this->createDeployerProjectFolder($task);
             
             //build the command used for the actual deployment
-            $deployTask = $this->prepareDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+            $deployTask = $this->createDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
             $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
-
+            $environmentVars = $this->getCmdEnvirontmentVars();
+            
             $log = '';
 
             //execute deploy command
-            $process = Process::fromShellCommandline($cmd, null, null, null, $this->getTimeout());
+            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
             $process->start();
             foreach ($process as $msg) {
                 // Live output
@@ -124,7 +145,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
             // Update deployment entry's state and save log to data source
             $deployData->dataUpdate(false, $transaction);
             
-            //$this->cleanupFiles($projectFolder, $hostAliasFolderPath);
+            $this->cleanupFiles($projectFolder, $hostAliasFolderPath);
 
             // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
             $this->performAfterDeferred($result, $transaction);
@@ -135,7 +156,8 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     }
      
     /**
-     * function for getting a value out of the projects data
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks project data, stored under the attribute passed as a parameter.
      *
      * @param TaskInterface $task
      * @param string $projectAttributeAlias
@@ -145,7 +167,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->projectData === null) {
-            $projectUid = $this->getHostData($task, 'project');
+            $projectUid = $this->getBuildData($task, 'project');
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
             $ds->getColumns()->addMultiple([
@@ -156,7 +178,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
                 'default_composer_auth_json',
                 'default_config',
                 'deployment_recipe',
-                'deployment_receipe_custom_path',
+                'deployment_recipe_custom_path',
                 'name',
                 'project_group'
             ]);
@@ -168,7 +190,8 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     }
 
     /**
-     * Function for getting a value out of the host's data
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks host data, stored under the attribute passed as a parameter.
      *
      * @param TaskInterface $task
      * @param string $option
@@ -178,11 +201,17 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     protected function getHostData(TaskInterface $task, string $option) : string
     {
         if ($this->hostData === null) {
-            // TODO host name aus CLI-Parameter
             if ($task->hasParameter('host')) {
                 $hostName = $task->getParameter('host');
             } else {
-                $hostUid = $this->getHostUid($task);
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('host')) {
+                    $hostUid = $col->getCellValue(0);
+                }
+            }
+            
+            if (! $hostUid && $hostName === null) {
+                throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
             }
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
@@ -206,8 +235,9 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     }
     
     /**
-     * Function for getting a value out of the build's data
-     * 
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks build data, stored under the attribute passed as a parameter.
+     *
      * @param TaskInterface $task
      * @param string $projectAttributeAlias
      * @return string
@@ -218,11 +248,14 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
             if ($task->hasParameter('build')) {
                 $buildName = $task->getParameter('build');
             } else {
-                $buildUid = $this->getBuildUid($task);
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('build')) {
+                    $buildUid = $col->getCellValue(0);
+                }
             }
             
             if (! $buildUid && $buildName === null) {
-                throw new ActionInputMissingError($this, 'Cannot deploy build: missing build reference!', '784EI40');
+                throw new ActionInputMissingError($this, 'Cannot deploy build: missing build reference!', '7880ZT2');
             }
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
@@ -235,7 +268,7 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
                 'log',
                 'name',
                 'notes',
-                'project_oid',
+                'project',
                 'status',
                 'version'
             ]);
@@ -243,43 +276,8 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
             $ds->addFilterFromString('name', $buildName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->buildData = $ds;
-            $test = $this->buildData->getCellValue('name', 0);
         }
         return $this->buildData->getCellValue($projectAttributeAlias, 0);
-    }
-    
-    /**
-     *  
-     * @param Taskinterface $task
-     * @throws ActionInputMissingError
-     * @return string
-     */
-    protected function getHostUid(Taskinterface $task) : string
-    {
-        $inputData = $this->getInputDataSheet($task);
-        if ($col = $inputData->getColumns()->get('host')) {
-            $hostUid = $col->getCellValue(0);
-        } else {
-            throw new ActionInputMissingError($this, 'TODO: no host given!');
-        }
-        return $hostUid;
-    }
-    
-    /**
-     * 
-     * @param TaskInterface $task
-     * @throws ActionInputMissingError
-     * @return string
-     */
-    protected function getBuildUid(TaskInterface $task) : string
-    {
-        $inputData = $this->getInputDataSheet($task);
-        if ($col = $inputData->getColumns()->get('build')) {
-            $buildUid = $col->getCellValue(0);
-        } else {
-            throw new ActionInputMissingError($this, 'TODO: no build given!');
-        }
-        return $buildUid;
     }
  
     /**
@@ -294,7 +292,8 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
     }    
  
     /**
-     * generates deploy data and creates deploy.php file
+     * This function generates the contents of the `deploy.php` file, which is required for the depolyment process.
+     * It returns the path to the `deploy.php`, relative to the working directory (`.../exface/exface`).
      *
      * @param TaskInterface $task
      * @param string $recipePath
@@ -307,11 +306,17 @@ class DeployBuild extends AbstractActionDeferred implements iCanBeCalledFromCLI,
         $stage = $this->getHostData($task, 'stage');
         $name = $this->getHostData($task, 'name');
         $absoluteSshConfigFilePath = $basepath . $sshConfigFilePath;
-        $basicDeployPath = 'C:' . DIRECTORY_SEPARATOR . 'wamp' . DIRECTORY_SEPARATOR . $name;
+        $basicDeployPath = $this->getHostData($task, 'path_abs_to_api');
         $buildsArchivesPath = $basepath . $buildFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
         $phpPath = $this->getHostData($task, 'php_cli');
         $recipePath = $this->getDeployRecipeFile($task);
-        
+        $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
+        $projectConfig = json_decode('...');
+        if (empty($projectConfig['local_vendors']) !== false) {
+            $localVendors = "set('local_vendors', " . json_encode($projectConfig['local_vendors']) . ");";
+        } else {
+            $localVendors = '';
+        }
         
         $content = <<<PHP
 <?php
@@ -326,12 +331,15 @@ require 'vendor/deployer/deployer/recipe/common.php';
 set('stage', '{$stage}');
 set('host_short', '{$name}');
 set('host_ssh_config', '{$absoluteSshConfigFilePath}');
+host('{$name}');
 
 // === Path definitions ===
 set('basic_deploy_path', '{$basicDeployPath}');
-set('relative_deploy_path', 'powerui');
+set('relative_deploy_path', '{$relativeDeployPath}');
 set('builds_archives_path', '{$buildsArchivesPath}');
 set('php_path', '{$phpPath}');
+
+{$localVendors}
 
 require '{$recipePath}';
 
@@ -344,8 +352,11 @@ PHP;
         return $buildFolder . DIRECTORY_SEPARATOR . 'deploy.php';
     }
     
-    
-    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Interfaces\Actions\iCanBeCalledFromCLI::getCliArguments()
+     */
     public function getCliArguments(): array
     {
         return [
@@ -360,29 +371,29 @@ PHP;
         ];
     }
 
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Interfaces\Actions\iCanBeCalledFromCLI::getCliOptions()
+     */
     public function getCliOptions(): array
     {
         return [];
     }
 
-    
     /**
      * Prepares the folder structure needed to run the deployer command.
      *
      * @param TaskInterface $task
      * @return string
      */
-    protected function prepareDeployerProjectFolder(TaskInterface $task) : string
+    protected function createDeployerProjectFolder(TaskInterface $task) : string
     {
         $connection = $this->getSshConnection($task);
         
         //extract the data required for the SSH-connection
         $privateKey = $connection->getSshPrivateKey();
         $hostAlias = $connection->getAlias();
-        $customOptions = $connection->getSshConfig();
-        $hostName = $connection->getHostName();
-        $user = $connection->getUser();
-        $port = $connection->getPort();
         $host = $this->getHostData($task, 'name');
         
         //create /hosts/alias directory 
@@ -392,22 +403,15 @@ PHP;
         
         // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
         $privateKeyFilePath = $this->createPrivateKeyFile($hostAliasFolderPath, $privateKey);
-        $this->setPrivateKeyFilePermissions($privateKeyFilePath);
+        $this->createPrivateKeyFileSetPermissions($privateKeyFilePath);
         
         //create known_hosts file
         $knownHostsFilePath = $this->createKnownHostsFile($hostAliasFolderPath);
 
-        //get default ssh-config
-        $defaultSshConfig = $this->getDefaultSshConfig($basePath, $host, $hostName, $user, $port, $privateKeyFilePath, $knownHostsFilePath);
-        
-        //merge the default options with the ones set in the dataconnection
-        $sshConfig = array_merge($defaultSshConfig, $customOptions);
-        
-        //save the options to a file 
-        $sshConfigFilePath = $this->createSshConfigFile($hostAliasFolderPath, $sshConfig);
-        
-        $this->createDeployPhp($task, $basePath, $this->getProjectFolderRelativePath($task), $sshConfigFilePath);
+        //get ssh-config
+        $sshConfigFilePath = $this->createSshConfig($basePath, $host, $connection, $privateKeyFilePath, $knownHostsFilePath, $hostAliasFolderPath);
 
+        $this->createDeployPhp($task, $basePath, $this->getProjectFolderRelativePath($task), $sshConfigFilePath);
         
         return $hostAliasFolderPath;
     }
@@ -493,26 +497,31 @@ PHP;
     /**
      * This function sets the right permissions for the file containing the private ssh-key.
      * If the parameters are not set right, the ssh-call of the deployment process might not work.
+     * The permissions are set, so that only the user that calles this action and system administrators have the rights 
+     * to read, write and modify the file.
      * The actual functions to set the permissions are depending on the operating system the deployer is executed on.
      * 
      * @param string $privateKeyFileDirectory
      * @param string $hostOperatingSystem
      */
-    protected function setPrivateKeyFilePermissions(string $privateKeyFileDirectory)
+    protected function createPrivateKeyFileSetPermissions(string $privateKeyFileDirectory)
     {
         $hostOperatingSystem = PHP_OS;
         
         switch ($hostOperatingSystem){
             // running on windows:
             case (strtoupper(substr($hostOperatingSystem, 0, 3)) === 'WIN') :
+
+                $user = $this->getCurrentWinCliUsername();
+                
                 $commandList = [
                     'icacls ' . $privateKeyFileDirectory . ' /c /t /inheritance:d',
-                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant %username%:F',
-                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant SYSTEM:WRX',
                     'icacls ' . $privateKeyFileDirectory . ' /c /t /remove Administrator "Authenticated Users" BUILTIN Everyone System Users',
-                    'icacls ' . $privateKeyFileDirectory . ' /verify'
+                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant "'. $user .'":F',
+                    'icacls ' . $privateKeyFileDirectory
                 ];
                 
+                //execute all commands set in $commandList
                 foreach($commandList as $cmd){
                     $process = Process::fromShellCommandline($cmd);
                     $process->start();
@@ -529,6 +538,8 @@ PHP;
     }
        
     /**
+     * This function creates the known-hosts file which is needed for an ssh-connection.
+     * The file is created empty, date will be filled automatically when an ssh-connection is established.
      * 
      * @param string $hostAliasFolderPath
      * @return string
@@ -564,6 +575,8 @@ PHP;
     }
     
     /**
+     * This function creates the content for the ssh-connection file, returning them in form of an array.
+     * Teh settings array is created by merging the default ssh options with the custom ones in the 
      *
      * @param string $pathToHostFolder
      * @param string $hostName
@@ -571,10 +584,15 @@ PHP;
      * @param string $port
      * @return array
      */
-    protected function getDefaultSshConfig(string $basePath, string $host, string $hostName, string $user, string $port, string $privateKeyFilePath, string $knownHostsFilePath) : array
+    protected function createSshConfig(string $basePath, string $host, DeployerSshConnector $connection, string $privateKeyFilePath, string $knownHostsFilePath, string $hostAliasFolderPath) : string
     {
         
-        return [
+        $hostName = $connection->getHostName();
+        $user = $connection->getUser();
+        $port = $connection->getPort();
+        $customOptions = $connection->getSshConfig();
+        
+        $defaultSshConfig = [
              'Host' => $host,
              'HostName' => $hostName, // 10.57.2.40 // Kommt aus Dataconnection
              'User' => $user, //SFCKOENIG\ITSaltBI // Kommt aus DataConnection
@@ -584,6 +602,16 @@ PHP;
              'IdentityFile' => $basePath . $privateKeyFilePath, //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
              'UserKnownHostsFile' => $basePath . $knownHostsFilePath //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
         ];
+        
+        //if there are no specific ssh options given, use the default ones from the project data.
+        if (!$customOptions){
+            $sshConfig = $customOptions;
+        } else {
+            $sshConfig = $defaultSshConfig;
+        }
+                
+        //save the options to a file
+        return $this->createSshConfigFile($hostAliasFolderPath, $sshConfig);
     }
     
     /**
@@ -610,6 +638,8 @@ PHP;
     }
     
     /**
+     * This function gets the recipe file required for the deployment. 
+     * The project contains data describing which recipe is to use. 
      * 
      * @param TaskInterface $task
      * @return string
@@ -628,13 +658,16 @@ PHP;
     }
     
     /**
+     * This function returns the cli-command, executing the deployment process.
+     * 
+     * Example: `- f=testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz`
      * 
      * @param TaskInterface $task
      * @param string $baseFolder
      * @param DataSheetInterface $deployData
      * @return string
      */
-    protected function prepareDeployerTask(TaskInterface $task, string $baseFolder, DataSheetInterface $deployData) : string
+    protected function createDeployerTask(TaskInterface $task, string $baseFolder, DataSheetInterface $deployData) : string
     {
         $cmd = " -f=" . $this->getProjectFolderRelativePath($task) . DIRECTORY_SEPARATOR . 'deploy.php';
         
@@ -644,43 +677,19 @@ PHP;
         
         $cmd .= ' ' . $deployerTaskName;
 
-        $cmd .= ' --build=' . $this->getBuildData($task, 'name') . '.tar.gz';
+        $cmd .= ' --build=' . $this->getBuildData($task, 'name');
         
-        return $cmd; // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+        return $cmd;
     }
     
     /**
+     * Returns an array of environment variables which may be required for commands executed via symfony.
      * 
-     * @return string
+     * @return array
      */
-    protected function getBasePath() : string
+    protected function getCmdEnvirontmentVars() : array
     {
-        return $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
-    }
-    
-    /**
-     * 
-     * @return int
-     */
-    protected function getTimeout() : int
-    {
-        return $this->timeout;
-    }
-    
-    /**
-     * Timeout for the Deploy command.
-     *
-     * @uxon-property timeout
-     * @uxon-type integer
-     * @uxon-default 600
-     *
-     * @param int $seconds
-     * @return Build
-     */
-    public function setTimeout(int $seconds) : Build
-    {
-        $this->timeout = $seconds;
-        return $this;
+        return ['ProgramData' => 'C:\\ProgramData'];
     }
     
     /**
@@ -704,12 +713,33 @@ PHP;
         
         //delete files first
         foreach($stagedFiles as $file){
-            unlink($file);
+            if (file_exists($file)){
+                unlink($file);
+            }
         }
         
         //delete directories last
         foreach($stagedDirectories as $dir){
-            rmdir($dir);
+            if (file_exists($dir))
+                Filemanager::deleteDir($dir);
+            }
         } 
+    }
+    
+    /**
+     * Uses the windows commandline for getting the username which the server uses on the commandline.
+     * 
+     * @return string
+     */
+    protected function getCurrentWinCliUsername() :string
+    {
+        $process = Process::fromShellCommandline('whoami');
+        $process->start();
+        foreach ($process as $msg) {
+            $user = $msg;
+        }
+        // replace CRLF
+        $user = trim(preg_replace('/\s\s+/', ' ', $user));
+        return $user;
     }
 }

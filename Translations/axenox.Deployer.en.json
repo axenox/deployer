@@ -1,3 +1,4 @@
 {
-	"ACTION.BUILD.NAME": "Create Build"
+	"ACTION.BUILD.NAME": "Create Build",
+	"ACTION.DEPLOY.NAME": "Deploy Build"
 }

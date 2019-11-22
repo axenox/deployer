@@ -10,6 +10,27 @@ use exface\Core\Interfaces\Tasks\TaskInterface;
 trait BuildProjectTrait{
     
     /**
+     * Returns the absolute path to the basefolder, ending with a DIRECTORY_SEPERATOR.
+     * 
+     * Example:
+     * ```
+     *  C:\wamp\www\exface\exface\
+     * ```
+     * 
+     * @return string
+     */
+    protected function getBasePath() : string
+    {
+        return $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR;
+    }
+    
+    /**
+     * Returns the path to the project folder, relative to the basefolder.
+     * 
+     * Example:
+     * ```
+     *  deployer\exampleHost
+     * ```
      * 
      * @param TaskInterface $task
      * @return string
@@ -18,53 +39,6 @@ trait BuildProjectTrait{
     {
         return 'deployer' . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias');
     }
-    
-    /**
-     * function for getting a value out of the projects data
-     *
-     * @param TaskInterface $task
-     * @param string $projectAttributeAlias
-     * @throws ActionInputMissingError
-     * @return string
-     */
-    protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
-    {
-        if ($this->projectData === null) {
-            if ($task->hasParameter('project')) {
-                $projectAlias = $task->getParameter('project');
-            } else {
-                $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('project')) {
-                    $projectUid = $col->getCellValue(0);
-                }
-            }
-            
-            if (! $projectUid && $projectAlias === null) {
-                throw new ActionInputMissingError($this, 'Cannot create build: missing project reference!', '784EI40');
-            }
-            
-            $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
-            $ds->getColumns()->addMultiple([
-                'alias',
-                'build_recipe',
-                'build_recipe_custom_path',
-                'default_composer_json',
-                'default_composer_auth_json',
-                'default_config',
-                'deployment_recipe',
-                'deployment_receipe_custom_path',
-                'name',
-                'project_group'
-            ]);
-            $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
-            $ds->addFilterFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
-            $ds->dataRead();
-            $this->projectData = $ds;
-        }
-        return $this->projectData->getCellValue($projectAttributeAlias, 0);
-    }
-    
-    
     
     /**
      *
@@ -84,6 +58,27 @@ trait BuildProjectTrait{
         return 'base-config';
     }
     
+    /**
+     * @return int
+     */
+    protected function getTimeout() : int
+    {
+        return $this->timeout;
+    }
     
+    /**
+     * Timeout for the Deploy/Build command in seconds.
+     *
+     * @uxon-property timeout
+     * @uxon-type integer
+     * @uxon-default 600
+     *
+     * @param int $seconds
+     */
+    public function setTimeout(int $seconds)
+    {
+        $this->timeout = $seconds;
+        return $this;
+    }
     
 }
