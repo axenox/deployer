@@ -83,4 +83,5 @@ trait BuildProjectTrait{
         return $this;
     }
     
+    protected abstract function getProjectData(TaskInterface $task, string $projectAttributeAlias) : string;
 }

@@ -18,7 +18,6 @@ use exface\Core\CommonLogic\Filemanager;
 use axenox\Deployer\DataConnectors\DeployerSshConnector;
 use exface\Core\Factories\DataConnectionFactory;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
-use exface\Core\DataTypes\StringDataType;
 use Symfony\Component\Process\Process;
 
 /**
@@ -53,8 +52,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     
     private $projectData = null;
     
-    private $timeout = 600;
-    
     /**
      *
      * {@inheritdoc}
@@ -73,7 +70,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      * {@inheritdoc}
      * @see \exface\Core\CommonLogic\AbstractAction::perform()
      */
-    protected function perform(TaskInterface $task, DataTransactionInterface $transaction): ResultInterface
+    protected function perform(TaskInterface $task, DataTransactionInterface $transaction) : ResultInterface
     {
         // $buildData based on object axenox.Deployer.deployment
         try {
@@ -167,7 +164,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      * @throws ActionInputMissingError
      * @return string
      */
-    protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
+    protected function getProjectData(TaskInterface $task, string $projectAttributeAlias) : string
     {
         if ($this->projectData === null) {
             $projectUid = $this->getBuildData($task, 'project');
@@ -245,7 +242,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      * @param string $projectAttributeAlias
      * @return string
      */
-    protected function getBuildData(TaskInterface $task, string $projectAttributeAlias): string
+    protected function getBuildData(TaskInterface $task, string $projectAttributeAlias) : string
     {
         if ($this->buildData === null) {
             if ($task->hasParameter('build')) {
@@ -360,7 +357,7 @@ PHP;
      * {@inheritDoc}
      * @see \exface\Core\Interfaces\Actions\iCanBeCalledFromCLI::getCliArguments()
      */
-    public function getCliArguments(): array
+    public function getCliArguments() : array
     {
         return [
             (new ServiceParameter($this))
@@ -379,7 +376,7 @@ PHP;
      * {@inheritDoc}
      * @see \exface\Core\Interfaces\Actions\iCanBeCalledFromCLI::getCliOptions()
      */
-    public function getCliOptions(): array
+    public function getCliOptions() : array
     {
         return [];
     }
@@ -647,7 +644,7 @@ PHP;
      * @param TaskInterface $task
      * @return string
      */
-    protected function getDeployRecipeFile(TaskInterface $task): string
+    protected function getDeployRecipeFile(TaskInterface $task) : string
     {
         $recipe = $this->getProjectData($task, 'deployment_recipe');
         
@@ -700,7 +697,7 @@ PHP;
      * @param string $projectFolder
      * @param string $hostAliasFolderPath
      */
-    protected function cleanupFiles(string $projectFolder, string $hostAliasFolderPath)
+    protected function cleanupFiles(string $projectFolder, string $hostAliasFolderPath) : Deploy
     {
         $stagedFiles = [
             $projectFolder . DIRECTORY_SEPARATOR . 'deploy.php',
@@ -715,18 +712,19 @@ PHP;
         ];
         
         //delete files first
-        foreach($stagedFiles as $file){
-            if (file_exists($file)){
+        foreach($stagedFiles as $file) {
+            if (file_exists($file)) {
                 unlink($file);
             }
         }
         
         //delete directories last
-        foreach($stagedDirectories as $dir){
-            if (file_exists($dir))
+        foreach($stagedDirectories as $dir) {
+            if (file_exists($dir)) {
                 Filemanager::deleteDir($dir);
             }
         } 
+        return $this;
     }
     
     /**
@@ -734,7 +732,7 @@ PHP;
      * 
      * @return string
      */
-    protected function getCurrentWinCliUsername() :string
+    protected function getCurrentWinCliUsername() : string
     {
         $process = Process::fromShellCommandline('whoami');
         $process->start();
