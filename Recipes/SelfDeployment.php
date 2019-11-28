@@ -35,7 +35,7 @@ task('self_deployment:create', function () {
  * upload self deployment php file to remote host
  */
 task('self_deployment:upload', function () {
-    runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{basic_deploy_path_cygwin}}; cat > {{release_name}}.php)"');
+    runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{basic_deploy_path_cygwin}}; cat > {{release_name}}.php)"', ['timeout' => 900]);
 });
     
 /**
