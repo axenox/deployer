@@ -130,7 +130,7 @@ task('build:create_from_composer', function() {
         $directory_name = substr($baseConfigPath, strrpos($baseConfigPath, '\\') + 1);
         runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}} -C {{base_config_path}}/.. ' . $directory_name);
     } else {
-        runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}} -C {{base_config_path}}/.. ' . $directory_name);
+        runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}}');
     }
     runLocally('rm -rf {{builds_archives_path}}\..\vendor');
     
