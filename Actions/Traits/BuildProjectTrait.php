@@ -9,6 +9,8 @@ use exface\Core\Interfaces\Tasks\TaskInterface;
 
 trait BuildProjectTrait{
     
+    private $timeout = 900;
+    
     /**
      * Returns the absolute path to the basefolder, ending with a DIRECTORY_SEPERATOR.
      * 
@@ -71,7 +73,7 @@ trait BuildProjectTrait{
      *
      * @uxon-property timeout
      * @uxon-type integer
-     * @uxon-default 600
+     * @uxon-default 900
      *
      * @param int $seconds
      */

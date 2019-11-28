@@ -55,8 +55,6 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     use BuildProjectTrait;
     
     private $projectData = null;
-    
-    private $timeout = 600;
 
     /**
      *
