@@ -105,7 +105,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Create build entry and mark it as "in progress"
             $buildData->setCellValue('status', 0, 50);
             $buildData->setCellValue('name', 0, $buildName);
-            $buildData->dataCreate(false, $transaction);
+            // Do not use the transaction to force force creating a separate one for this operation.
+            $buildData->dataCreate(false);
 
             // Prepare project folder and deployer task file
             $projectFolder = $this->prepareDeployerProjectFolder($task);
@@ -134,6 +135,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 yield $msg;
                 // Save to log
                 $log .= $msg;
+                // Save current log to DB
+                $buildData->setCellValue('log', 0, $log);
+                $buildData->dataUpdate(false);
             }
             
             if ($process->isSuccessful() === false) {
@@ -161,7 +165,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildData->setCellValue('log', 0, $log); 
             
             // Update build entry's state and save log to data source 
-            $buildData->dataUpdate(false, $transaction);
+            $buildData->dataUpdate(false);
             
             // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
             $this->performAfterDeferred($result, $transaction);

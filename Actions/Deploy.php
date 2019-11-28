@@ -97,7 +97,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             $deployData->setCellValue('host', 0, $this->getHostData($task, 'UID'));
             $deployData->setCellValue('build', 0, $this->getBuildData($task, 'UID'));
             $deployData->setCellValue('started_on', 0, $seconds);
-            $deployData->dataCreate(false, $transaction);
+            // Do not use the transaction to force force creating a separate one for this operation.
+            $deployData->dataCreate(false);
             
             $buildName = $this->getBuildData($task, 'name');
             $hostName = $this->getHostData($task, 'name');
@@ -126,6 +127,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 yield $msg;
                 // Save to log
                 $log .= $msg;
+                $deployData->setCellValue('log', 0, $log);
+                $deployData->dataUpdate(false);
             }
             
             if ($process->isSuccessful() === false) {
@@ -143,7 +146,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             $deployData->setCellValue('log', 0, $log); 
 
             // Update deployment entry's state and save log to data source
-            $deployData->dataUpdate(false, $transaction);
+            $deployData->dataUpdate(false);
             
             $this->cleanupFiles($projectFolder, $hostAliasFolderPath);
 
