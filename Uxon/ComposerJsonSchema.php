@@ -1,3 +1,4 @@
+
 <?php
 namespace axenox\Deployer\Uxon;
 
@@ -56,9 +57,8 @@ class ComposerJsonSchema implements UxonSchemaInterface
     public function getPropertiesTemplates(string $prototypeClass): array
     {
         return [
-            'require' => '{""}',
-            'repositories' => '{""}',
-            'config' => '{""}'
+            'require' => '{"": ""}',
+            'repositories' => '{"": ""}'
         ];
     }
 

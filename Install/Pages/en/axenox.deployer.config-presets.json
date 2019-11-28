@@ -1,0 +1,245 @@
+{
+    "id": "0x802585a0115011ea9ac2e4b318306b9a",
+    "alias_with_namespace": "axenox.deployer.config-presets",
+    "menu_parent_page_alias": "axenox.deployer.home",
+    "menu_index": "3",
+    "menu_visible": true,
+    "name": "Config Presets",
+    "description": "",
+    "intro": "",
+    "replaces_page_alias": null,
+    "contents": {
+        "widget_type": "Tabs",
+        "object_alias": "exface.Core.UXON_PRESET",
+        "tabs": [
+            {
+                "caption": "Deployment Config",
+                "widgets": [
+                    {
+                        "widget_type": "DataTable",
+                        "filters": [
+                            {
+                                "attribute_alias": "NAME"
+                            },
+                            {
+                                "attribute_alias": "APP"
+                            },
+                            {
+                                "attribute_alias": "WRAP_FLAG"
+                            },
+                            {
+                                "attribute_alias": "UXON_SCHEMA",
+                                "value": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema",
+                                "comparator": "==",
+                                "widget_type": "InputHidden"
+                            }
+                        ],
+                        "columns": [
+                            {
+                                "attribute_alias": "NAME"
+                            },
+                            {
+                                "attribute_alias": "DESCRIPTION",
+                                "width_max": "800px"
+                            },
+                            {
+                                "attribute_alias": "WRAP_FLAG"
+                            },
+                            {
+                                "attribute_alias": "APP__LABEL"
+                            },
+                            {
+                                "attribute_alias": "CREATED_ON"
+                            }
+                        ],
+                        "sorters": [
+                            {
+                                "attribute_alias": "PROTOTYPE",
+                                "direction": "desc"
+                            }
+                        ],
+                        "buttons": [
+                            {
+                                "action": {
+                                    "alias": "exface.Core.ShowObjectCreateDialog",
+                                    "prefill_with_prefill_data": true,
+                                    "prefill_with_filter_context": false,
+                                    "prefill_data_sheet": {
+                                        "object_alias": "exface.Core.UXON_PRESET",
+                                        "rows": [
+                                            {
+                                                "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectEditDialog",
+                                "bind_to_double_click": true
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectCopyDialog"
+                            },
+                            {
+                                "action_alias": "exface.Core.DeleteObject"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "caption": "composer.json",
+                "widgets": [
+                    {
+                        "widget_type": "DataTable",
+                        "filters": [
+                            {
+                                "attribute_alias": "NAME"
+                            },
+                            {
+                                "attribute_alias": "APP"
+                            },
+                            {
+                                "attribute_alias": "WRAP_FLAG"
+                            },
+                            {
+                                "attribute_alias": "UXON_SCHEMA",
+                                "value": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema",
+                                "comparator": "==",
+                                "widget_type": "InputHidden"
+                            }
+                        ],
+                        "columns": [
+                            {
+                                "attribute_alias": "NAME"
+                            },
+                            {
+                                "attribute_alias": "DESCRIPTION",
+                                "width_max": "800px"
+                            },
+                            {
+                                "attribute_alias": "WRAP_FLAG"
+                            },
+                            {
+                                "attribute_alias": "APP__LABEL"
+                            },
+                            {
+                                "attribute_alias": "CREATED_ON"
+                            }
+                        ],
+                        "sorters": [
+                            {
+                                "attribute_alias": "PROTOTYPE",
+                                "direction": "desc"
+                            }
+                        ],
+                        "buttons": [
+                            {
+                                "action": {
+                                    "alias": "exface.Core.ShowObjectCreateDialog",
+                                    "prefill_with_prefill_data": true,
+                                    "prefill_with_filter_context": false,
+                                    "prefill_data_sheet": {
+                                        "object_alias": "exface.Core.UXON_PRESET",
+                                        "rows": [
+                                            {
+                                                "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectEditDialog",
+                                "bind_to_double_click": true
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectCopyDialog"
+                            },
+                            {
+                                "action_alias": "exface.Core.DeleteObject"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "caption": "auth.json",
+                "widgets": [
+                    {
+                        "widget_type": "DataTable",
+                        "filters": [
+                            {
+                                "attribute_alias": "NAME"
+                            },
+                            {
+                                "attribute_alias": "APP"
+                            },
+                            {
+                                "attribute_alias": "WRAP_FLAG"
+                            },
+                            {
+                                "attribute_alias": "UXON_SCHEMA",
+                                "value": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema",
+                                "comparator": "==",
+                                "widget_type": "InputHidden"
+                            }
+                        ],
+                        "columns": [
+                            {
+                                "attribute_alias": "NAME"
+                            },
+                            {
+                                "attribute_alias": "DESCRIPTION",
+                                "width_max": "800px"
+                            },
+                            {
+                                "attribute_alias": "WRAP_FLAG"
+                            },
+                            {
+                                "attribute_alias": "APP__LABEL"
+                            },
+                            {
+                                "attribute_alias": "CREATED_ON"
+                            }
+                        ],
+                        "sorters": [
+                            {
+                                "attribute_alias": "PROTOTYPE",
+                                "direction": "desc"
+                            }
+                        ],
+                        "buttons": [
+                            {
+                                "action": {
+                                    "alias": "exface.Core.ShowObjectCreateDialog",
+                                    "prefill_with_prefill_data": true,
+                                    "prefill_with_filter_context": false,
+                                    "prefill_data_sheet": {
+                                        "object_alias": "exface.Core.UXON_PRESET",
+                                        "rows": [
+                                            {
+                                                "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectEditDialog",
+                                "bind_to_double_click": true
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectCopyDialog"
+                            },
+                            {
+                                "action_alias": "exface.Core.DeleteObject"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

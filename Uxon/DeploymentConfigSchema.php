@@ -56,7 +56,8 @@ class DeploymentConfigSchema implements UxonSchemaInterface
     public function getPropertiesTemplates(string $prototypeClass): array
     {
         return [
-            'local_vendors' => '[""]'
+            'local_vendors' => '[""]',
+            'default_app_config' => '{"app.Alias.config.json": {"": ""}}'
         ];
     }
 

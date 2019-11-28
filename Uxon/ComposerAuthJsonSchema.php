@@ -35,7 +35,7 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
     
     public static function getSchemaName() : string
     {
-        return 'auth.json for composer';
+        return 'auth.json for Composer';
     }
     
     public function getValidValues(UxonObject $uxon, array $path, string $search = null, string $rootPrototypeClass = null, MetaObjectInterface $rootObject = null): array
@@ -56,8 +56,8 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
     public function getPropertiesTemplates(string $prototypeClass): array
     {
         return [
-            'github-oauth' => '{""}',
-            'http-basic' => '{""}'
+            'github-oauth' => '{"github.com": ""}',
+            'http-basic' => '{"example1.org": {"username": "", "password": ""}}'
         ];
     }
 
@@ -70,9 +70,7 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
     {
         return [
             'github-oauth',
-            'http-basic',
-            'username',
-            'password'
+            'http-basic'
         ];
     }
 
