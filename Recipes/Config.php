@@ -21,15 +21,6 @@ task('config:setup_build_config', function() {
     }
     set('composer_timeout', $composerTimeout);
     
-    $buildsArchivesPath = get('builds_archives_path');
-    set('builds_archives_path_cygwin', '/cygdrive/' . str_replace(['\\', ':'], ['/', ''], $buildsArchivesPath));
-    try {
-        $baseConfigPath = get('base_config_path');
-        set('base_config_path_cygwin', '/cygdrive/' . str_replace(['\\', ':'], ['/', ''], $baseConfigPath));
-    } catch (ConfigurationException $e) {
-        $baseConfigPath = null;
-    }
-    
     // === semantic versioning parameters  ===
     $time_zone = 'Europe/Berlin';
     set('time_zone', $time_zone);
