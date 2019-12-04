@@ -128,44 +128,53 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             
             $environmentVars = $this->getCmdEnvironmentVars($projectFolder);
             
-            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
-            $process->start();
-            foreach ($process as $msg) {
-                // Live output
+            try {
+                $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
+                $process->start();
+                foreach ($process as $msg) {
+                    // Live output
+                    yield $msg;
+                    // Save to log
+                    $log .= $msg;
+                    // Save current log to DB
+                    $buildData->setCellValue('log', 0, $log);
+                    $buildData->dataUpdate(false);
+                }            
+            
+                if ($process->isSuccessful() === false) {
+                    $buildData->setCellValue('status', 0, 90); // failed                
+                    $msg = 'Building of ' . $buildName . ' failed.'; 
+                } else {
+                    $buildData->setCellValue('status', 0, 99); // completed                
+                    $seconds = time() - $seconds;
+                    $msg = 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds.';
+                }
+                $buildData->dataUpdate(false);
+    
+                $buildComment = $this->getComment($task);
+                $buildData->setCellValue('comment', 0, $buildComment);
+                
+                $buildNotes = $this->getNotes($task);
+                $buildData->setCellValue('notes', 0, $buildNotes);
+                
+                // Delete temporary files
+                $this->cleanupFiles($projectFolder);
+                
+                // Send success/failure message
                 yield $msg;
-                // Save to log
                 $log .= $msg;
-                // Save current log to DB
+               
+                $buildData->setCellValue('log', 0, $log); 
+                
+                // Update build entry's state and save log to data source 
+                $buildData->dataUpdate(false);
+            } catch (\Throwable $e) {
+                $log .= PHP_EOL . 'ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
                 $buildData->setCellValue('log', 0, $log);
+                $buildData->setCellValue('status', 0, 90); // failed 
+                $this->getWorkbench()->getLogger()->logException($e);
                 $buildData->dataUpdate(false);
             }
-            
-            if ($process->isSuccessful() === false) {
-                $buildData->setCellValue('status', 0, 90); // failed                
-                $msg = 'Building of ' . $buildName . ' failed.'; 
-            } else {
-                $buildData->setCellValue('status', 0, 99); // completed                
-                $seconds = time() - $seconds;
-                $msg = 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds.';
-            }
-
-            $buildComment = $this->getComment($task);
-            $buildData->setCellValue('comment', 0, $buildComment);
-            
-            $buildNotes = $this->getNotes($task);
-            $buildData->setCellValue('notes', 0, $buildNotes);
-            
-            // Delete temporary files
-            $this->cleanupFiles($projectFolder);
-            
-            // Send success/failure message
-            yield $msg;
-            $log .= $msg;
-           
-            $buildData->setCellValue('log', 0, $log); 
-            
-            // Update build entry's state and save log to data source 
-            $buildData->dataUpdate(false);
             
             // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
             $this->performAfterDeferred($result, $transaction);
