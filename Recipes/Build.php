@@ -85,7 +85,8 @@ task('build:create_from_composer', function() {
     }
     
     // Use a high timeout for composer install!!!
-    $composerOutput = runLocally('cd {{builds_archives_path}}\.. && php composer.phar install --prefer-dist', ['timeout' => 900]);
+    $composer_timeout = get('composer_timeout');
+    $composerOutput = runLocally('cd {{builds_archives_path}}\.. && php composer.phar install --prefer-dist', ['timeout' => $composer_timeout]);
     write($composerOutput);
     writeln('');
     
