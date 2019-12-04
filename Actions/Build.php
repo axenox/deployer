@@ -312,7 +312,7 @@ PHP;
         
         // copy current composer.phar to project folder, so it can be used for composer commands.
         if (file_exists($this->getBasePath() . 'composer.phar')) {
-            $this->getWorkbench()->filemanager()->copyFile($this->getBasePath() . 'composer.phar', $projectFolder . DIRECTORY_SEPARATOR . 'composer.phar');
+            $this->getWorkbench()->filemanager()->copyFile($this->getBasePath() . 'composer.phar', $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.phar');
         }
         
         return $projectFolder;
