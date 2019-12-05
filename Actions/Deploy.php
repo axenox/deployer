@@ -605,11 +605,7 @@ PHP;
         ];
         
         //if there are no specific ssh options given, use the default ones from the project data.
-        if (!$customOptions){
-            $sshConfig = $customOptions;
-        } else {
-            $sshConfig = $defaultSshConfig;
-        }
+        $sshConfig = array_merge($defaultSshConfig, $customOptions);
                 
         //save the options to a file
         return $this->createSshConfigFile($hostAliasFolderPath, $sshConfig);
