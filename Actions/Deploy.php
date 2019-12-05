@@ -99,55 +99,63 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             // Do not use the transaction to force force creating a separate one for this operation.
             $deployData->dataCreate(false);
             
-            $buildName = $this->getBuildData($task, 'name');
-            $hostName = $this->getHostData($task, 'name');
-            
-            // run the deployer task via CLI
-            if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
-                chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
-            }
-            
-            //create directories
-            $projectFolder = $this->getProjectFolderRelativePath($task);
-            $hostAliasFolderPath = $this->createDeployerProjectFolder($task);
-            
-            //build the command used for the actual deployment
-            $deployTask = $this->createDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
-            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
-            $environmentVars = $this->getCmdEnvirontmentVars();
-            
-            $log = '';
-
-            //execute deploy command
-            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
-            $process->start();
-            foreach ($process as $msg) {
-                // Live output
+            try {
+                $buildName = $this->getBuildData($task, 'name');
+                $hostName = $this->getHostData($task, 'name');
+                
+                // run the deployer task via CLI
+                if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
+                    chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
+                }
+                
+                //create directories
+                $projectFolder = $this->getProjectFolderRelativePath($task);
+                $hostAliasFolderPath = $this->createDeployerProjectFolder($task);
+                
+                //build the command used for the actual deployment
+                $deployTask = $this->createDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+                $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
+                $environmentVars = $this->getCmdEnvirontmentVars();
+                
+                $log = '';
+    
+                //execute deploy command
+                $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
+                $process->start();
+                foreach ($process as $msg) {
+                    // Live output
+                    yield $msg;
+                    // Save to log
+                    $log .= $msg;
+                    $deployData->setCellValue('log', 0, $log);
+                    $deployData->dataUpdate(false);
+                }
+                
+                if ($process->isSuccessful() === false) {
+                    $deployData->setCellValue('status', 0, 90); // failed
+                    $msg = '<fg=red>✘ FAILED</fg=red> deploying ' . $buildName . ' on ' . $hostName . '.';
+                } else {
+                    $deployData->setCellValue('status', 0, 99); // completed
+                    $seconds = time() - $seconds;
+                    $msg = '<fg=green>✔ SUCCEEDED</fg=green> deploying ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
+                }
                 yield $msg;
-                // Save to log
                 $log .= $msg;
+                
+                $deployData->setCellValue('completed_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
+                $deployData->setCellValue('log', 0, $log); 
+    
+                // Update deployment entry's state and save log to data source
+                $deployData->dataUpdate(false);
+                
+                $this->cleanupFiles($projectFolder, $hostAliasFolderPath);
+            } catch (\Throwable $e) {
+                $log .= PHP_EOL . '<fg=red>ERRROR</fg=red>: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
                 $deployData->setCellValue('log', 0, $log);
+                $deployData->setCellValue('status', 0, 90); // failed
+                $this->getWorkbench()->getLogger()->logException($e);
                 $deployData->dataUpdate(false);
             }
-            
-            if ($process->isSuccessful() === false) {
-                $deployData->setCellValue('status', 0, 90); // failed
-                $msg = 'Deployment of ' . $buildName . ' on ' . $hostName . ' failed.';
-            } else {
-                $deployData->setCellValue('status', 0, 99); // completed
-                $seconds = time() - $seconds;
-                $msg = 'Deployment of ' . $buildName . ' on ' . $hostName . ' completed in ' . $seconds . ' seconds.';
-            }
-            yield $msg;
-            $log .= $msg;
-            
-            $deployData->setCellValue('completed_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
-            $deployData->setCellValue('log', 0, $log); 
-
-            // Update deployment entry's state and save log to data source
-            $deployData->dataUpdate(false);
-            
-            $this->cleanupFiles($projectFolder, $hostAliasFolderPath);
 
             // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
             $this->performAfterDeferred($result, $transaction);

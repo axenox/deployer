@@ -108,27 +108,27 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             // Do not use the transaction to force force creating a separate one for this operation.
             $buildData->dataCreate(false);
 
-            // Prepare project folder and deployer task file
-            $projectFolder = $this->prepareDeployerProjectFolder($task);
-            $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
-            
-            $composerJson = $this->createComposerJson($task, $projectFolder);
-            $buildData->setCellValue('composer_json', 0, $composerJson);
-            
-            $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
-            $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
-
-            // run the deployer task via CLI
-            if (getcwd() !== $this->getBasePath()) {
-                chdir($this->getBasePath());
-            }
-            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
-
-            $seconds = time();
-            
-            $environmentVars = $this->getCmdEnvironmentVars($projectFolder);
-            
             try {
+                // Prepare project folder and deployer task file
+                $projectFolder = $this->prepareDeployerProjectFolder($task);
+                $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
+                
+                $composerJson = $this->createComposerJson($task, $projectFolder);
+                $buildData->setCellValue('composer_json', 0, $composerJson);
+                
+                $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
+                $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
+    
+                // run the deployer task via CLI
+                if (getcwd() !== $this->getBasePath()) {
+                    chdir($this->getBasePath());
+                }
+                $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
+    
+                $seconds = time();
+                
+                $environmentVars = $this->getCmdEnvironmentVars($projectFolder);
+            
                 $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
                 $process->start();
                 foreach ($process as $msg) {
@@ -143,11 +143,11 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             
                 if ($process->isSuccessful() === false) {
                     $buildData->setCellValue('status', 0, 90); // failed                
-                    $msg = 'Building of ' . $buildName . ' failed.'; 
+                    $msg = '<fg=red>✘ FAILED</fg=red> Building ' . $buildName . '.'; 
                 } else {
                     $buildData->setCellValue('status', 0, 99); // completed                
                     $seconds = time() - $seconds;
-                    $msg = 'Build ' . $buildName . ' completed in ' . $seconds . ' seconds.';
+                    $msg = '<fg=green>✔ SUCCEEDED</fg=green> building ' . $buildName . ' in ' . $seconds . ' seconds.';
                 }
                 $buildData->dataUpdate(false);
     
@@ -169,7 +169,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 // Update build entry's state and save log to data source 
                 $buildData->dataUpdate(false);
             } catch (\Throwable $e) {
-                $log .= PHP_EOL . 'ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+                $log .= PHP_EOL . '<fg=red>✘ ERRROR</fg=red>: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
                 $buildData->setCellValue('log', 0, $log);
                 $buildData->setCellValue('status', 0, 90); // failed 
                 $this->getWorkbench()->getLogger()->logException($e);
