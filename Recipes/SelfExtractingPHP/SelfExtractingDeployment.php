@@ -132,9 +132,16 @@ if (is_dir($currentPath)) {
     foreach ($uninstallAppsAliases as $alias) {
         $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
         $cmdarray = [];
-        exec("{$command}", $cmdarray);
-        foreach($cmdarray as $line) {
-            echo ($line . "\n");
+        try {
+            exec("{$command}", $cmdarray);
+            foreach($cmdarray as $line) {
+                echo ($line . "\n");
+            }
+        } catch (\Throwable $e) {
+            echo ('ERROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL);
+            while ($e = $e->getPrevious()) {
+                echo ('ERROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL);
+            }
         }
     }
 }
