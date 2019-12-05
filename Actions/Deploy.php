@@ -295,10 +295,14 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      * @param TaskInterface $task
      * @return DeployerSshConnector
      */
-    protected function getSshConnection(TaskInterface $task) : DeployerSshConnector
+    protected function getSshConnection(TaskInterface $task) : ?DeployerSshConnector
     {
         $connectionUid = $this->getHostData($task, 'data_connection');
-        return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
+        if (! $connectionUid) {
+            return null;
+        } else {
+            return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
+        }
     }    
  
     /**
@@ -402,8 +406,13 @@ PHP;
         $connection = $this->getSshConnection($task);
         
         //extract the data required for the SSH-connection
-        $privateKey = $connection->getSshPrivateKey();
-        $hostAlias = $connection->getAlias();
+        if ($connection !== null) {
+            $privateKey = $connection->getSshPrivateKey();
+            $hostAlias = $connection->getAlias();
+        } else {
+            $privateKey = "";
+            $hostAlias = "";
+        }
         $host = $this->getHostData($task, 'name');
         
         //create /hosts/alias directory 
@@ -419,7 +428,7 @@ PHP;
         $knownHostsFilePath = $this->createKnownHostsFile($hostAliasFolderPath);
 
         //get ssh-config
-        $sshConfigFilePath = $this->createSshConfig($basePath, $host, $connection, $privateKeyFilePath, $knownHostsFilePath, $hostAliasFolderPath);
+        $sshConfigFilePath = $this->createSshConfig($basePath, $host, $privateKeyFilePath, $knownHostsFilePath, $hostAliasFolderPath, $connection);
 
         $this->createDeployPhp($task, $basePath, $this->getProjectFolderRelativePath($task), $sshConfigFilePath);
         
@@ -586,16 +595,21 @@ PHP;
     
     /**
      * This function creates the content for the ssh-connection file, returning them in form of an array.
-     * Teh settings array is created by merging the default ssh options with the custom ones in the 
+     * The settings array is created by merging the default ssh options with the custom ones in the 
      *
-     * @param string $pathToHostFolder
-     * @param string $hostName
-     * @param string $user
-     * @param string $port
-     * @return array
+     * @param string $basePath
+     * @param string $host
+     * @param string $privateKeyFilePath
+     * @param string $knownHostsFilePath
+     * @param string $hostAliasFolderPath
+     * @param DeployerSshConnector|NULL $connection
+     * @return string
      */
-    protected function createSshConfig(string $basePath, string $host, DeployerSshConnector $connection, string $privateKeyFilePath, string $knownHostsFilePath, string $hostAliasFolderPath) : string
+    protected function createSshConfig(string $basePath, string $host, string $privateKeyFilePath, string $knownHostsFilePath, string $hostAliasFolderPath, DeployerSshConnector $connection = null) : string
     {
+        if ($connection === null) {
+            return $this->createSshConfigFile($hostAliasFolderPath, []);
+        }
         
         $hostName = $connection->getHostName();
         $user = $connection->getUser();
