@@ -170,12 +170,6 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
     }
     
     /**
-     * SSL private key to connect to the server (i.e. the contents of id_rsa).
-     * 
-     * @uxon-property ssh_privat_key
-     * @uxon-type password
-     * @uxon-required true
-     * 
      * @return string
      */
     public function getSshPrivateKey() : string
@@ -184,6 +178,11 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
     }
     
     /**
+     * SSL private key to connect to the server (i.e. the contents of id_rsa).
+     * 
+     * @uxon-property ssh_private_key
+     * @uxon-type password
+     * @uxon-required true
      * 
      * @param string $value
      * @return DeployerSshConnector

@@ -19,6 +19,7 @@ use axenox\Deployer\DataConnectors\DeployerSshConnector;
 use exface\Core\Factories\DataConnectionFactory;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use Symfony\Component\Process\Process;
+use exface\Core\DataTypes\DateTimeDataType;
 
 /**
  * Deploys a build to a specific host.
@@ -93,7 +94,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             $deployData->setCellValue('status', 0, 50);
             $deployData->setCellValue('host', 0, $this->getHostData($task, 'UID'));
             $deployData->setCellValue('build', 0, $this->getBuildData($task, 'UID'));
-            $deployData->setCellValue('started_on', 0, $seconds);
+            $deployData->setCellValue('started_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
             $deployData->setCellValue('deploy_recipe_file', 0, $this->getDeployRecipeFile($task));
             // Do not use the transaction to force force creating a separate one for this operation.
             $deployData->dataCreate(false);
@@ -140,7 +141,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             yield $msg;
             $log .= $msg;
             
-            $deployData->setCellValue('completed_on', 0, time());
+            $deployData->setCellValue('completed_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
             $deployData->setCellValue('log', 0, $log); 
 
             // Update deployment entry's state and save log to data source
@@ -605,11 +606,7 @@ PHP;
         ];
         
         //if there are no specific ssh options given, use the default ones from the project data.
-        if (!$customOptions){
-            $sshConfig = $customOptions;
-        } else {
-            $sshConfig = $defaultSshConfig;
-        }
+        $sshConfig = array_merge($defaultSshConfig, $customOptions);
                 
         //save the options to a file
         return $this->createSshConfigFile($hostAliasFolderPath, $sshConfig);
