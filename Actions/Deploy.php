@@ -133,11 +133,11 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 
                 if ($process->isSuccessful() === false) {
                     $deployData->setCellValue('status', 0, 90); // failed
-                    $msg = '<fg=red>✘ FAILED</fg=red> deploying ' . $buildName . ' on ' . $hostName . '.';
+                    $msg = '✘ FAILED deploying ' . $buildName . ' on ' . $hostName . '.';
                 } else {
                     $deployData->setCellValue('status', 0, 99); // completed
                     $seconds = time() - $seconds;
-                    $msg = '<fg=green>✔ SUCCEEDED</fg=green> deploying ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
+                    $msg = '✔ SUCCEEDED deploying ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
                 }
                 yield $msg;
                 $log .= $msg;
@@ -150,7 +150,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 
                 $this->cleanupFiles($projectFolder, $hostAliasFolderPath);
             } catch (\Throwable $e) {
-                $log .= PHP_EOL . '<fg=red>ERRROR</fg=red>: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+                $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
                 $deployData->setCellValue('log', 0, $log);
                 $deployData->setCellValue('status', 0, 90); // failed
                 $this->getWorkbench()->getLogger()->logException($e);

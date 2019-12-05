@@ -143,11 +143,11 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             
                 if ($process->isSuccessful() === false) {
                     $buildData->setCellValue('status', 0, 90); // failed                
-                    $msg = '<fg=red>✘ FAILED</fg=red> Building ' . $buildName . '.'; 
+                    $msg = '✘ FAILED building ' . $buildName . '.'; 
                 } else {
                     $buildData->setCellValue('status', 0, 99); // completed                
                     $seconds = time() - $seconds;
-                    $msg = '<fg=green>✔ SUCCEEDED</fg=green> building ' . $buildName . ' in ' . $seconds . ' seconds.';
+                    $msg = '✔ SUCCEEDED building ' . $buildName . ' in ' . $seconds . ' seconds.';
                 }
                 $buildData->dataUpdate(false);
     
@@ -169,7 +169,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 // Update build entry's state and save log to data source 
                 $buildData->dataUpdate(false);
             } catch (\Throwable $e) {
-                $log .= PHP_EOL . '<fg=red>✘ ERRROR</fg=red>: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+                $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
                 $buildData->setCellValue('log', 0, $log);
                 $buildData->setCellValue('status', 0, 90); // failed 
                 $this->getWorkbench()->getLogger()->logException($e);
