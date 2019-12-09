@@ -4,6 +4,7 @@ namespace axenox\Deployer\DataConnectors;
 use exface\Core\CommonLogic\AbstractDataConnectorWithoutTransactions;
 use exface\Core\Interfaces\DataSources\DataQueryInterface;
 use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Exceptions\DataSources\DataConnectionConfigurationError;
 
 /**
  * Special connector to give deployer SSH access to hosts.
@@ -13,6 +14,7 @@ use exface\Core\CommonLogic\UxonObject;
  * ```
  * {
  *  "host_name": "127.0.0.1",
+ *  "user": "UserName",
  *  "ssh_private_key": "-----BEGIN RSA PRIVATE KEY-----
  *                      MIIJKQIBAAKCAgEA2ZGCXJocb9lUiAcIAWP3ZPb/TQdOvjC+Ek193oLkJHXN9Amh
  *                      XvDH5QjlGzgFakHa+u7HB+tLBbpstMkdQuIFrw3t1VunVb+udfB6X8bLle+jT7Az
@@ -86,36 +88,30 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
     /**
      *
      * {@inheritdoc}
-     *
      * @see \exface\Core\CommonLogic\AbstractDataConnector::performQuery()
      */
     protected function performQuery(DataQueryInterface $query)
     {
-        // TODO
         return;
     }
     
     /**
      *
      * {@inheritdoc}
-     *
      * @see \exface\Core\CommonLogic\AbstractDataConnector::performConnect()
      */
     protected function performConnect()
     {
-        // TODO
         return;
     }
     
     /**
      *
      * {@inheritdoc}
-     *
      * @see \exface\Core\CommonLogic\AbstractDataConnector::performDisconnect()
      */
     protected function performDisconnect()
     {
-        // TODO
         return;
     }
     
@@ -125,6 +121,9 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
      */
     public function getHostName() : string
     {
+        if ($this->host === null) {
+            throw new DataConnectionConfigurationError($this, 'Cannot determine host for connection "' . $this->getAlias() . '": please set the `host` property int the data connection configuration!');
+        }
         return $this->host;
     }
     
@@ -174,6 +173,9 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
      */
     public function getSshPrivateKey() : string
     {
+        if ($this->ssh_private_key === null) {
+            throw new DataConnectionConfigurationError($this, 'Cannot determine SSH key for connection "' . $this->getAlias() . '": please set the `ssh_private_key` property int the data connection configuration or in the current user\'s credential set for this connection!');
+        }
         return $this->ssh_private_key;
     }
     
@@ -200,6 +202,9 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
      */
     public function getUser() : string
     {
+        if ($this->user === null) {
+            throw new DataConnectionConfigurationError($this, 'Cannot determine user name for connection "' . $this->getAlias() . '": please set the `user` property int the data connection configuration or in the current user\'s credential set for this connection!');
+        }
         return $this->user;
     }
     
@@ -208,7 +213,7 @@ class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
      * 
      * @uxon-property user
      * @uxon-type string
-     * @uxon-required
+     * @uxon-required true
      * 
      * @param string $value
      * @return DeployerSshConnector
