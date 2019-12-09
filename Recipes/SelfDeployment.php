@@ -29,6 +29,11 @@ task('self_deployment:create', function () {
     $str=str_replace('[#releases#]', $replaceKeepReleases, $str);
     file_put_contents($temp_php, $str);
     
+    $buildFileAbs = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('archiv_name');
+    if (false === file_exists($buildFileAbs)) {
+        throw new \RuntimeException('Build file "' . get('archiv_name') . '" not found!');
+    }
+    
     runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}{{self_extractor_extension}}"');
 });
 

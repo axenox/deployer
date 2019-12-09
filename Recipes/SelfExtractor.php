@@ -9,6 +9,10 @@ set('self_extractor_extension', '.phx');
  * create self extracting php file
  */
 task('self_extractor:create', function () {
+    $buildFileAbs = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('archiv_name');
+    if (false === file_exists($buildFileAbs)) {
+        throw new \RuntimeException('Build file "' . $buildFileAbs . '" not found!');
+    }
     runLocally('copy /b "{{path_script_createphparchive}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}{{self_extractor_extension}}"');
 });
 
