@@ -74,6 +74,22 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "USE_IN_OBJECT_BASKET_FLAG": "0",
             "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2019-12-09 10:26:28",
+            "MODIFIED_ON": "2019-12-09 10:29:47",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11ea1a6e59cb7c18b3fd0205857feb80",
+            "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
+            "ACTION_PROTOTYPE": "exface\/Core\/Actions\/UpdateData.php",
+            "ALIAS": "MarkRolledBack",
+            "NAME": "Mark as rolled back",
+            "SHORT_DESCRIPTION": "Changes the status of the deployment without actually performing the rollback",
+            "CONFIG_UXON": "{\"input_object_alias\":\"axenox.Deployer.deployment\",\"icon\":\"undo\",\"input_data_sheet\":{\"object_alias\":\"axenox.Deployer.deployment\",\"columns\":[{\"attribute_alias\":\"status\",\"formula\":\"=98\"}]}}",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "USE_IN_OBJECT_BASKET_FLAG": "0",
+            "DOCS": ""
         }
     ],
     "totals_rows": [],
