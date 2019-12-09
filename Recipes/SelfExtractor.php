@@ -3,19 +3,20 @@ namespace Deployer;
 
 $path_script_createphparchive = 'vendor\\axenox\\deployer\\Recipes\\SelfExtractingPHP\\SelfExtractingArchive.php';
 set('path_script_createphparchive', $path_script_createphparchive);
+set('self_extractor_extension', '.phx');
 
 /**
  * create self extracting php file
  */
 task('self_extractor:create', function () {
-    runLocally('copy /b "{{path_script_createphparchive}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}.php"');
+    runLocally('copy /b "{{path_script_createphparchive}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}{{self_extractor_extension}}"');
 });
 
 /**
  * upload self extracting php file to remote host
  */
 task('self_extractor:upload', function () {
-    runLocally('cat {{builds_archives_path}}\{{release_name}}.php | ssh -F {{host_ssh_config}} {{host_short}} "(cd {{deploy_path}}/{{release_path}}; cat > {{release_name}}.php)"');
+    runLocally('cat {{builds_archives_path}}\{{release_name}}{{self_extractor_extension}} | ssh -F {{host_ssh_config}} "{{host_short}}" "(cd {{deploy_path}}/{{release_path}}; cat > {{release_name}}.php)"');
 });
 
 /**
