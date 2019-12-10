@@ -18,7 +18,8 @@ task('self_deployment:create', function () {
     $replaceRelativeDeployPath = get('relative_deploy_path');
     $replaceSharedDirs = "['" . implode("', '", get('shared_dirs')) . "']";
     $replaceCopyDirs = "['" . implode("', '", get('copy_dirs')) . "']";
-    $replaceLocalVendors = is_array(get('local_vendors')) === true ? "['" . implode("', '", get('local_vendors')) . "']" : "[]";
+    $localVendors = get('local_vendors');
+    $replaceLocalVendors = empty($localVendors) === false && is_array($localVendors) === true ? "['" . implode("', '", $localVendors) . "']" : "[]";
     $replacePhpPath = get('php_path');
     $replaceKeepReleases = get('keep_releases');
     $str=str_replace('[#basic#]', $replaceBasicDeployPath, $str);
