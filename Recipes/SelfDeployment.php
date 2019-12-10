@@ -9,7 +9,8 @@ set('self_extractor_extension', '.phx');
  * copy deployment script and replace placeholders
  */
 task('self_deployment:create', function () {
-    $temp_php = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('release_name') . get('self_extractor_extension');
+    set('self_extractor_filename', get('release_name') . '_' . get('host_short') . get('self_extractor_extension'));
+    $temp_php = get('builds_archives_path') . DIRECTORY_SEPARATOR . get('self_extractor_filename');
     set('temp_php', $temp_php);
     copy(get('path_script_createphpdeployment'), $temp_php);
     $str=file_get_contents($temp_php);
@@ -34,21 +35,21 @@ task('self_deployment:create', function () {
         throw new \RuntimeException('Build file "' . get('archiv_name') . '" not found!');
     }
     
-    runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{release_name}}{{self_extractor_extension}}"');
+    runLocally('copy /b "{{temp_php}}" + "{{builds_archives_path}}\{{archiv_name}}" "{{builds_archives_path}}\{{self_extractor_filename}}"');
 });
 
 /**
  * upload self deployment php file to remote host
  */
 task('self_deployment:upload', function () {
-    runLocally('cat {{builds_archives_path}}\{{release_name}}{{self_extractor_extension}} | ssh -F "{{host_ssh_config}}" "{{host_short}}" "(cd {{basic_deploy_path_cygwin}}; cat > {{release_name}}{{self_extractor_extension}})"', ['timeout' => 900]);
+    runLocally('cat {{builds_archives_path}}\{{self_extractor_filename}} | ssh -F "{{host_ssh_config}}" "{{host_short}}" "(cd {{basic_deploy_path_cygwin}}; cat > {{self_extractor_filename}})"', ['timeout' => 900]);
 });
     
 /**
  * run self deployment php file on remote host
  */
 task('self_deployment:run', function () {
-    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=500M {{release_name}}{{self_extractor_extension}}', ['timeout' => null]);;
+    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=500M {{self_extractor_filename}}', ['timeout' => null]);;
     write($composerOutput);
     writeln('');
 });
@@ -57,19 +58,21 @@ task('self_deployment:run', function () {
  * delete self deplyoment php file on local machine
  */
 task('self_deployment:delete_local_file', function() {
-    runLocally('del /f {{builds_archives_path}}\{{release_name}}{{self_extractor_extension}}');
+    runLocally('del /f {{builds_archives_path}}\{{self_extractor_filename}}');
 }); 
 
 /**
  * show link to created local self deployment php file
  */
 task('self_deployment:show_link', function() {
-    $filename = get('release_name') . get('self_extractor_extension');
+    $filename = get('self_extractor_filename');
+    $filePath = get('builds_archives_path') . DIRECTORY_SEPARATOR . $filename;
     $phpPath = get('php_path');
     $text = <<<cli
+
 Please transfer the self-extractor PHP file to the server manually and execute it there:
 
-1) Download "$filename" in the "Build Files" tab or copy it from the builds folder  
+1) Copy/Download "$filePath"
 2) Upload it to anywhere on the host
 3) Run "$phpPath path/to/$filename" on the host's command line 
 

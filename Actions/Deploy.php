@@ -20,6 +20,7 @@ use exface\Core\Factories\DataConnectionFactory;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use Symfony\Component\Process\Process;
 use exface\Core\DataTypes\DateTimeDataType;
+use exface\Core\Facades\HttpFileServerFacade;
 
 /**
  * Deploys a build to a specific host.
@@ -110,10 +111,10 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 
                 //create directories
                 $projectFolder = $this->getProjectFolderRelativePath($task);
-                $hostAliasFolderPath = $this->createDeployerProjectFolder($task);
+                $this->createDeployerProjectFolder($task);
                 
                 //build the command used for the actual deployment
-                $deployTask = $this->createDeployerTask($task, $hostAliasFolderPath, $deployData); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+                $deployTask = $this->createDeployerTask($task); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
                 $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
                 $environmentVars = $this->getCmdEnvirontmentVars();
                 
@@ -124,7 +125,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 $process->start();
                 foreach ($process as $msg) {
                     // Live output
-                    yield $msg;
+                    yield $this->replaceFilePathsWithHyperlinks($msg);
                     // Save to log
                     $log .= $msg;
                     $deployData->setCellValue('log', 0, $log);
@@ -133,11 +134,11 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 
                 if ($process->isSuccessful() === false) {
                     $deployData->setCellValue('status', 0, 90); // failed
-                    $msg = '✘ FAILED deploying ' . $buildName . ' on ' . $hostName . '.';
+                    $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
                 } else {
                     $deployData->setCellValue('status', 0, 99); // completed
                     $seconds = time() - $seconds;
-                    $msg = '✔ SUCCEEDED deploying ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
+                    $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
                 }
                 yield $msg;
                 $log .= $msg;
@@ -148,7 +149,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 // Update deployment entry's state and save log to data source
                 $deployData->dataUpdate(false);
                 
-                $this->cleanupFiles($projectFolder, $hostAliasFolderPath);
+                $this->cleanupFiles($projectFolder);
             } catch (\Throwable $e) {
                 $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
                 $deployData->setCellValue('log', 0, $log);
@@ -163,6 +164,24 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         
         $result->setMessageStreamGenerator($generator);
         return $result;
+    }
+    
+    /**
+     * Replaces C:\... with http://... links for files within the project folder
+     * 
+     * @param string $msg
+     * @return string
+     */
+    protected function replaceFilePathsWithHyperlinks(string $msg) : string
+    {
+        $urlMatches = [];
+        if (preg_match_all('/' . preg_quote($this->getBasePath(), '/') . '[^ "]*/', $msg, $urlMatches) !== false) {
+            foreach ($urlMatches[0] as $urlPath) {
+                $url = HttpFileServerFacade::buildUrlForDownload($this->getWorkbench(), $urlPath);
+                $msg = str_replace($urlPath, $url, $msg);
+            }
+        }
+        return $msg;
     }
      
     /**
@@ -303,30 +322,31 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         } else {
             return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
         }
-    }    
+    }
  
-    /**
-     * This function generates the contents of the `deploy.php` file, which is required for the depolyment process.
-     * It returns the path to the `deploy.php`, relative to the working directory (`.../exface/exface`).
-     *
-     * @param TaskInterface $task
-     * @param string $recipePath
-     * @param string $buildFolder
-     * @return string
-     */
-    protected function createDeployPhp(TaskInterface $task, string $basepath, string $buildFolder, string $sshConfigFilePath) : string
+   /**
+    * This function generates the contents of the `deploy.php` file, which is required for the depolyment process.
+    * It returns the path to the `deploy.php`, relative to the working directory (`.../exface/exface`).
+    *
+    * @param TaskInterface $task
+    * @param string $basepath
+    * @param string $buildFolder
+    * @param string $hostName
+    * @param string $sshConfigFilePath
+    * @return string
+    */
+    protected function createDeployPhp(TaskInterface $task, string $basepath, string $buildFolder, string $hostName, string $sshConfigFilePath = null) : string
     {
-
         $stage = $this->getHostData($task, 'stage');
-        $name = $this->getHostData($task, 'name');
-        $absoluteSshConfigFilePath = $basepath . $sshConfigFilePath;
+        $absoluteSshConfigFilePath = $sshConfigFilePath !== null ? $basepath . $sshConfigFilePath : '';
         $basicDeployPath = $this->getHostData($task, 'path_abs_to_api');
         $buildsArchivesPath = $basepath . $buildFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
         $phpPath = $this->getHostData($task, 'php_cli');
         $recipePath = $this->getDeployRecipeFile($task);
         $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
-        $projectConfig = json_decode('...');
-        if (empty($projectConfig['local_vendors']) !== false) {
+        $projectConfig = json_decode($this->getProjectData($task, 'default_config'), true);
+        
+        if (empty($projectConfig['local_vendors']) === false) {
             $localVendors = "set('local_vendors', " . json_encode($projectConfig['local_vendors']) . ");";
         } else {
             $localVendors = '';
@@ -343,9 +363,9 @@ require 'vendor/deployer/deployer/recipe/common.php';
 
 // === Host ===
 set('stage', '{$stage}');
-set('host_short', '{$name}');
 set('host_ssh_config', '{$absoluteSshConfigFilePath}');
-host('{$name}');
+set('host_short', '{$hostName}');
+host('{$hostName}');
 
 // === Path definitions ===
 set('basic_deploy_path', '{$basicDeployPath}');
@@ -405,34 +425,37 @@ PHP;
     {
         $connection = $this->getSshConnection($task);
         
+        $basePath = $this->getBasePath();
+        
         //extract the data required for the SSH-connection
         if ($connection !== null) {
             $privateKey = $connection->getSshPrivateKey();
             $hostAlias = $connection->getAlias();
+            
+            //create /hosts/alias directory
+            $hostAliasFolderPath = $this->createHostFolderPath($task, $hostAlias);
+            
+            // ACHTUNG: id_rsa darf nur für PHP-user lesbar sein!
+            $privateKeyFilePath = $this->createPrivateKeyFile($hostAliasFolderPath, $privateKey);
+            $this->createPrivateKeyFileSetPermissions($privateKeyFilePath);
+            
+            //create known_hosts file
+            $knownHostsFilePath = $this->createKnownHostsFile($hostAliasFolderPath);
+            
+            //get ssh-config
+            $sshConfigFilePath = $this->createSshConfig($basePath, $hostAlias, $privateKeyFilePath, $knownHostsFilePath, $hostAliasFolderPath, $connection);
         } else {
-            $privateKey = "";
-            $hostAlias = "";
+            // If no connection exists, generate the host alias from the host name.
+            $sshConfigFilePath = null;
+            $hostName = $this->getHostData($task, 'name');
+            $hostAlias = str_replace(' ', '_', $hostName);
+            $hostAlias = preg_replace('/[^a-z0-9_]/i', '', $hostAlias);
         }
-        $host = $this->getHostData($task, 'name');
         
-        //create /hosts/alias directory 
-        $hostAliasFolderPath = $this->createHostFolderPath($task, $hostAlias);
+        $projectFolderPath = $this->getProjectFolderRelativePath($task);
+        $this->createDeployPhp($task, $basePath, $projectFolderPath, $hostAlias, $sshConfigFilePath);
         
-        $basePath = $this->getBasePath();
-        
-        // ACHTUNG: id_rsa muss nur für PHP-user lesbar sein!
-        $privateKeyFilePath = $this->createPrivateKeyFile($hostAliasFolderPath, $privateKey);
-        $this->createPrivateKeyFileSetPermissions($privateKeyFilePath);
-        
-        //create known_hosts file
-        $knownHostsFilePath = $this->createKnownHostsFile($hostAliasFolderPath);
-
-        //get ssh-config
-        $sshConfigFilePath = $this->createSshConfig($basePath, $host, $privateKeyFilePath, $knownHostsFilePath, $hostAliasFolderPath, $connection);
-
-        $this->createDeployPhp($task, $basePath, $this->getProjectFolderRelativePath($task), $sshConfigFilePath);
-        
-        return $hostAliasFolderPath;
+        return $basePath . $projectFolderPath;
     }
     
     /**
@@ -687,7 +710,7 @@ PHP;
      * @param DataSheetInterface $deployData
      * @return string
      */
-    protected function createDeployerTask(TaskInterface $task, string $baseFolder, DataSheetInterface $deployData) : string
+    protected function createDeployerTask(TaskInterface $task) : string
     {
         $cmd = " -f=" . $this->getProjectFolderRelativePath($task) . DIRECTORY_SEPARATOR . 'deploy.php';
         
@@ -717,17 +740,14 @@ PHP;
      * @param string $projectFolder
      * @param string $hostAliasFolderPath
      */
-    protected function cleanupFiles(string $projectFolder, string $hostAliasFolderPath) : Deploy
+    protected function cleanupFiles(string $projectFolder) : Deploy
     {
         $stagedFiles = [
-            $projectFolder . DIRECTORY_SEPARATOR . 'deploy.php',
-            $hostAliasFolderPath . DIRECTORY_SEPARATOR . $this->getFileNameKnownHosts(),
-            $hostAliasFolderPath . DIRECTORY_SEPARATOR . $this->getFileNamePrivateKey(),
-            $hostAliasFolderPath . DIRECTORY_SEPARATOR . $this->getFileNameSshConfig()
+            $projectFolder . DIRECTORY_SEPARATOR . 'deploy.php'
         ];
         
         $stagedDirectories = [
-            $hostAliasFolderPath,
+            $projectFolder . DIRECTORY_SEPARATOR . 'hosts',
             $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForHosts()
         ];
         
