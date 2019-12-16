@@ -200,6 +200,9 @@ foreach($cmdarray as $line) {
 //copy Apps from local vendors
 if ($oldReleasePath !== null) {
     foreach ($localVendors as $local) {
+        if ($local === null || $local === '') {
+            continue;
+        }
         foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
             $tmp = explode($local, $appPath);
             $appPathRelative = array_pop($tmp);

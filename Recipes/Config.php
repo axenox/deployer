@@ -17,7 +17,7 @@ task('config:setup_build_config', function() {
     try {
         $composerTimeout = get('composer_timeout');        
     } catch (ConfigurationException $e) {
-        $composerTimeout = 900;
+        $composerTimeout = 1200;
     }
     set('composer_timeout', $composerTimeout);
     
