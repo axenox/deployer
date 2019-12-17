@@ -60,7 +60,14 @@ task('self_deployment:run', function () {
  */
 task('self_deployment:delete_local_file', function() {
     runLocally('del /f {{builds_archives_path}}\{{self_extractor_filename}}');
-}); 
+});
+
+/**
+ * delete self deplyoment php file on remote machine
+ */
+task('self_deployment:delete_remote_file', function() {
+    run('cd {{basic_deploy_path_cygwin}} && rm {{self_extractor_filename}}');
+});
 
 /**
  * show link to created local self deployment php file
