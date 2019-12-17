@@ -71,11 +71,12 @@ task('self_deployment:show_link', function() {
     $phpPath = get('php_path');
     $text = <<<cli
 
-Please transfer the self-extractor PHP file to the server manually and execute it there:
+ⓘ Please transfer the self-extractor PHP file to the server manually and execute it there:
 
 1) Copy/Download "$filePath"
 2) Upload it to anywhere on the host
-3) Run "$phpPath path/to/$filename" on the host's command line 
+3) Open the host's command line as administrator (IMPORTANT - otherwise you will get symlink-errors!) 
+4) Run the command "$phpPath -d memory_limit=1G path/to/$filename"
 
 
 cli;
