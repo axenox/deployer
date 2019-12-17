@@ -49,12 +49,12 @@
     "rows": [
         {
             "CREATED_ON": "2019-10-24 08:15:25",
-            "MODIFIED_ON": "2019-10-24 08:15:25",
+            "MODIFIED_ON": "2019-12-09 10:34:17",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9f63665e2c17db2ce0205857feb80",
             "BEHAVIOR": "exface\/Core\/Behaviors\/StateMachineBehavior.php",
-            "CONFIG_UXON": "{\"state_attribute_alias\":\"status\",\"states\":{\"10\":{\"name\":\"Pending\"},\"50\":{\"name\":\"Deploying\"},\"90\":{\"name\":\"Failed\",\"color\":\"red\"},\"99\":{\"name\":\"Completed\"}}}",
+            "CONFIG_UXON": "{\"state_attribute_alias\":\"status\",\"states\":{\"10\":{\"name\":\"Pending\"},\"50\":{\"name\":\"Deploying\"},\"90\":{\"name\":\"Failed\",\"color\":\"orangered\"},\"98\":{\"name\":\"Rolled Back\",\"color\":\"lightgray\"},\"99\":{\"name\":\"Completed\"}}}",
             "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "State Model",
