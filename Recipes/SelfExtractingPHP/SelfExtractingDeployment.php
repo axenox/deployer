@@ -233,10 +233,18 @@ try {
             if ($local === null || $local === '') {
                 continue;
             }
+            $releaseLocalDir = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local;
+            if (!is_dir($releaseLocalDir)) {
+                if (mkdir($releaseLocalDir) === true) {
+                    echo("Directory {$releasePath}\\{$dir} created!\n");
+                } else {
+                    throw new Exception("Directory {$releaseLocalDir} could not be created!\n");
+                }
+            }
             foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
                 $tmp = explode($local, $appPath);
                 $appPathRelative = array_pop($tmp);
-                $appPathNew = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . $appPathRelative;
+                $appPathNew = $releaseLocalDir . $appPathRelative;
                 if ( !is_dir($appPathNew)) {
                     echo ("Copying local app: " . $appPathRelative . "\n");
                     recurseCopy($appPath, $appPathNew);
