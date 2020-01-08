@@ -24,219 +24,296 @@ $baseConfigPath = $releasePath . DIRECTORY_SEPARATOR . 'base-config';
 $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
 $configFiles = ['exface.ModxCmsConnector.config.json'];
 
-//create relative deploy path directory if it not exists yet
-if (!is_dir($deployPath)) {
-    mkdir($deployPath);
-    echo("Directory {$deployPath} created!\n");
-}
-
-//create releases directory if it not exists yet
-if (!is_dir($releasesPath)) {
-    mkdir($releasesPath);
-    echo("Directory {$releasesPath} created!\n");
-}
-
-//create shared directory if it not exists yet
-if (!is_dir($sharedPath)) {
-    mkdir($sharedPath);
-    echo("Directory {$sharedPath} created!\n");
-}
-
-//create directories which are shared between releases
-foreach ($sharedDirs as $dir) {
-    if (!is_dir($sharedPath . DIRECTORY_SEPARATOR . $dir)) {
-        mkdir($sharedPath . DIRECTORY_SEPARATOR . $dir);
-        echo("Directory {$dir} created!\n");
-    }
-}
-
-//create directory with release name
-if (!is_dir($releasePath)) {
-    mkdir($releasePath);
-    echo("Directory {$releasePath} created!\n");
-} else {
-    throw new Exception("The selected release '{$releaseName}' does already exist on the server");
-}
-
-//copy directories which should get copied from old to new releases
-if (!is_dir($currentPath)) {
-    foreach ($copyDirs as $dir) {
-        mkdir($releasePath . DIRECTORY_SEPARATOR . $dir);
-        echo("Directory {$dir} created!\n");
-    }
-} else {
-    foreach ($copyDirs as $dir) {
-        $dst = $releasePath . DIRECTORY_SEPARATOR . $dir;
-        $src = $currentPath . DIRECTORY_SEPARATOR . $dir;
-        recurseCopy($src, $dst);
-        echo("Directory {$dir} copied!\n");
-    }    
-}
-
-//creating symlinks to shared directories
-chdir($releasePath);
-foreach($sharedDirs as $dir) {
-    $target_pointer = $sharedPath . DIRECTORY_SEPARATOR . $dir;
-    $test = symlink($target_pointer, $dir);
-    if (! $test)
-    {
-        throw new Exception("Symlink to {$dir} could not be created");
-    }
-    echo("Symlink to {$dir} created!\n");
-}
-
-//extract archive
-echo("Extracting archive ...\n");
-chdir($releasePath);
-extractArchive();
-
-//copy needed app configs, if not already exist
-if (is_dir($baseConfigPath)) {
-    foreach($configFiles as $file) {
-        if(!file_exists($configPath . DIRECTORY_SEPARATOR . $file)) {
-            copy($baseConfigPath . DIRECTORY_SEPARATOR . $file, $configPath . DIRECTORY_SEPARATOR . $file);
-            echo("Base config {$file} copied!\n");
-        }
-    }
-    deleteDirectory($baseConfigPath);
-    echo("Directory {$baseConfigPath} removed!\n");
-}
-
-//uninstall old apps
 $oldReleasePath = null;
 if (is_dir($currentPath)) {
     chdir($currentPath);
     $oldReleasePath = getcwd();
     chdir($basicDeployPath);
-    require $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-    $oldVendorPath = $currentPath . DIRECTORY_SEPARATOR . 'vendor';
-    chdir($deployPath);
-    $newAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($releasePath . DIRECTORY_SEPARATOR . 'vendor');
-    $oldAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($oldVendorPath);
-    $uninstallAppsAliases = array_diff($oldAppsAliases, $newAppsAliases);
-    $uninstallAppsAliases = array_values($uninstallAppsAliases);
-    for ($i = 0; $i < count($uninstallAppsAliases); $i++) {
-        $arr = explode('.', $uninstallAppsAliases[$i]);
-        $appsVendor = $arr[0];
-        foreach ($localVendors as $vendor) {
-            if (strpos($vendor, $appsVendor) !== FALSE) {                
-                unset ($uninstallAppsAliases[$i]);
+}
+
+if (is_dir($releasePath)) {
+    exit("The selected release '{$releaseName}' does already exist on the server!\n");
+}
+
+try {
+    //create relative deploy path directory if it not exists yet
+    if (!is_dir($deployPath)) {
+        if (mkdir($deployPath) === true) {
+            echo("Directory {$deployPath} created!\n");
+        } else {
+            throw new Exception("Directory {$deployPath} could not be created!\n");
+        }
+    }
+    
+    //create releases directory if it not exists yet
+    if (!is_dir($releasesPath)) {
+        if (mkdir($deployPath) === true) {
+            echo("Directory {$releasesPath} created!\n");
+        } else {
+            throw new Exception("Directory {$releasesPath} could not be created!\n");
+        }
+    }
+    
+    //create shared directory if it not exists yet
+    if (!is_dir($sharedPath)) {
+        if (mkdir($deployPath) === true) {
+            echo("Directory {$sharedPath} created!\n");
+        } else {
+            throw new Exception("Directory {$sharedPath} could not be created!\n");
+        }
+    }
+    
+    //create directories which are shared between releases
+    foreach ($sharedDirs as $dir) {
+        if (!is_dir($sharedPath . DIRECTORY_SEPARATOR . $dir)) {
+            if (mkdir($sharedPath . DIRECTORY_SEPARATOR . $dir) === true) {
+                echo("Directory {$sharedPath}\\{$dir} created!\n");
+            } else {
+                throw new Exception("Directory {$sharedPath}\\{$dir} could not be created!\n");
             }
         }
     }
-    $uninstallAppsAliases = array_values($uninstallAppsAliases);
-    $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
-    if (count($uninstallAppsAliases) > 0) {
-        echo("Uninstalling old apps...\n");
+    
+    //create directory with release name
+    if (mkdir($releasePath) === true) {
+        echo("Directory {$releasePath} created!\n");
+    } else {
+        throw new Exception("Directory {$releasePath} could not be created!\n");
     }
-    foreach ($uninstallAppsAliases as $alias) {
-        $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
-        $cmdarray = [];
-        try {
-            exec("{$command}", $cmdarray);
-            foreach($cmdarray as $line) {
-                echo ($line . "\n");
+    
+    //copy directories which should get copied from old to new releases
+    if (!is_dir($currentPath)) {
+        foreach ($copyDirs as $dir) {
+            if (mkdir($releasePath . DIRECTORY_SEPARATOR . $dir) === true) {
+                echo("Directory {$releasePath}\\{$dir} created!\n");
+            } else {            
+                deleteDirectory($releasePath);
+                throw new Exception("Directory {$releasePath}\\{$dir} could not be created!\n");
             }
-        } catch (\Throwable $e) {
-            echo ('ERROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL);
-            while ($e = $e->getPrevious()) {
+            
+        }
+    } else {
+        foreach ($copyDirs as $dir) {
+            $dst = $releasePath . DIRECTORY_SEPARATOR . $dir;
+            $src = $currentPath . DIRECTORY_SEPARATOR . $dir;
+            recurseCopy($src, $dst);
+            echo("Directory {$releasePath}\\{$dir} copied!\n");
+        }    
+    }
+    
+    //creating symlinks to shared directories
+    chdir($releasePath);
+    foreach($sharedDirs as $dir) {
+        $target_pointer = $sharedPath . DIRECTORY_SEPARATOR . $dir;
+        $test = symlink($target_pointer, $dir);
+        if (! $test)
+        {
+            
+            throw new Exception("Symlink to {$releasesPath}\\{$dir} could not be created: from {$target_pointer}");
+        }
+        echo("Symlink to {$dir} created!\n");
+    }
+    
+    //extract archive
+    echo("Extracting archive ...\n");
+    chdir($releasePath);
+    if (extractArchive() === true) {        
+        echo("Archive extracted!\n");
+    } else {
+        throw new Exception("Archive could not be extracted from file!\n");
+    }
+    
+    //copy needed app configs, if not already exist
+    if (is_dir($baseConfigPath)) {
+        foreach($configFiles as $file) {
+            if(!file_exists($configPath . DIRECTORY_SEPARATOR . $file)) {
+                copy($baseConfigPath . DIRECTORY_SEPARATOR . $file, $configPath . DIRECTORY_SEPARATOR . $file);
+                echo("Base config {$file} copied!\n");
+            }
+        }
+        deleteDirectory($baseConfigPath);
+        echo("Directory {$baseConfigPath} removed!\n");
+    }
+    
+    //uninstall old apps
+    if ($oldReleasePath !== null) {
+        chdir($basicDeployPath);
+        require $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+        $oldVendorPath = $currentPath . DIRECTORY_SEPARATOR . 'vendor';
+        chdir($deployPath);
+        $newAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($releasePath . DIRECTORY_SEPARATOR . 'vendor');
+        $oldAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($oldVendorPath);
+        $uninstallAppsAliases = array_diff($oldAppsAliases, $newAppsAliases);
+        $uninstallAppsAliases = array_values($uninstallAppsAliases);
+        for ($i = 0; $i < count($uninstallAppsAliases); $i++) {
+            $arr = explode('.', $uninstallAppsAliases[$i]);
+            $appsVendor = $arr[0];
+            foreach ($localVendors as $vendor) {
+                if (strpos($vendor, $appsVendor) !== FALSE) {                
+                    unset ($uninstallAppsAliases[$i]);
+                }
+            }
+        }
+        $uninstallAppsAliases = array_values($uninstallAppsAliases);
+        $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
+        if (count($uninstallAppsAliases) > 0) {
+            echo("Uninstalling old apps...\n");
+        }
+        foreach ($uninstallAppsAliases as $alias) {
+            $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
+            $cmdarray = [];
+            try {
+                exec("{$command}", $cmdarray);
+                foreach($cmdarray as $line) {
+                    echo ($line . "\n");
+                }
+            } catch (\Throwable $e) {
                 echo ('ERROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL);
+                while ($e = $e->getPrevious()) {
+                    echo ('ERROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL);
+                }
             }
         }
     }
-}
-
-//permissions
-chmod($releasePath, 0777);
-chmod($releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
-echo("Permissions set!\n");
-
-//create 'current' symlink to new release
-chdir($deployPath);
-if (is_dir($currentPath)) {
-    rmdir($currentPath);
-}
-$target_pointer = $releasePath;
-$test = symlink($target_pointer, $relativeCurrentPath);
-if (!$test)
-{
-    throw new Exception("Symlink to {$relativeCurrentPath} could not be created");
-} else {
-    echo("Symlink to {$relativeCurrentPath} created!\n");
-}
-
-//create 'exface' symlink to 'current'
-chdir($basicDeployPath);
-if (is_dir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface')) {
-    rmdir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface');
-}
-$target_pointer = $currentPath;
-$test = symlink($target_pointer, 'exface');
-if (!$test)
-{
-    throw new Exception("Symlink to exface could not be created");
-} else {
-    echo("Symlink to exface created!\n");
-}
-
-//Install Apps
-//require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-//echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
-
-if (substr(php_uname(), 0, 7) == "Windows"){
-    $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
-}
-else {
-    //TODO not tested yet on Linux!
-    $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
-}
-echo ("Installing apps...\n");
-$cmdarray = [];
-echo exec("{$command}", $cmdarray);
-foreach($cmdarray as $line) {
-    echo ($line . "\n");
-}
-
-//copy Apps from local vendors
-if ($oldReleasePath !== null) {
-    foreach ($localVendors as $local) {
-        if ($local === null || $local === '') {
-            continue;
-        }
-        foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
-            $tmp = explode($local, $appPath);
-            $appPathRelative = array_pop($tmp);
-            $appPathNew = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . $appPathRelative;
-            if ( !is_dir($appPathNew)) {
-                echo ("Copying local app: " . $appPathRelative . "\n");
-                recurseCopy($appPath, $appPathNew);
+    
+    //permissions
+    chmod($releasePath, 0777);
+    chmod($releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', 0777);
+    echo("Permissions set!\n");
+    
+    //create 'current' symlink to new release
+    chdir($deployPath);
+    if (is_dir($currentPath)) {
+        rmdir($currentPath);
+    }
+    $target_pointer = $releasePath;
+    $test = symlink($target_pointer, $relativeCurrentPath);
+    if (!$test)
+    {
+        throw new Exception("Symlink to {$relativeCurrentPath} could not be created: from {$target_pointer}");
+    } else {
+        echo("Symlink to {$relativeCurrentPath} created!\n");
+    }
+    
+    //create 'exface' symlink to 'current'
+    chdir($basicDeployPath);
+    if (is_dir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface')) {
+        rmdir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface');
+    }
+    $target_pointer = $currentPath;
+    $test = symlink($target_pointer, 'exface');
+    if (!$test)
+    {
+        throw new Exception("Symlink to exface could not be created");
+    } else {
+        echo("Symlink to exface created!\n");
+    }
+    
+    //Install Apps
+    //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+    //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
+    
+    if (substr(php_uname(), 0, 7) == "Windows"){
+        $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
+    }
+    else {
+        //TODO not tested yet on Linux!
+        $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
+    }
+    echo ("Installing apps...\n");
+    $cmdarray = [];
+    echo exec("{$command}", $cmdarray);
+    foreach($cmdarray as $line) {
+        echo ($line . "\n");
+    }
+    
+    //copy Apps from local vendors
+    if ($oldReleasePath !== null) {
+        foreach ($localVendors as $local) {
+            if ($local === null || $local === '') {
+                continue;
+            }
+            $releaseLocalDir = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local;
+            if (!is_dir($releaseLocalDir)) {
+                if (mkdir($releaseLocalDir) === true) {
+                    echo("Directory {$releasePath}\\{$dir} created!\n");
+                } else {
+                    throw new Exception("Directory {$releaseLocalDir} could not be created!\n");
+                }
+            }
+            foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
+                $tmp = explode($local, $appPath);
+                $appPathRelative = array_pop($tmp);
+                $appPathNew = $releaseLocalDir . $appPathRelative;
+                if ( !is_dir($appPathNew)) {
+                    echo ("Copying local app: " . $appPathRelative . "\n");
+                    recurseCopy($appPath, $appPathNew);
+                }
             }
         }
     }
+    
+    //create/append release list file, deleting old releases
+    cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases);
+    
+    echo ("Self deployment successful!\n");
+    
+} catch (Exception $e) {
+    echo("{$e->getMessage()}");
+    if (is_dir($releasePath)) {
+        deleteDirectory($releasePath);
+        echo("Directory {$releasePath} removed!\n");
+        //create 'current' symlink to old release
+        chdir($deployPath);
+        if (is_dir($currentPath)) {
+            rmdir($currentPath);
+        }
+        if ($oldReleasePath !== null) {
+            $target_pointer = $oldReleasePath;
+            $test = symlink($target_pointer, $relativeCurrentPath);
+            if (!$test)
+            {
+                echo("Symlink to {$relativeCurrentPath} could not be created: from old release {$target_pointer}!\n");
+            } else {
+                echo("Symlink to {$relativeCurrentPath} created: from old release {$target_pointer}!\n");
+            }
+            //create 'exface' symlink to 'current'
+            chdir($basicDeployPath);
+            if (is_dir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface')) {
+                rmdir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface');
+            }
+            $target_pointer = $currentPath;
+            $test = symlink($target_pointer, 'exface');
+            if (!$test)
+            {
+                echo("Symlink to exface could not be created!\n");
+            } else {
+                echo("Symlink to exface created!\n");
+            }
+        }       
+    }
 }
-
-//create/append release list file, deleting old releases
-cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases);
-
-//delete this file
-unlink(__FILE__);
-echo ("Self deployment file deleted!\n");
 
 //Functions
 //copy whole directory (with subdirectories)
 function recurseCopy(string $src, string $dst) : void
 {
     $dir = opendir($src);
-    mkdir($dst);
-    while(false !== ( $file = readdir($dir)) ) {
-        if (( $file != '.' ) && ( $file != '..' )) {
-            if ( is_dir($src . DIRECTORY_SEPARATOR . $file) ) {
-                recurseCopy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
-            }
-            else {
-                copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
+    if (mkdir($dst) === true) {
+        while(false !== ( $file = readdir($dir)) ) {
+            if (( $file != '.' ) && ( $file != '..' )) {
+                if ( is_dir($src . DIRECTORY_SEPARATOR . $file) ) {
+                    recurseCopy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
+                }
+                else {
+                    if (copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file) === false) {
+                        throw new Exception("File {$file} could not be copied from {$src} to {$dst}!\n");
+                    }
+                }
             }
         }
+    } else {
+        throw new Exception("Directory {$dst} could not be created!\n");
     }
     closedir($dir);
     return;
@@ -275,7 +352,9 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
     
     //creating .dep directory
     if (!is_dir($depPath)) {
-        mkdir($depPath);
+        if (mkdir($depPath) === false) {
+            throw new Exception("Directory {$depPath} could not be created!\n");
+        }
     }
     $date = date('YmdHis');
     $line = $date . ',' . $releaseName;
@@ -346,7 +425,7 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
 }
 
 //extracting archive that is appended to this php file
-function extractArchive() : void
+function extractArchive() : bool
 {
     try {
         $pharfilename = md5(time()).'archive.tar'; //remove with tempname()
@@ -361,15 +440,14 @@ function extractArchive() : void
         try {
             $phar = new PharData($pharfilename);
             $phar->extractTo('.');
-            echo("Archive extracted!\n");
         } catch (Exception $e) {
-            throw new Exception('extraction failed!');
+            throw new Exception($e->getMessage());
         }
         unlink($pharfilename);
     } catch (Exception $e) {
-        printf("Error:<br/>%s<br>%s>",$e->getMessage(),$e->getTraceAsString());
-    };
-    return;
+        return false;
+    }
+    return true;
 }
 //IMPORTANT: no empty lines after "____HALT_COMPILER();" else archive extraction wont work!
 __HALT_COMPILER();
