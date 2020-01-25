@@ -218,8 +218,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'default_composer_auth_json',
                 'default_config'
             ]);
-            $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
-            $ds->addFilterFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('UID', $projectUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->projectData = $ds;
         }
