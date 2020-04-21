@@ -1,7 +1,7 @@
 {
     "name": "axenox/deployer",
     "require": {
-        "exface/core": "~0.1",
+        "exface/core": "~1.0",
         "deployer/deployer": "^6.5",
         "deployer/recipes": "^6.2.2",
         "kabachello/composerapi": "~0.3.2"
