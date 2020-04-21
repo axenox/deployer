@@ -98,7 +98,7 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
     {
         $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'exface.Core.UXON_PRESET');
         $ds->getColumns()->addMultiple(['UID','NAME', 'PROTOTYPE__LABEL', 'DESCRIPTION', 'PROTOTYPE', 'UXON' , 'WRAP_PATH', 'WRAP_FLAG']);
-        $ds->addFilterFromString('UXON_SCHEMA', '\\' . __CLASS__, ComparatorDataType::EQUALS);
+        $ds->getFilters()->addConditionFromString('UXON_SCHEMA', '\\' . __CLASS__, ComparatorDataType::EQUALS);
         $ds->getSorters()
         ->addFromString('PROTOTYPE', SortingDirectionsDataType::ASC)
         ->addFromString('NAME', SortingDirectionsDataType::ASC);

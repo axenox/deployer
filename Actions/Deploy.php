@@ -211,7 +211,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'name',
                 'project_group'
             ]);
-            $ds->addFilterFromString('UID', $projectUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('UID', $projectUid, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->projectData = $ds;
         }
@@ -255,8 +255,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'project',
                 'stage'
             ]);
-            $ds->addFilterFromString('UID', $hostUid, ComparatorDataType::EQUALS);
-            $ds->addFilterFromString('name', $hostName, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('UID', $hostUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('name', $hostName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->hostData = $ds;
         }
@@ -301,8 +301,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'status',
                 'version'
             ]);
-            $ds->addFilterFromString('UID', $buildUid, ComparatorDataType::EQUALS);
-            $ds->addFilterFromString('name', $buildName, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('UID', $buildUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('name', $buildName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->buildData = $ds;
         }
