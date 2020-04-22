@@ -82,6 +82,10 @@
             "attribute_alias": "RELATION_CARDINALITY"
         },
         {
+            "name": "TYPE",
+            "attribute_alias": "TYPE"
+        },
+        {
             "name": "ALIAS",
             "attribute_alias": "ALIAS"
         },
@@ -184,6 +188,7 @@
             "COMMENTS": null,
             "NAME": "Name",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "name",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "name",
@@ -226,6 +231,7 @@
             "COMMENTS": "",
             "NAME": "Group",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "project_group",
             "DATATYPE": "0x11e8091315d97da6b5b5e4b318306b9a",
             "DATA_ADDRESS": "project_group_oid",
@@ -268,6 +274,7 @@
             "COMMENTS": "",
             "NAME": "Deployment Recipe",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "deployment_recipe",
             "DATATYPE": "0x11e9f644a3971508b2ce0205857feb80",
             "DATA_ADDRESS": "deployment_recipe",
@@ -310,6 +317,7 @@
             "COMMENTS": "",
             "NAME": "Custom Deployment Recipe",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "deployment_recipe_custom_path",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "deployment_recipe_custom_path",
@@ -352,6 +360,7 @@
             "COMMENTS": "",
             "NAME": "Build Recipe",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "build_recipe",
             "DATATYPE": "0x11e9f6453ce34b8cb2ce0205857feb80",
             "DATA_ADDRESS": "build_recipe",
@@ -394,6 +403,7 @@
             "COMMENTS": "",
             "NAME": "Custom Build Recipe",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "build_recipe_custom_path",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "build_recipe_custom_path",
@@ -436,6 +446,7 @@
             "COMMENTS": "",
             "NAME": "Alias \/ Folder",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "alias",
             "DATATYPE": "0x11e7b02bbffd277c98350205857feb80",
             "DATA_ADDRESS": "alias",
@@ -478,6 +489,7 @@
             "COMMENTS": "",
             "NAME": "Default composer json",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "default_composer_json",
             "DATATYPE": "0x11ea0c67c75b6641a1b9847beb3e34e8",
             "DATA_ADDRESS": "default_composer_json",
@@ -520,6 +532,7 @@
             "COMMENTS": "",
             "NAME": "Default config",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "default_config",
             "DATATYPE": "0x11ea05498fd86d0f85d7847beb3e34e8",
             "DATA_ADDRESS": "default_config",
@@ -562,6 +575,7 @@
             "COMMENTS": "",
             "NAME": "Default auth.json for Composer",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "default_composer_auth_json",
             "DATATYPE": "0x11ea0c70d73fb233a1b9847beb3e34e8",
             "DATA_ADDRESS": "default_composer_auth_json",
@@ -587,6 +601,7 @@
     "totals_rows": [],
     "filters": {
         "operator": "AND",
+        "base_object_alias": "exface.Core.ATTRIBUTE",
         "conditions": [
             {
                 "expression": "OBJECT__APP",

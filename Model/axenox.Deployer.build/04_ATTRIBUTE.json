@@ -82,6 +82,10 @@
             "attribute_alias": "RELATION_CARDINALITY"
         },
         {
+            "name": "TYPE",
+            "attribute_alias": "TYPE"
+        },
+        {
             "name": "ALIAS",
             "attribute_alias": "ALIAS"
         },
@@ -184,6 +188,7 @@
             "COMMENTS": "",
             "NAME": "Project",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "project",
             "DATATYPE": "0x11e8091315d97da6b5b5e4b318306b9a",
             "DATA_ADDRESS": "project_oid",
@@ -226,6 +231,7 @@
             "COMMENTS": null,
             "NAME": "Version",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "version",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "version",
@@ -268,6 +274,7 @@
             "COMMENTS": "",
             "NAME": "Build Name",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "name",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "name",
@@ -310,6 +317,7 @@
             "COMMENTS": "",
             "NAME": "Build recipe used",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "build_recipe_path",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "build_recipe_path",
@@ -352,6 +360,7 @@
             "COMMENTS": null,
             "NAME": "Comment",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "comment",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "comment",
@@ -394,6 +403,7 @@
             "COMMENTS": "",
             "NAME": "Composer.json",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "composer_json",
             "DATATYPE": "0x11ea0c67c75b6641a1b9847beb3e34e8",
             "DATA_ADDRESS": "composer_json",
@@ -436,6 +446,7 @@
             "COMMENTS": "",
             "NAME": "Composer auth.json",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "composer_auth_json",
             "DATATYPE": "0x11ea0c70d73fb233a1b9847beb3e34e8",
             "DATA_ADDRESS": "composer_auth_json",
@@ -478,6 +489,7 @@
             "COMMENTS": null,
             "NAME": "Notes",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "notes",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "notes",
@@ -520,6 +532,7 @@
             "COMMENTS": "",
             "NAME": "Log",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "log",
             "DATATYPE": "0x31310000000000000000000000000000",
             "DATA_ADDRESS": "log",
@@ -562,6 +575,7 @@
             "COMMENTS": "",
             "NAME": "Build time",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "build_datetime",
             "DATATYPE": "0x11e93b4b3d1f22188c660205857feb80",
             "DATA_ADDRESS": "created_on",
@@ -604,6 +618,7 @@
             "COMMENTS": "",
             "NAME": "Status",
             "RELATION_CARDINALITY": "",
+            "TYPE": "D",
             "ALIAS": "status",
             "DATATYPE": "0x11e7c39621725c1e8001e4b318306b9a",
             "DATA_ADDRESS": "status",
@@ -629,6 +644,7 @@
     "totals_rows": [],
     "filters": {
         "operator": "AND",
+        "base_object_alias": "exface.Core.ATTRIBUTE",
         "conditions": [
             {
                 "expression": "OBJECT__APP",
