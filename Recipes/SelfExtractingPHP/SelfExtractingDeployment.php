@@ -12,17 +12,17 @@ $phpPath = '[#php#]'; //placeholder for string
 $relativeReleasesPath = 'releases';
 $relativeSharedPath = 'shared';
 $relativeCurrentPath = 'current';
+$exfaceFolderName = 'exface';
 $deployPath = $basicDeployPath .  DIRECTORY_SEPARATOR . $relativeDeployPath;
 $releasesPath = $deployPath . DIRECTORY_SEPARATOR . $relativeReleasesPath;
 $sharedPath = $deployPath . DIRECTORY_SEPARATOR . $relativeSharedPath;
 $currentPath = $deployPath . DIRECTORY_SEPARATOR . $relativeCurrentPath;
-$exfacePath = $basicDeployPath . DIRECTORY_SEPARATOR . 'exface';
+$exfacePath = $basicDeployPath . DIRECTORY_SEPARATOR . $exfaceFolderName;
 
 $releaseName = pathinfo(__FILE__,  PATHINFO_FILENAME);
 $releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
 $baseConfigPath = $releasePath . DIRECTORY_SEPARATOR . 'base-config';
 $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
-$configFiles = ['exface.ModxCmsConnector.config.json'];
 
 $oldReleasePath = null;
 if (is_dir($currentPath)) {
@@ -47,7 +47,7 @@ try {
     
     //create releases directory if it not exists yet
     if (!is_dir($releasesPath)) {
-        if (mkdir($deployPath) === true) {
+        if (mkdir($releasesPath) === true) {
             echo("Directory {$releasesPath} created!\n");
         } else {
             throw new Exception("Directory {$releasesPath} could not be created!\n");
@@ -56,7 +56,7 @@ try {
     
     //create shared directory if it not exists yet
     if (!is_dir($sharedPath)) {
-        if (mkdir($deployPath) === true) {
+        if (mkdir($sharedPath) === true) {
             echo("Directory {$sharedPath} created!\n");
         } else {
             throw new Exception("Directory {$sharedPath} could not be created!\n");
@@ -125,12 +125,16 @@ try {
     
     //copy needed app configs, if not already exist
     if (is_dir($baseConfigPath)) {
-        foreach($configFiles as $file) {
-            if(!file_exists($configPath . DIRECTORY_SEPARATOR . $file)) {
-                copy($baseConfigPath . DIRECTORY_SEPARATOR . $file, $configPath . DIRECTORY_SEPARATOR . $file);
-                echo("Base config {$file} copied!\n");
+        $dir = opendir($baseConfigPath);
+        while(false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if(!file_exists($configPath . DIRECTORY_SEPARATOR . $file)) {
+                    copy($baseConfigPath . DIRECTORY_SEPARATOR . $file, $configPath . DIRECTORY_SEPARATOR . $file);
+                    echo("Base config {$file} copied!\n");
+                }
             }
         }
+        closedir($dir);
         deleteDirectory($baseConfigPath);
         echo("Directory {$baseConfigPath} removed!\n");
     }
@@ -160,7 +164,7 @@ try {
             echo("Uninstalling old apps...\n");
         }
         foreach ($uninstallAppsAliases as $alias) {
-            $command = "cd {$exfacePath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
+            $command = "cd {$currentPath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
             $cmdarray = [];
             try {
                 exec("{$command}", $cmdarray);
@@ -195,18 +199,23 @@ try {
         echo("Symlink to {$relativeCurrentPath} created!\n");
     }
     
-    //create 'exface' symlink to 'current'
-    chdir($basicDeployPath);
-    if (is_dir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface')) {
-        rmdir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface');
-    }
-    $target_pointer = $currentPath;
-    $test = symlink($target_pointer, 'exface');
-    if (!$test)
-    {
-        throw new Exception("Symlink to exface could not be created");
+    // when relative path is empty (no modx) then create special .htaccess
+    if ($relativeDeployPath == '' || $relativeDeployPath == null) {
+        createHtaccess($basicDeployPath);
     } else {
-        echo("Symlink to exface created!\n");
+        //create 'exface' symlink to 'current'
+        chdir($basicDeployPath);
+        if (is_dir($exfacePath)) {
+            rmdir($exfacePath);
+        }
+        $target_pointer = $currentPath;
+        $test = symlink($target_pointer, $exfaceFolderName);
+        if (!$test)
+        {
+            throw new Exception("Symlink to exface could not be created");
+        } else {
+            echo("Symlink to exface created!\n");
+        }
     }
     
     //Install Apps
@@ -214,13 +223,14 @@ try {
     //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
     
     if (substr(php_uname(), 0, 7) == "Windows"){
-        $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
+        $command = "cd {$currentPath} && {$phpPath} composer.phar run-script post-install-cmd";
     }
     else {
         //TODO not tested yet on Linux!
-        $command = "cd {$exfacePath} && {$phpPath} composer.phar run-script post-install-cmd";
+        $command = "cd {$currentPath} && {$phpPath} composer.phar run-script post-install-cmd";
     }
     echo ("Installing apps...\n");
+    echo ("Execute command: {$command} \n");
     $cmdarray = [];
     echo exec("{$command}", $cmdarray);
     foreach($cmdarray as $line) {
@@ -259,7 +269,7 @@ try {
     echo ("Self deployment successful!\n");
     
 } catch (Exception $e) {
-    echo("{$e->getMessage()}");
+    echo("Error - Line {$e->getLine()}: {$e->getMessage()}");
     if (is_dir($releasePath)) {
         deleteDirectory($releasePath);
         echo("Directory {$releasePath} removed!\n");
@@ -279,11 +289,12 @@ try {
             }
             //create 'exface' symlink to 'current'
             chdir($basicDeployPath);
-            if (is_dir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface')) {
-                rmdir($basicDeployPath . DIRECTORY_SEPARATOR . 'exface');
+            chdir($basicDeployPath);
+            if (is_dir($exfacePath)) {
+                rmdir($exfacePath);
             }
             $target_pointer = $currentPath;
-            $test = symlink($target_pointer, 'exface');
+            $test = symlink($target_pointer, $exfaceFolderName);
             if (!$test)
             {
                 echo("Symlink to exface could not be created!\n");
@@ -421,6 +432,18 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
         deleteDirectory($dir);
         echo ("Deleted release: " . $release . "\n");
     }    
+    return;
+}
+
+function createHtaccess($path) : void
+{
+    $content = <<<TXT
+    
+RewriteEngine On
+RewriteRule ^(.*)$ current/$1 [L,QSA]
+TXT;
+    file_put_contents($path . DIRECTORY_SEPARATOR . '.htaccess', $content);
+    echo("htaccess file created!\n");
     return;
 }
 
