@@ -22,6 +22,7 @@ use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use exface\Core\Interfaces\Events\TaskEventInterface;
 use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
+use exface\Core\CommonLogic\UxonObject;
 
 /**
  * Creates a build from an instance of a project and a version number.
@@ -292,7 +293,7 @@ PHP;
     
     /**
      * Prepares the folder structure needed to run the deployer command and 
-     * returns it's path relative to installation root.
+     * returns it's path relative to workbench installation root.
      * 
      * ```
      * project_folder
@@ -337,9 +338,11 @@ PHP;
     protected function createConfigFiles(TaskInterface $task, string $folderAbsolutePath) : Build
     {
         Filemanager::pathConstruct($folderAbsolutePath);
-        $projectConfig = json_decode($this->getProjectData($task, 'default_config'), true);
-        foreach ($projectConfig['default_app_config'] as $fileName => $config) {
-            file_put_contents($folderAbsolutePath . DIRECTORY_SEPARATOR . $fileName, json_encode($config));
+        $projectConfig = UxonObject::fromJson($this->getProjectData($task, 'default_config'));
+        if ($projectConfig->hasProperty('defualt_app_config')) {
+            foreach ($projectConfig->getProperty('default_app_config')->getPropertiesAll() as $fileName => $configUxon) {
+                file_put_contents($folderAbsolutePath . DIRECTORY_SEPARATOR . $fileName, $configUxon->toJson(true));
+            }
         }
         return $this;
     }
@@ -598,6 +601,7 @@ PHP;
      */
     protected function cleanupFiles(string $projectFolder)
     {
+        $baseAbsPath = $this->getBasePath();
         $stagedFiles = [
             $projectFolder . DIRECTORY_SEPARATOR . 'build.php',
             $projectFolder . DIRECTORY_SEPARATOR . 'composer.json',
@@ -606,8 +610,9 @@ PHP;
         ];
         
         $stagedDirectories = [
-            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig(),
-            $projectFolder . DIRECTORY_SEPARATOR . '.composer'
+            $baseAbsPath . $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig(),
+            // .composer folder contains the composer cache. Perhaps it's not bad too keep it...
+            // $baseAbsPath . $projectFolder . DIRECTORY_SEPARATOR . '.composer'
         ];   
         
         //delete files first
@@ -619,9 +624,7 @@ PHP;
         
         //delete directories last
         foreach($stagedDirectories as $dir){
-            if (file_exists($file)) {
-                Filemanager::deleteDir($dir);
-            }
+            Filemanager::deleteDir($dir);
         }
    
     }
