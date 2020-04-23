@@ -599,7 +599,7 @@
         },
         {
             "CREATED_ON": "2019-10-24 07:58:19",
-            "MODIFIED_ON": "2019-12-09 14:20:19",
+            "MODIFIED_ON": "2020-04-22 20:49:31",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9f6340218ac6db2ce0205857feb80",
@@ -638,7 +638,7 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "10",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{\"values\":{\"10\":\"10 Pending\",\"50\":\"50 Building\",\"90\":\"90 Failed\",\"99\":\"99 Completed\"},\"show_values\":false}"
+            "CUSTOM_DATA_TYPE": "{\"values\":{\"10\":\"10 Pending\",\"50\":\"50 Building\",\"90\":\"90 Failed\",\"95\":\"95 Broken\",\"99\":\"99 Completed\"},\"show_values\":false}"
         }
     ],
     "totals_rows": [],

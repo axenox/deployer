@@ -74,6 +74,22 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "USE_IN_OBJECT_BASKET_FLAG": "0",
             "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2020-04-22 20:39:10",
+            "MODIFIED_ON": "2020-04-22 20:43:33",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11ea84d94edb6e9c97940205857feb80",
+            "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
+            "ACTION_PROTOTYPE": "exface\/Core\/Actions\/UpdateData.php",
+            "ALIAS": "MarkBuildBroken",
+            "NAME": "Mark broken",
+            "SHORT_DESCRIPTION": "Sets the build state to \"broken\"",
+            "CONFIG_UXON": "{\"icon\":\"ban\",\"input_object_alias\":\"axenox.Deployer.build\",\"input_rows_min\":1,\"input_mapper\":{\"inherit_columns\":false,\"column_to_column_mappings\":[{\"from\":\"=95\",\"to\":\"status\"},{\"from\":\"UID\",\"to\":\"UID\"},{\"from\":\"MODIFIED_ON\",\"to\":\"MODIFIED_ON\"}]}}",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "USE_IN_OBJECT_BASKET_FLAG": "0",
+            "DOCS": ""
         }
     ],
     "totals_rows": [],
