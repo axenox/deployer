@@ -339,7 +339,7 @@ PHP;
     {
         Filemanager::pathConstruct($folderAbsolutePath);
         $projectConfig = UxonObject::fromJson($this->getProjectData($task, 'default_config'));
-        if ($projectConfig->hasProperty('defualt_app_config')) {
+        if ($projectConfig->hasProperty('default_app_config')) {
             foreach ($projectConfig->getProperty('default_app_config')->getPropertiesAll() as $fileName => $configUxon) {
                 file_put_contents($folderAbsolutePath . DIRECTORY_SEPARATOR . $fileName, $configUxon->toJson(true));
             }
