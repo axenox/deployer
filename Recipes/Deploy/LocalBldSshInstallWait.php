@@ -40,9 +40,6 @@ namespace Deployer;
  //path for php executable on remote machine, default is 'php'
  set('php_path', 'php');
  
- //array of vendor directories that contain local apps on remote and should be copied
- set('local_vendors', ['powerui']);
- 
  // set number how many releases should be kept, -1 to keep all releases, default is 4
  set('keep_releases', 6);
  

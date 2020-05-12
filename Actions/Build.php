@@ -216,8 +216,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'build_recipe',
                 'build_recipe_custom_path',
                 'default_composer_json',
-                'default_composer_auth_json',
-                'default_config'
+                'default_composer_auth_json'
             ]);
             $ds->getFilters()->addConditionFromString('UID', $projectUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
@@ -260,7 +259,6 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     {
         $slash = DIRECTORY_SEPARATOR;
         $builds_archives_path = $slash . $this->getFolderNameForBuilds();
-        $base_config_path = $slash . $this->getFolderNameForBaseConfig();
 
         // Get deployer recipe file path
         $recipePath = $this->getBuildRecipeFile($task);
@@ -277,7 +275,6 @@ set('release_name', '{$buildName}');
 
 // === Path definitions ===
 set('builds_archives_path', __DIR__ . '{$builds_archives_path}');
-set('base_config_path', __DIR__ . '{$base_config_path}');
 
 require '{$recipePath}';
 
@@ -298,7 +295,6 @@ PHP;
      * ```
      * project_folder
      * - builds
-     * - base-config
      * 
      * ```
      * 
@@ -315,36 +311,12 @@ PHP;
             . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
         Filemanager::pathConstruct($basePath . $buildsFolderPath);
         
-        
-        $baseConfigFolderPath = $projectFolder
-            . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();
-        $this->createConfigFiles($task, $basePath . $baseConfigFolderPath);
-        
         // copy current composer.phar to project folder, so it can be used for composer commands.
         if (file_exists($this->getBasePath() . 'composer.phar')) {
             $this->getWorkbench()->filemanager()->copyFile($this->getBasePath() . 'composer.phar', $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.phar');
         }
         
         return $projectFolder;
-    }
-    
-    /**
-     * This Function creates the configuration file, needed for the building process.
-     * 
-     * @param TaskInterface $task
-     * @param string $folderAbsolutePath
-     * @return Build
-     */
-    protected function createConfigFiles(TaskInterface $task, string $folderAbsolutePath) : Build
-    {
-        Filemanager::pathConstruct($folderAbsolutePath);
-        $projectConfig = UxonObject::fromJson($this->getProjectData($task, 'default_config'));
-        if ($projectConfig->hasProperty('default_app_config')) {
-            foreach ($projectConfig->getProperty('default_app_config')->getPropertiesAll() as $fileName => $configUxon) {
-                file_put_contents($folderAbsolutePath . DIRECTORY_SEPARATOR . $fileName, $configUxon->toJson(true));
-            }
-        }
-        return $this;
     }
 
     /**
@@ -610,7 +582,6 @@ PHP;
         ];
         
         $stagedDirectories = [
-            $baseAbsPath . $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig(),
             // .composer folder contains the composer cache. Perhaps it's not bad too keep it...
             // $baseAbsPath . $projectFolder . DIRECTORY_SEPARATOR . '.composer'
         ];   

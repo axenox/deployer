@@ -205,7 +205,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'build_recipe_custom_path',
                 'default_composer_json',
                 'default_composer_auth_json',
-                'default_config',
                 'deployment_recipe',
                 'deployment_recipe_custom_path',
                 'name',
@@ -253,7 +252,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'path_rel_to_releases',
                 'php_cli',
                 'project',
-                'stage'
+                'stage',
+                'deploy_config'
             ]);
             $ds->getFilters()->addConditionFromString('UID', $hostUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('name', $hostName, ComparatorDataType::EQUALS);
@@ -344,13 +344,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         $phpPath = $this->getHostData($task, 'php_cli');
         $recipePath = $this->getDeployRecipeFile($task);
         $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
-        $projectConfig = json_decode($this->getProjectData($task, 'default_config'), true);
-        
-        if (empty($projectConfig['local_vendors']) === false) {
-            $localVendors = "set('local_vendors', " . json_encode($projectConfig['local_vendors']) . ");";
-        } else {
-            $localVendors = '';
-        }
+        $projectConfigJson = $this->getHostData($task, 'deploy_config') ?? [];
         
         $content = <<<PHP
 <?php
@@ -372,8 +366,10 @@ set('basic_deploy_path', '{$basicDeployPath}');
 set('relative_deploy_path', '{$relativeDeployPath}');
 set('builds_archives_path', '{$buildsArchivesPath}');
 set('php_path', '{$phpPath}');
-
-{$localVendors}
+\$deployConfig = <<<JSON
+{$projectConfigJson}
+JSON;
+set('deploy_config', json_decode(\$deployConfig));
 
 require '{$recipePath}';
 

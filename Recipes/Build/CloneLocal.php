@@ -5,7 +5,7 @@ namespace Deployer;
 /**
  * This file contains the recipe to build a deployment archive by cloning the local 
  * PowerUI installation. To do so, creat a build.php file in the same directory as your
- * builds and base-config directories are located.
+ * builds directories are located.
  * To create the archive run the following command in the console from the PowerUI exface directory:
  * 
  * vendor\bin\dep -f={filepath} CloneLocal
@@ -33,10 +33,6 @@ namespace Deployer;
     //path to builds directory
     $buildsArchivesPath = __DIR__ . '\\builds';
     set('builds_archives_path', $buildsArchivesPath);
-    
-    //path to base-config directory
-    $baseConfigPath = __DIR__ . '\\base-config';
-    set('base_config_path', $baseConfigPath);
     
     require 'vendor/axenox/deployer/Recipes/Build/CloneLocal.php'; 
  

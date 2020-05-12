@@ -1,5 +1,4 @@
 <?php
-
 namespace Deployer;
 
 use Deployer\Exception\Exception;
@@ -83,10 +82,12 @@ task('deploy:copy_directories', function () {
         run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/ && chmod +w ./ && mkdir -p {{config_dir}}');
     }
     
-    run('cp -rn {{target_dir}}/base-config/*.* {{target_dir}}/{{config_dir}}/');
+    // TODO #deployconfig add support for deployment configs and default_app_config instead 
+    // of the old base-config folder
+    /*run('cp -rn {{target_dir}}/base-config/*.* {{target_dir}}/{{config_dir}}/');
     run('rm -rf {{target_dir}}/base-config');
-    
-    writeln('Generated initial configuration files.');
+    writeln('Generated initial configuration files.');*/
+    writeln('Host config files not updated: please review ' . get('target_dir') . '/' . get('config_dir') . ' manually!');
 });
 
 /**

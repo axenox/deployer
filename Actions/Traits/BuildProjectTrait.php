@@ -52,15 +52,6 @@ trait BuildProjectTrait{
     }
     
     /**
-     *
-     * @return string
-     */
-    protected function getFolderNameForBaseConfig() : string
-    {
-        return 'base-config';
-    }
-    
-    /**
      * @return int
      */
     protected function getTimeout() : int

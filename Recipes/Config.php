@@ -66,11 +66,11 @@ task('config:setup_deploy_config', function () {
     }
     set('php_path', $phpPath);
     try {
-        $localVendors = get('local_vendors');
+        $deployConfig = get('deploy_config');
     } catch (ConfigurationException $e) {
-        $localVendors = [];
+        $deployConfig = [];
     }
-    set('local_vendors', $localVendors);
+    set('deploy_config', $deployConfig);
     
     // === Deployer specific parameters ===
     set('config_dir', $configDir);
