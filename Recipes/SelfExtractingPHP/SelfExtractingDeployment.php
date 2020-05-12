@@ -124,8 +124,8 @@ try {
     }
     
     //copy needed app configs, if not already exist
-    if (is_array($deployConfig('default_app_config'))) {
-        foreach($deployConfig('default_app_config') as $fileName => $configArray) {
+    if (is_array($deployConfig['default_app_config'])) {
+        foreach($deployConfig['default_app_config'] as $fileName => $configArray) {
             $filePath = $configPath . DIRECTORY_SEPARATOR . $fileName;
             if(! file_exists($filePath)) {
                 file_put_contents($filePath, json_encode($configArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
