@@ -70,10 +70,10 @@ task('LocalBldSshSelfExtractor', [
     'config:setup_deploy_config',
     'build:find',
     'self_deployment:create',
-    'self_deployment:upload',
+    /*'self_deployment:upload',
     'self_deployment:run',
     'self_deployment:delete_local_file',
     'self_deployment:delete_remote_file',
-    'deploy:show_release_names',
+    'deploy:show_release_names',*/
     'deploy:success'
 ]);

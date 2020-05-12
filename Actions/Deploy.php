@@ -344,7 +344,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         $phpPath = $this->getHostData($task, 'php_cli');
         $recipePath = $this->getDeployRecipeFile($task);
         $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
-        $projectConfigJson = $this->getHostData($task, 'deploy_config') ?? [];
+        $deployConfigJson = $this->getHostData($task, 'deploy_config') ?? '{}';
+        $deployConfigPHP = var_export(json_decode($deployConfigJson, true), true);
         
         $content = <<<PHP
 <?php
@@ -366,10 +367,7 @@ set('basic_deploy_path', '{$basicDeployPath}');
 set('relative_deploy_path', '{$relativeDeployPath}');
 set('builds_archives_path', '{$buildsArchivesPath}');
 set('php_path', '{$phpPath}');
-\$deployConfig = <<<JSON
-{$projectConfigJson}
-JSON;
-set('deploy_config', json_decode(\$deployConfig));
+set('deploy_config', $deployConfigPHP);
 
 require '{$recipePath}';
 

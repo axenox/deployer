@@ -82,7 +82,7 @@ task('deploy:copy_directories', function () {
         run('cd {{basic_deploy_path_cygwin}}/{{relative_deploy_path}}/{{release_path}}/ && chmod +w ./ && mkdir -p {{config_dir}}');
     }
     
-    // TODO #deployconfig add support for deployment configs and default_app_config instead 
+    // TODO #deploy_config add support for deployment configs and default_app_config instead 
     // of the old base-config folder
     /*run('cp -rn {{target_dir}}/base-config/*.* {{target_dir}}/{{config_dir}}/');
     run('rm -rf {{target_dir}}/base-config');

@@ -8,10 +8,7 @@ $sharedDirs = [#shared#]; //placeholder for array
 $copyDirs = [#copy#]; //placeholder for array
 $keepReleases = [#releases#]; //placeholder for integer
 // The deployment config of the host
-$deployConfigJson = <<<JSON
-[#deployconfig#]
-JSON;
-$deployConfig = json_decode($deployConfigJson); // array with local vendors, base config, etc.
+$deployConfig = [#deploy_config#]; // array with local vendors, base config, etc.
 $phpPath = '[#php#]'; //placeholder for string
 $relativeReleasesPath = 'releases';
 $relativeSharedPath = 'shared';
