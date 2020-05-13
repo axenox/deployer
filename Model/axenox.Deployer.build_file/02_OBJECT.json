@@ -81,7 +81,7 @@
     "rows": [
         {
             "CREATED_ON": "2019-10-01 07:57:20",
-            "MODIFIED_ON": "2019-10-22 13:28:19",
+            "MODIFIED_ON": "2020-05-13 09:44:58",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9e42115b0c631bacde4b318306b9a",
@@ -98,7 +98,7 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_EDITOR_UXON": null,
             "ALIAS": "build_file",
-            "DATA_ADDRESS": "deployer\/[#PARENT_FOLDER__FOLDER_NAME#]\/builds\/*"
+            "DATA_ADDRESS": "data\/deployer\/[#PARENT_FOLDER__FOLDER_NAME#]\/builds\/*"
         }
     ],
     "totals_rows": [],
