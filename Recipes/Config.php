@@ -75,7 +75,7 @@ task('config:setup_deploy_config', function () {
     // === Deployer specific parameters ===
     set('config_dir', $configDir);
     set('shared_files', []);
-    set('shared_dirs', ['backup', 'cache', 'export', 'UserData', 'logs']);
+    set('shared_dirs', ['backup', 'cache', 'data', 'logs']);
     set('copy_dirs', ['config']);    
     try {
         $keepReleases = get('keep_releases');

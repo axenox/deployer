@@ -491,7 +491,7 @@ PHP;
     /**
      * Creates the folder structure of the directories needed for deployment. 
      * 
-     * e.g. deployer\testBuild\hosts\hostAlias
+     * e.g. data\deployer\testBuild\hosts\hostAlias
      * 
      * @param Taskinterface $task
      * @param string $hostAlias

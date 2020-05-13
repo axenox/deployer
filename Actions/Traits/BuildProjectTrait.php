@@ -5,11 +5,14 @@ use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\Exceptions\Actions\ActionInputMissingError;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\Interfaces\Tasks\TaskInterface;
+use exface\Core\DataTypes\FilePathDataType;
 
 
 trait BuildProjectTrait{
     
     private $timeout = 900;
+    
+    private $projectFolder = null;
     
     /**
      * Returns the absolute path to the basefolder, ending with a DIRECTORY_SEPERATOR.
@@ -31,7 +34,7 @@ trait BuildProjectTrait{
      * 
      * Example:
      * ```
-     *  deployer\exampleHost
+     *  data\deployer\exampleHost
      * ```
      * 
      * @param TaskInterface $task
@@ -39,7 +42,10 @@ trait BuildProjectTrait{
      */
     protected function getProjectFolderRelativePath(TaskInterface $task) : string
     {
-        return 'deployer' . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias');
+        if ($this->projectFolder === null) {
+            $this->projectFolder = FilePathDataType::normalize($this->getApp()->getConfig()->getOption('PROJECTS_FOLDER_RELATIVE_TO_BASE'), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->getProjectData($task, 'alias');
+        }
+        return $this->projectFolder;
     }
     
     /**
