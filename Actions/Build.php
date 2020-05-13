@@ -119,6 +119,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 
                 $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
                 $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
+                
+                $buildData->setCellValue('comment', 0, $this->getComment($task));
+                $buildData->setCellValue('notes', 0, $this->getNotes($task));
     
                 // run the deployer task via CLI
                 if (getcwd() !== $this->getBasePath()) {
@@ -151,12 +154,11 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                     $msg = '✔ SUCCEEDED building ' . $buildName . ' in ' . $seconds . ' seconds.';
                 }
                 $buildData->dataUpdate(false);
-    
-                $buildComment = $this->getComment($task);
-                $buildData->setCellValue('comment', 0, $buildComment);
                 
-                $buildNotes = $this->getNotes($task);
-                $buildData->setCellValue('notes', 0, $buildNotes);
+                $composerLockPath = $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.lock';
+                if (file_exists($composerLockPath)) {
+                    $buildData->setCellValue('composer_lock', 0, file_get_contents($composerLockPath)); 
+                }
                 
                 // Delete temporary files
                 $this->cleanupFiles($projectFolder);
