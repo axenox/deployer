@@ -125,6 +125,7 @@
     "totals_rows": [],
     "filters": {
         "operator": "AND",
+        "base_object_alias": "exface.Core.MESSAGE",
         "conditions": [
             {
                 "expression": "APP",

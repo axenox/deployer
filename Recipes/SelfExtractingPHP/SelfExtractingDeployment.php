@@ -6,8 +6,9 @@ $basicDeployPath = '[#basic#]'; //placeholder for string
 $relativeDeployPath = '[#relative#]'; //placeholder for string
 $sharedDirs = [#shared#]; //placeholder for array
 $copyDirs = [#copy#]; //placeholder for array
-$localVendors = [#localvendors#]; //placeholder for array
 $keepReleases = [#releases#]; //placeholder for integer
+// The deployment config of the host
+$deployConfig = [#deploy_config#]; // array with local vendors, base config, etc.
 $phpPath = '[#php#]'; //placeholder for string
 $relativeReleasesPath = 'releases';
 $relativeSharedPath = 'shared';
@@ -21,7 +22,6 @@ $exfacePath = $basicDeployPath . DIRECTORY_SEPARATOR . $exfaceFolderName;
 
 $releaseName = pathinfo(__FILE__,  PATHINFO_FILENAME);
 $releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
-$baseConfigPath = $releasePath . DIRECTORY_SEPARATOR . 'base-config';
 $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
 
 $oldReleasePath = null;
@@ -124,19 +124,14 @@ try {
     }
     
     //copy needed app configs, if not already exist
-    if (is_dir($baseConfigPath)) {
-        $dir = opendir($baseConfigPath);
-        while(false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if(!file_exists($configPath . DIRECTORY_SEPARATOR . $file)) {
-                    copy($baseConfigPath . DIRECTORY_SEPARATOR . $file, $configPath . DIRECTORY_SEPARATOR . $file);
-                    echo("Base config {$file} copied!\n");
-                }
+    if (is_array($deployConfig['default_app_config'])) {
+        foreach($deployConfig['default_app_config'] as $fileName => $configArray) {
+            $filePath = $configPath . DIRECTORY_SEPARATOR . $fileName;
+            if(! file_exists($filePath)) {
+                file_put_contents($filePath, json_encode($configArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                echo("Config {$fileName} created." . PHP_EOL);
             }
         }
-        closedir($dir);
-        deleteDirectory($baseConfigPath);
-        echo("Directory {$baseConfigPath} removed!\n");
     }
     
     //uninstall old apps
@@ -152,9 +147,11 @@ try {
         for ($i = 0; $i < count($uninstallAppsAliases); $i++) {
             $arr = explode('.', $uninstallAppsAliases[$i]);
             $appsVendor = $arr[0];
-            foreach ($localVendors as $vendor) {
-                if (strpos($vendor, $appsVendor) !== FALSE) {                
-                    unset ($uninstallAppsAliases[$i]);
+            if (is_array($deployConfig['local_vendors'])) {
+                foreach ($deployConfig['local_vendors'] as $vendor) {
+                    if (strpos($vendor, $appsVendor) !== FALSE) {                
+                        unset ($uninstallAppsAliases[$i]);
+                    }
                 }
             }
         }
@@ -238,8 +235,8 @@ try {
     }
     
     //copy Apps from local vendors
-    if ($oldReleasePath !== null) {
-        foreach ($localVendors as $local) {
+    if ($oldReleasePath !== null && is_array($deployConfig['local_vendors'])) {
+        foreach ($deployConfig['local_vendors'] as $local) {
             if ($local === null || $local === '') {
                 continue;
             }

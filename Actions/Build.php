@@ -22,6 +22,7 @@ use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use exface\Core\Interfaces\Events\TaskEventInterface;
 use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
+use exface\Core\CommonLogic\UxonObject;
 
 /**
  * Creates a build from an instance of a project and a version number.
@@ -31,7 +32,7 @@ use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
  * The action creates a build, named after a comination of the verison number and current time, seperated by a '+' character.
  * The name of the resulting build is as following: `[version]+yyyymmddhhmmss`, e.g. `1.0-beta+20191108145134`
  * In the building process the action will create some temporary files and directories, and saves the 
- * crated build at `/deployer/[hostname]/[buildfolder]/[buildname].tar.gz`. Apart from the default json structures 
+ * crated build at `[config:PROJECTS_FOLDER][hostname]/[buildfolder]/[buildname].tar.gz`. Apart from the default json structures 
  * you may set in the projects data, you can also pass the objects for `composer.json` and `auth.json` to the building action.
  * The given objects will then overwrite the equivalent default object given in the project.
  * After completing the building process, you might deploy the build to a host of your choice, using the action `axenox.Deployer:Deploy`. 
@@ -118,6 +119,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 
                 $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
                 $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
+                
+                $buildData->setCellValue('comment', 0, $this->getComment($task));
+                $buildData->setCellValue('notes', 0, $this->getNotes($task));
     
                 // run the deployer task via CLI
                 if (getcwd() !== $this->getBasePath()) {
@@ -150,12 +154,11 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                     $msg = '✔ SUCCEEDED building ' . $buildName . ' in ' . $seconds . ' seconds.';
                 }
                 $buildData->dataUpdate(false);
-    
-                $buildComment = $this->getComment($task);
-                $buildData->setCellValue('comment', 0, $buildComment);
                 
-                $buildNotes = $this->getNotes($task);
-                $buildData->setCellValue('notes', 0, $buildNotes);
+                $composerLockPath = $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.lock';
+                if (file_exists($composerLockPath)) {
+                    $buildData->setCellValue('composer_lock', 0, file_get_contents($composerLockPath)); 
+                }
                 
                 // Delete temporary files
                 $this->cleanupFiles($projectFolder);
@@ -215,8 +218,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'build_recipe',
                 'build_recipe_custom_path',
                 'default_composer_json',
-                'default_composer_auth_json',
-                'default_config'
+                'default_composer_auth_json'
             ]);
             $ds->getFilters()->addConditionFromString('UID', $projectUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
@@ -259,7 +261,6 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     {
         $slash = DIRECTORY_SEPARATOR;
         $builds_archives_path = $slash . $this->getFolderNameForBuilds();
-        $base_config_path = $slash . $this->getFolderNameForBaseConfig();
 
         // Get deployer recipe file path
         $recipePath = $this->getBuildRecipeFile($task);
@@ -276,7 +277,6 @@ set('release_name', '{$buildName}');
 
 // === Path definitions ===
 set('builds_archives_path', __DIR__ . '{$builds_archives_path}');
-set('base_config_path', __DIR__ . '{$base_config_path}');
 
 require '{$recipePath}';
 
@@ -292,12 +292,11 @@ PHP;
     
     /**
      * Prepares the folder structure needed to run the deployer command and 
-     * returns it's path relative to installation root.
+     * returns it's path relative to workbench installation root.
      * 
      * ```
      * project_folder
      * - builds
-     * - base-config
      * 
      * ```
      * 
@@ -314,34 +313,12 @@ PHP;
             . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
         Filemanager::pathConstruct($basePath . $buildsFolderPath);
         
-        
-        $baseConfigFolderPath = $projectFolder
-            . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig();
-        $this->createConfigFiles($task, $basePath . $baseConfigFolderPath);
-        
         // copy current composer.phar to project folder, so it can be used for composer commands.
         if (file_exists($this->getBasePath() . 'composer.phar')) {
             $this->getWorkbench()->filemanager()->copyFile($this->getBasePath() . 'composer.phar', $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.phar');
         }
         
         return $projectFolder;
-    }
-    
-    /**
-     * This Function creates the configuration file, needed for the building process.
-     * 
-     * @param TaskInterface $task
-     * @param string $folderAbsolutePath
-     * @return Build
-     */
-    protected function createConfigFiles(TaskInterface $task, string $folderAbsolutePath) : Build
-    {
-        Filemanager::pathConstruct($folderAbsolutePath);
-        $projectConfig = json_decode($this->getProjectData($task, 'default_config'), true);
-        foreach ($projectConfig['default_app_config'] as $fileName => $config) {
-            file_put_contents($folderAbsolutePath . DIRECTORY_SEPARATOR . $fileName, json_encode($config));
-        }
-        return $this;
     }
 
     /**
@@ -598,6 +575,7 @@ PHP;
      */
     protected function cleanupFiles(string $projectFolder)
     {
+        $baseAbsPath = $this->getBasePath();
         $stagedFiles = [
             $projectFolder . DIRECTORY_SEPARATOR . 'build.php',
             $projectFolder . DIRECTORY_SEPARATOR . 'composer.json',
@@ -606,8 +584,8 @@ PHP;
         ];
         
         $stagedDirectories = [
-            $projectFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBaseConfig(),
-            $projectFolder . DIRECTORY_SEPARATOR . '.composer'
+            // .composer folder contains the composer cache. Perhaps it's not bad too keep it...
+            // $baseAbsPath . $projectFolder . DIRECTORY_SEPARATOR . '.composer'
         ];   
         
         //delete files first
@@ -619,9 +597,7 @@ PHP;
         
         //delete directories last
         foreach($stagedDirectories as $dir){
-            if (file_exists($file)) {
-                Filemanager::deleteDir($dir);
-            }
+            Filemanager::deleteDir($dir);
         }
    
     }
@@ -637,7 +613,6 @@ PHP;
         $composerHomePath = $this->getComposerHomePath($projectFolder);
         return [
             'COMPOSER_HOME' => $composerHomePath,
-            //'HOME' => 'C:\wamp\www\exface\exface\deployer'
         ];
     }
     

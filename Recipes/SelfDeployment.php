@@ -18,15 +18,15 @@ task('self_deployment:create', function () {
     $replaceRelativeDeployPath = get('relative_deploy_path');
     $replaceSharedDirs = "['" . implode("', '", get('shared_dirs')) . "']";
     $replaceCopyDirs = "['" . implode("', '", get('copy_dirs')) . "']";
-    $localVendors = get('local_vendors');
-    $replaceLocalVendors = empty($localVendors) === false && is_array($localVendors) === true ? "['" . implode("', '", $localVendors) . "']" : "[]";
+    $deployConfig = get('deploy_config') ?? [];
+    $deployConfigPHP = var_export($deployConfig, true);
     $replacePhpPath = get('php_path');
     $replaceKeepReleases = get('keep_releases');
     $str=str_replace('[#basic#]', $replaceBasicDeployPath, $str);
     $str=str_replace('[#relative#]', $replaceRelativeDeployPath, $str);
     $str=str_replace('[#shared#]', $replaceSharedDirs, $str);
     $str=str_replace('[#copy#]', $replaceCopyDirs, $str);
-    $str=str_replace('[#localvendors#]', $replaceLocalVendors, $str);
+    $str=str_replace('[#deploy_config#]', $deployConfigPHP, $str);
     $str=str_replace('[#php#]', $replacePhpPath, $str);
     $str=str_replace('[#releases#]', $replaceKeepReleases, $str);
     file_put_contents($temp_php, $str);

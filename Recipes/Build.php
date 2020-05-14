@@ -59,20 +59,7 @@ task('build:create_from_local', function() {
     if (!is_dir($buildsPath)) {
         mkdir($buildsPath);
     }
-    try {
-        $baseConfigPath = get('base_config_path');
-    } catch (ConfigurationException $e) {
-        $baseConfigPath = null;
-    }
-    if ($baseConfigPath !=='' && $baseConfigPath !== null) {
-        if (!is_dir($baseConfigPath)) {
-            mkdir($baseConfigPath);
-        }
-        $directory_name = substr($baseConfigPath, strrpos($baseConfigPath, '\\') + 1);
-        runLocally('tar -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}} -C {{base_config_path}}\.. ' . $directory_name);
-    } else {
-        runLocally('tar -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}}');        
-    }
+    runLocally('tar -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}}');        
 });
 
 /**
@@ -102,11 +89,6 @@ task('build:create_from_composer', function() {
         echo $output . PHP_EOL;
     }
     */
-    try {
-        $baseConfigPath = get('base_config_path');
-    } catch (ConfigurationException $e) {
-        $baseConfigPath = null;
-    }
     $inp = file_get_contents($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR. 'composer.json');
     $tempArray = json_decode($inp, true);
     $tmp1 = [];
@@ -124,15 +106,7 @@ task('build:create_from_composer', function() {
     $jsonData = json_encode($tempArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     file_put_contents($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR. 'composer.json', $jsonData);
     
-    if ($baseConfigPath !=='' && $baseConfigPath !== null) {
-        if (!is_dir($baseConfigPath)) {
-            mkdir($baseConfigPath);
-        }
-        $directory_name = substr($baseConfigPath, strrpos($baseConfigPath, '\\') + 1);
-        runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}} -C {{base_config_path}}/.. ' . $directory_name);
-    } else {
-        runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}}');
-    }
+    runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}}');
+
     runLocally('rm -rf {{builds_archives_path}}\..\vendor');
-    
 });

@@ -4,8 +4,7 @@ namespace Deployer;
 
 /**
  * This file contains the recipe to build a deployment archive by via a composer.json file.
- * To do so, create a build.php file in the same directory where your builds and
- * base-config directories are located. Additional in the same directory you need a composer.json file, the
+ * To do so, create a build.php file in the same directory where your builds directories are located. Additional in the same directory you need a composer.json file, the
  * composer.phar file and, if you need to access protected git repositiories, also a auth.json with the access data.
  * To create the archive run the following command in the console from the PowerUI exface directory:
  *
@@ -34,10 +33,6 @@ namespace Deployer;
  //path to builds directory
  $buildsArchivesPath = __DIR__ . '\\builds';
  set('builds_archives_path', $buildsArchivesPath);
- 
- //path to base-config directory
- $baseConfigPath = __DIR__ . '\\base-config';
- set('base_config_path', $baseConfigPath);
  
  require 'vendor/axenox/deployer/Recipes/Build/CloneLocal.php';
  

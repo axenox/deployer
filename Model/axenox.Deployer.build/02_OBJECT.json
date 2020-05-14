@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-10-22 13:31:13",
-            "MODIFIED_ON": "2019-11-21 16:57:25",
+            "MODIFIED_ON": "2020-05-13 09:06:59",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
@@ -96,7 +96,7 @@
             "SHORT_DESCRIPTION": "",
             "PARENT_OBJECT": "",
             "DATA_ADDRESS_PROPS": null,
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Dialog\",\"widgets\":[{\"widget_type\":\"Tabs\",\"tabs\":[{\"caption\":\"General\",\"widgets\":[{\"attribute_alias\":\"version\"},{\"attribute_alias\":\"project\",\"widget_type\":\"InputComboTable\",\"id\":\"project_selector\",\"table\":{\"object_alias\":\"axenox.Deployer.project\",\"columns\":[{\"attribute_group_alias\":\"~DEFAULT_DISPLAY\"},{\"attribute_alias\":\"default_composer_json\",\"hidden\":true},{\"attribute_alias\":\"alias\",\"hidden\":true},{\"attribute_alias\":\"default_composer_auth_json\",\"hidden\":true}]}},{\"attribute_alias\":\"project__alias\",\"widget_type\":\"InputHidden\",\"value\":\"=project_selector!alias\"},{\"attribute_alias\":\"comment\",\"width\":\"max\"},{\"attribute_alias\":\"status\"},{\"attribute_alias\":\"name\",\"required\":false},{\"attribute_alias\":\"notes\",\"widget_type\":\"InputText\",\"width\":\"max\",\"height\":8}]},{\"caption\":\"composer.json\",\"widgets\":[{\"attribute_alias\":\"composer_json\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true,\"value\":\"=project_selector!default_composer_json\"}]},{\"caption\":\"auth.json\",\"widgets\":[{\"attribute_alias\":\"composer_auth_json\",\"widget_type\":\"InputJson\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true,\"value\":\"=project_selector!default_composer_auth_json\"}]},{\"caption\":\"Log\",\"widgets\":[{\"attribute_alias\":\"log\",\"widget_type\":\"InputText\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true}]}]}]}",
+            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Dialog\",\"widgets\":[{\"widget_type\":\"Tabs\",\"tabs\":[{\"caption\":\"General\",\"widgets\":[{\"attribute_alias\":\"version\"},{\"attribute_alias\":\"project\",\"widget_type\":\"InputComboTable\",\"id\":\"project_selector\",\"table\":{\"object_alias\":\"axenox.Deployer.project\",\"columns\":[{\"attribute_group_alias\":\"~DEFAULT_DISPLAY\"},{\"attribute_alias\":\"default_composer_json\",\"hidden\":true},{\"attribute_alias\":\"alias\",\"hidden\":true},{\"attribute_alias\":\"default_composer_auth_json\",\"hidden\":true}]}},{\"attribute_alias\":\"project__alias\",\"widget_type\":\"InputHidden\",\"value\":\"=project_selector!alias\"},{\"attribute_alias\":\"comment\",\"width\":\"max\"},{\"attribute_alias\":\"status\"},{\"attribute_alias\":\"name\",\"required\":false},{\"attribute_alias\":\"notes\",\"widget_type\":\"InputText\",\"width\":\"max\",\"height\":8}]},{\"caption\":\"composer.json\",\"widgets\":[{\"attribute_alias\":\"composer_json\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true,\"value\":\"=project_selector!default_composer_json\"}]},{\"caption\":\"auth.json\",\"widgets\":[{\"attribute_alias\":\"composer_auth_json\",\"widget_type\":\"InputJson\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true,\"value\":\"=project_selector!default_composer_auth_json\"}]},{\"caption\":\"Log\",\"widgets\":[{\"attribute_alias\":\"log\",\"widget_type\":\"InputText\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true}]},{\"caption\":\"composer.lock\",\"widgets\":[{\"attribute_alias\":\"composer_lock\",\"widget_type\":\"InputJson\",\"height\":\"100%\",\"width\":\"max\",\"hide_caption\":true}]}]}]}",
             "ALIAS": "build",
             "DATA_ADDRESS": "axxdep_build"
         }
@@ -104,6 +104,7 @@
     "totals_rows": [],
     "filters": {
         "operator": "AND",
+        "base_object_alias": "exface.Core.OBJECT",
         "conditions": [
             {
                 "expression": "APP",
