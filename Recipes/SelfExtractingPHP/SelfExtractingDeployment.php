@@ -1,6 +1,8 @@
 <?php
 
-ini_set('memory_limit', '-1'); // or you could use 1G
+ini_set('memory_limit', '1G'); // or you could use -1
+set_time_limit(0);
+ini_set('max_execution_time', 0);
 
 $basicDeployPath = '[#basic#]'; //placeholder for string
 $relativeDeployPath = '[#relative#]'; //placeholder for string
