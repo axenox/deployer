@@ -334,6 +334,17 @@ function deleteDirectory(string $dir) : bool
         return true;
     }
     
+    if (is_link($dir)) {
+        echo ("Removing link '{$dir}'!\n");
+        chmod($dir, 0777);
+        $success = false;
+        $success = @unlink($dir);
+        if ($success === false) {
+            $success = rmdir($dir);
+        }
+        return $success;
+    }
+    
     if (!is_dir($dir)) {
         chmod($dir, 0777);
         return unlink($dir);
@@ -343,7 +354,6 @@ function deleteDirectory(string $dir) : bool
         if ($item == '.' || $item == '..') {
             continue;
         }
-        
         if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
             return false;
         }
