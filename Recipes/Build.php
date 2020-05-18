@@ -20,7 +20,16 @@ task('build:find', function () {
         } else {
             $directory = get('builds_archives_path');
             $files = scandir($directory, SCANDIR_SORT_DESCENDING);
-            $newest_file = $files[0];
+            $temp = [];
+            foreach ($files as $file) {
+                if ($file == '.' || $file == '..') {
+                    continue;
+                }
+                $temp[$file] = filemtime($directory . DIRECTORY_SEPARATOR . $file);
+            }            
+            arsort($temp);
+            $filesName = array_keys($temp);
+            $newest_file = $filesName[0];
             $archivName = $newest_file;
             $stringLength = strlen($archivName);
             $releaseName = substr($archivName,0,($stringLength-7));
