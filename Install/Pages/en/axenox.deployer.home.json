@@ -10,8 +10,8 @@
     "replaces_page_selector": null,
     "created_by_user_selector": "0x31000000000000000000000000000000",
     "created_on": "2019-09-27 10:28:03",
-    "modified_by_user_selector": "0x31000000000000000000000000000000",
-    "modified_on": "2020-05-04 08:55:54",
+    "modified_by_user_selector": "0x11ea95ea3987fa17a9d10205857feb80",
+    "modified_on": "2020-05-17 21:11:26",
     "contents": {
         "widget_type": "DataTable",
         "object_alias": "axenox.Deployer.project",
@@ -57,7 +57,9 @@
             },
             {
                 "action_alias": "exface.Core.ShowObjectEditDialog",
-                "bind_to_double_click": true
+                "bind_to_double_click": true,
+                "caption": "=TRANSLATE('exface.Core', 'ACTION.GENERIC.OPEN')",
+                "icon": "external-link"
             },
             {
                 "action_alias": "exface.Core.ShowObjectCopyDialog"
