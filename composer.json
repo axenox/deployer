@@ -1,6 +1,9 @@
 {
 	"name" : "axenox/deployer",
-	"license" : "GPL-3.0+, Commercial",
+	"license" : [
+		"GPL-3.0+",
+		"proprietary"
+	],
 	"require" : {
 		"exface/core" : "^1.0",
 		"deployer/deployer" : "^6.5",
