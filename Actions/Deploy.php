@@ -560,7 +560,7 @@ PHP;
                 //execute all commands set in $commandList
                 foreach($commandList as $cmd){
                     $process = Process::fromShellCommandline($cmd);
-                    $process->start();
+                    $process->mustRun();
                 }
                 break;
                 
