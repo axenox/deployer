@@ -11,7 +11,9 @@
 		"kabachello/composerapi" : "~0.3.2"
 	},
 	"support" : {
-		"issues" : "https://github.com/axenox/deployer/issues"
+		"issues" : "https://github.com/axenox/deployer/issues",
+		"source" : "https://github.com/axenox/deployer",
+		"docs" : "https://github.com/axenox/deployer/blob/master/Docs"
 	},
 	"autoload" : {
 		"psr-4" : {
