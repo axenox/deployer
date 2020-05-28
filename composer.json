@@ -1,36 +1,36 @@
 {
-	"name" : "axenox/deployer",
-	"license" : [
-		"GPL-3.0+",
-		"proprietary"
-	],
-	"require" : {
-		"exface/core" : "^1.0",
-		"deployer/deployer" : "^6.5",
-		"deployer/recipes" : "^6.2.2",
-		"kabachello/composerapi" : "~0.3.2"
-	},
-	"support" : {
-		"issues" : "https://github.com/axenox/deployer/issues",
-		"source" : "https://github.com/axenox/deployer",
-		"docs" : "https://github.com/axenox/deployer/blob/master/Docs"
-	},
-	"autoload" : {
-		"psr-4" : {
-			"\\axenox\\Deployer\\" : ""
-		},
-		"exclude-from-classmap" : [
-			"/Config/",
-			"/Translations/",
-			"/Model/"
-		]
-	},
-	"extra" : {
-		"app" : {
-			"app_uid" : "0x11e9e072016ba0dd8afae4b318306b9a",
-			"app_alias" : "axenox.Deployer",
-			"model_md5" : "92be5c12d679f724df69e19eb48b8c84",
-			"model_timestamp" : "2020-05-25 09:27:20"
-		}
-	}
+    "name": "axenox/deployer",
+    "license": [
+        "GPL-3.0+",
+        "proprietary"
+    ],
+    "require": {
+        "exface/core": "^1.0",
+        "deployer/deployer": "^6.5",
+        "deployer/recipes": "^6.2.2",
+        "kabachello/composerapi": "~0.3.2"
+    },
+    "support": {
+        "issues": "https://github.com/axenox/deployer/issues",
+        "source": "https://github.com/axenox/deployer",
+        "docs": "https://github.com/axenox/deployer/blob/master/Docs"
+    },
+    "autoload": {
+        "psr-4": {
+            "\\axenox\\Deployer\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Config/",
+            "/Translations/",
+            "/Model/"
+        ]
+    },
+    "extra": {
+        "app": {
+            "app_uid": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "app_alias": "axenox.Deployer",
+            "model_md5": "4e7e96fbcbac05cb57f76fd61a13be5b",
+            "model_timestamp": "2020-05-28 10:19:14"
+        }
+    }
 }
