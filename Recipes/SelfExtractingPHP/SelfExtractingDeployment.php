@@ -336,6 +336,7 @@ function recurseCopy(string $src, string $dst) : void
 //removing dir that is not empty
 function deleteDirectory(string $dir) : bool
 {
+    $success = false;
     if (!file_exists($dir)) {
         return true;
     }
@@ -348,12 +349,15 @@ function deleteDirectory(string $dir) : bool
         if ($success === false) {
             $success = rmdir($dir);
         }
+        echo ('DEBUG: Deleting symbolic link: ' . $dir . ($success === true ? ' successful!' : ' failed!') . PHP_EOL);
+        
         return $success;
     }
     
     if (!is_dir($dir)) {
         chmod($dir, 0777);
-        return unlink($dir);
+        $success = unlink($dir);
+        return $success;
     }
     
     foreach (scandir($dir) as $item) {
@@ -365,8 +369,9 @@ function deleteDirectory(string $dir) : bool
         }
         
     }
-    
-    return rmdir($dir);
+    chmod($dir, 0777);
+    $success = rmdir($dir);
+    return $success;
 }
 
 //deletin old releases, adding new release to logfile
@@ -442,8 +447,8 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
     foreach ($releasesList as $release){
         echo ("Deleting release: " . $release . "\n");
         $dir = $releasesPath . DIRECTORY_SEPARATOR . $release;
-        deleteDirectory($dir);
-        echo ("Deleted release: " . $release . "\n");
+        $success = deleteDirectory($dir);        
+        echo ('Deleting release: ' . $dir . ($success === true ? ' successful!' : ' failed!') . PHP_EOL);
     }    
     return;
 }
@@ -457,6 +462,31 @@ RewriteRule ^(.*)$ current/$1 [L,QSA]
 TXT;
     file_put_contents($path . DIRECTORY_SEPARATOR . '.htaccess', $content);
     echo("htaccess file created!\n");
+    return;
+}
+
+function createWebConfig($path) : void
+{
+    $content = <<<TXT
+    
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<location path="." inheritInChildApplications="false"> 
+		<system.webServer>
+			<rewrite>
+			  <rules>
+				<rule name="Redirect to Current" stopProcessing="false">
+				  <match url="^(.*)$" ignoreCase="false" />
+				  <action type="Redirect" url="current/{R:1}" appendQueryString="true" redirectType="Temporary"/>
+				</rule>
+			  </rules>
+			</rewrite>
+		</system.webServer>
+	</location>
+</configuration>
+TXT;
+    file_put_contents($path . DIRECTORY_SEPARATOR . 'Web.config', $content);
+    echo("Web.Config file created!\n");
     return;
 }
 
