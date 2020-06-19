@@ -107,7 +107,6 @@ try {
     chdir($releasePath);
     foreach($sharedDirs as $dir) {
         $target_pointer = $sharedPath . DIRECTORY_SEPARATOR . $dir;
-        echo ('DEBUG: ' . $target_pointer . (count(scandir($target_pointer)) == 2 ? ' EMPTY!!!' : ' not empty') . PHP_EOL);
         $test = symlink($target_pointer, $dir);
         if (! $test) {
             throw new Exception("Symlink to {$releasesPath}\\{$dir} could not be created: from {$target_pointer}");
@@ -131,6 +130,13 @@ try {
             if(! file_exists($filePath)) {
                 file_put_contents($filePath, json_encode($configArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
                 echo("Config {$fileName} created." . PHP_EOL);
+            } else {
+                $fileContentsArray = json_decode(file_get_contents($filePath), true);
+                if (is_array($fileContentsArray) && empty($fileContentsArray) === false) {
+                    $configMerged = array_replace($fileContentsArray, $configArray);
+                    file_put_contents($filePath, json_encode($configMerged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                    echo("Config {$fileName} merged." . PHP_EOL);
+                }
             }
         }
     }
@@ -184,7 +190,6 @@ try {
     echo("Permissions set!\n");
     
     //create 'current' symlink to new release
-    echo ('DEBUG 2: ' . $sharedPath . DIRECTORY_SEPARATOR . 'logs' . (count(scandir($sharedPath . DIRECTORY_SEPARATOR . 'logs')) == 2 ? ' EMPTY!!!' : ' not empty') . PHP_EOL);
     chdir($deployPath);
     if (is_dir($currentPath)) {
         rmdir($currentPath);
@@ -196,7 +201,6 @@ try {
     } else {
         echo("Symlink to {$relativeCurrentPath} created!\n");
     }
-    echo ('DEBUG 3: ' . $sharedPath . DIRECTORY_SEPARATOR . 'logs' . (count(scandir($sharedPath . DIRECTORY_SEPARATOR . 'logs')) == 2 ? ' EMPTY!!!' : ' not empty') . PHP_EOL);
     
     // when relative path is empty (no modx) then create special .htaccess
     if ($relativeDeployPath == '' || $relativeDeployPath == null) {
@@ -230,7 +234,6 @@ try {
         $command = "cd {$currentPath} && {$phpPath} composer.phar run-script post-install-cmd";
     }
     echo ("Installing apps...\n");
-    echo ('DEBUG 4: ' . $sharedPath . DIRECTORY_SEPARATOR . 'logs' . (count(scandir($sharedPath . DIRECTORY_SEPARATOR . 'logs')) == 2 ? ' EMPTY!!!' : ' not empty') . PHP_EOL);
     echo ("Execute command: {$command} \n");
     $cmdarray = [];
     echo exec("{$command}", $cmdarray);
@@ -238,7 +241,6 @@ try {
         echo ($line . "\n");
     }
     
-    echo ('DEBUG 5: ' . $sharedPath . DIRECTORY_SEPARATOR . 'logs' . (count(scandir($sharedPath . DIRECTORY_SEPARATOR . 'logs')) == 2 ? ' EMPTY!!!' : ' not empty') . PHP_EOL);
     //copy Apps from local vendors
     if ($oldReleasePath !== null && is_array($deployConfig['local_vendors'])) {
         foreach ($deployConfig['local_vendors'] as $local) {
@@ -266,9 +268,7 @@ try {
     }
     
     //create/append release list file, deleting old releases
-    echo ('DEBUG 6: ' . $sharedPath . DIRECTORY_SEPARATOR . 'logs' . (count(scandir($sharedPath . DIRECTORY_SEPARATOR . 'logs')) == 2 ? ' EMPTY!!!' : ' not empty') . PHP_EOL);
     cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases);
-    echo ('DEBUG 7: ' . $sharedPath . DIRECTORY_SEPARATOR . 'logs' . (count(scandir($sharedPath . DIRECTORY_SEPARATOR . 'logs')) == 2 ? ' EMPTY!!!' : ' not empty') . PHP_EOL);
     
     echo ("Self deployment successful!\n");
     
