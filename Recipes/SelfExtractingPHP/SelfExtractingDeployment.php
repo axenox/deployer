@@ -201,6 +201,7 @@ try {
     // when relative path is empty (no modx) then create special .htaccess
     if ($relativeDeployPath == '' || $relativeDeployPath == null) {
         createHtaccess($basicDeployPath);
+        createWebConfig($basicDeployPath);
     } else {
         //create 'exface' symlink to 'current'
         chdir($basicDeployPath);
@@ -456,11 +457,10 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
 function createHtaccess($path) : void
 {
     $content = <<<TXT
-    
 RewriteEngine On
 RewriteRule ^(.*)$ current/$1 [L,QSA]
 TXT;
-    file_put_contents($path . DIRECTORY_SEPARATOR . '.htaccess', $content);
+    file_put_contents($path . DIRECTORY_SEPARATOR . '.htaccess', trim($content));
     echo("htaccess file created!\n");
     return;
 }
@@ -468,7 +468,6 @@ TXT;
 function createWebConfig($path) : void
 {
     $content = <<<TXT
-    
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<location path="." inheritInChildApplications="false"> 
@@ -485,7 +484,7 @@ function createWebConfig($path) : void
 	</location>
 </configuration>
 TXT;
-    file_put_contents($path . DIRECTORY_SEPARATOR . 'Web.config', $content);
+    file_put_contents($path . DIRECTORY_SEPARATOR . 'Web.config', trim($content));
     echo("Web.Config file created!\n");
     return;
 }
