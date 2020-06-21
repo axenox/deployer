@@ -148,6 +148,20 @@
             "UXON": "{\"require\":{\"exface\\\/Core\":\"dev-1.x-dev as 1.99\",\"axenox\\\/PackageManager\":\"dev-1.x-dev as 1.99\",\"exface\\\/UrlDataConnector\":\"dev-1.x-dev as 1.99\",\"exface\\\/SapConnector\":\"dev-1.x-dev as 1.99\",\"exface\\\/UI5Facade\":\"dev-1.x-dev as 1.99\",\"exface\\\/JEasyUIFacade\":\"dev-1.x-dev as 1.99\",\"bower-asset\\\/jeasyui\":\"1.4.3\"},\"repositories\":[{\"type\":\"composer\",\"url\":\"https:\\\/\\\/asset-packagist.org\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/Core\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/UrlDataConnector\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/SapConnector\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/UI5Facade\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/JEasyUiFacade\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/axenox\\\/PackageManager\"}],\"minimum-stability\":\"dev\",\"prefer-stable\":true,\"config\":{\"secure-http\":false},\"optimize-autoloader\":true,\"autoload\":{\"psr-0\":{\"axenox\\\\PackageManager\":\"vendor\\\/\"}}}",
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema"
+        },
+        {
+            "CREATED_ON": "2020-06-19 13:37:56",
+            "MODIFIED_ON": "2020-06-19 13:37:56",
+            "CREATED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "MODIFIED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "UID": "0x11eaba9a51da9e20ba9a025041000001",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "Basic MsSQL+IIS config",
+            "DESCRIPTION": "Fill in the DB connection and add local vendors to prevent auto-overwriting changes in their apps on this server",
+            "PROTOTYPE": "",
+            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MsSqlModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MsSqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MsSqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"localhost\",\"user\":\"sa\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"UTF-8\"},\"SERVER.DEFAULT_LOCALE\":\"\"},\"exface.Core.config.json\":{\"INSTALLER.SERVER_INSTALLER.CLASS\":\"\\\\exface\\\\Core\\\\CommonLogic\\\\AppInstallers\\\\IISServerInstaller\"}},\"local_vendors\":[\"\"]}",
+            "WRAP_PATH": "",
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
         }
     ],
     "totals_rows": [],
