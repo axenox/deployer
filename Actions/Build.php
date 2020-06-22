@@ -84,7 +84,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildData = DataSheetFactory::createFromObject($this->getInputObjectExpected());
             $buildData->addRow([
                 'version' => $this->getVersion($task),
-                'project' => $this->getProjectData($task, 'UID'),
+                'project' => $this->getProjectData($task, 'uid'),
                 'comment' => $this->getComment($task),
                 'notes' => $this->getNotes($task),
                 'composer_json' => $this->getComposerJson($task),
@@ -220,7 +220,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'default_composer_json',
                 'default_composer_auth_json'
             ]);
-            $ds->getFilters()->addConditionFromString('UID', $projectUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('uid', $projectUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->projectData = $ds;

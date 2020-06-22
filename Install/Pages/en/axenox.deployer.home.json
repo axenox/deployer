@@ -11,7 +11,7 @@
     "created_by_user_selector": "0x31000000000000000000000000000000",
     "created_on": "2019-09-27 10:28:03",
     "modified_by_user_selector": "0x31000000000000000000000000000000",
-    "modified_on": "2020-05-28 09:45:58",
+    "modified_on": "2020-06-22 07:48:25",
     "contents": {
         "widget_type": "DataTable",
         "object_alias": "axenox.Deployer.project",
@@ -31,7 +31,7 @@
                 "attribute_alias": "project_group__LABEL"
             },
             {
-                "attribute_alias": "host__UID:COUNT",
+                "attribute_alias": "host__uid:COUNT",
                 "caption": "Hosts"
             },
             {

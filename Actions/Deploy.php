@@ -93,8 +93,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             
             // Create deploy entry and mark it as "in progress"
             $deployData->setCellValue('status', 0, 50);
-            $deployData->setCellValue('host', 0, $this->getHostData($task, 'UID'));
-            $deployData->setCellValue('build', 0, $this->getBuildData($task, 'UID'));
+            $deployData->setCellValue('host', 0, $this->getHostData($task, 'uid'));
+            $deployData->setCellValue('build', 0, $this->getBuildData($task, 'uid'));
             $deployData->setCellValue('started_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
             $deployData->setCellValue('deploy_recipe_file', 0, $this->getDeployRecipeFile($task));
             // Do not use the transaction to force force creating a separate one for this operation.
@@ -210,7 +210,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'name',
                 'project_group'
             ]);
-            $ds->getFilters()->addConditionFromString('UID', $projectUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('uid', $projectUid, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->projectData = $ds;
         }
@@ -255,7 +255,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'stage',
                 'deploy_config'
             ]);
-            $ds->getFilters()->addConditionFromString('UID', $hostUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('uid', $hostUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('name', $hostName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->hostData = $ds;
@@ -301,7 +301,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'status',
                 'version'
             ]);
-            $ds->getFilters()->addConditionFromString('UID', $buildUid, ComparatorDataType::EQUALS);
+            $ds->getFilters()->addConditionFromString('uid', $buildUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('name', $buildName, ComparatorDataType::EQUALS);
             $ds->dataRead();
             $this->buildData = $ds;

@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2020-05-17 08:34:15",
-            "MODIFIED_ON": "2020-05-17 08:34:41",
+            "MODIFIED_ON": "2020-06-22 08:21:42",
             "CREATED_BY_USER": "0x11ea95ea3987fa17a9d10205857feb80",
-            "MODIFIED_BY_USER": "0x11ea95ea3987fa17a9d10205857feb80",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ea98192612456aa9d10205857feb80",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "0",
@@ -91,12 +91,12 @@
             "DOCS": "",
             "NAME": "Currently deployed",
             "INHERIT_DATA_SOURCE_BASE_OBJECT": "1",
-            "DATA_SOURCE": "0x32000000000000000000000000000000",
+            "DATA_SOURCE": "0x11eab5facf6370bab5fa0205857feb80",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "SHORT_DESCRIPTION": "",
             "PARENT_OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
             "DATA_ADDRESS_PROPS": null,
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Dialog\",\"widgets\":[{\"attribute_alias\":\"build\"},{\"attribute_alias\":\"host\"},{\"attribute_alias\":\"status\"},{\"attribute_alias\":\"deploy_recipe_file\"},{\"attribute_alias\":\"started_on\"},{\"attribute_alias\":\"completed_on\"},{\"widget_type\":\"WidgetGroup\",\"caption\":\"Log\",\"width\":\"max\",\"widgets\":[{\"attribute_alias\":\"log\",\"hide_caption\":true,\"widget_type\":\"InputText\",\"width\":\"max\",\"height\":20}]}]}",
+            "DEFAULT_EDITOR_UXON": null,
             "ALIAS": "currently_deployed",
             "DATA_ADDRESS": "(SELECT \n\td1.*\nFROM \n\t(SELECT * FROM axxdep_deployment WHERE `status` = 99) d1 \n\tLEFT JOIN (SELECT * FROM axxdep_deployment WHERE `status` = 99) d2 ON (d1.host_oid = d2.host_oid AND d1.started_on < d2.started_on)\nWHERE d2.oid IS NULL)"
         }

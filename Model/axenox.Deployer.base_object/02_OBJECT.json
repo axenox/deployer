@@ -80,16 +80,16 @@
     ],
     "rows": [
         {
-            "CREATED_ON": "2019-09-27 07:22:14",
-            "MODIFIED_ON": "2020-06-22 07:45:59",
+            "CREATED_ON": "2020-06-22 07:42:48",
+            "MODIFIED_ON": "2020-06-22 08:26:09",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
-            "UID": "0x11e9e0f787585f52bacde4b318306b9a",
-            "READABLE_FLAG": "1",
-            "WRITABLE_FLAG": "1",
+            "UID": "0x11eab16ef7f1f6fab16e0205857feb80",
+            "READABLE_FLAG": "0",
+            "WRITABLE_FLAG": "0",
             "COMMENTS": "",
             "DOCS": "",
-            "NAME": "Deployment Stage",
+            "NAME": "Deployer Base Object",
             "INHERIT_DATA_SOURCE_BASE_OBJECT": "1",
             "DATA_SOURCE": "0x11eab5facf6370bab5fa0205857feb80",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
@@ -97,8 +97,8 @@
             "PARENT_OBJECT": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_EDITOR_UXON": null,
-            "ALIAS": "stage",
-            "DATA_ADDRESS": "axxdep_stage"
+            "ALIAS": "base_object",
+            "DATA_ADDRESS": ""
         }
     ],
     "totals_rows": [],
