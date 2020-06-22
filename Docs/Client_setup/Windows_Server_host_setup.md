@@ -2,6 +2,10 @@
 
 **IMPORTANT:** all of the PowerShell commands must be performed in **Administrator mode**!!!
 
+## Before you start
+
+Make sure your web server (i.e. Apache/WAMP or IIS) and PHP are properly configured. See [core installation guide](https://github.com/ExFace/Core/blob/1.x-dev/Docs/Installation/index.md) for details.
+
 ## 1. Install OpenSSH
 
 **NOTE:** on Windows Server 2019 and later OpenSSH is supposed to be built in. Try the [official tutorial](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) from Microsoft. 
