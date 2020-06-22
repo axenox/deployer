@@ -25,13 +25,16 @@ New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH SSH Server' -Enabled True -
 
 ## 2. Generate an SSH key pair
 
-1. Open PowerShell and run `'C:\Program Files\OpenSSH-Win64\ssh-keygen.exe'`
+1. Open PowerShell and run `'C:\Program Files\OpenSSH-Win64\ssh-keygen.exe' -t rsa -b 4096`
     - don't use a passphrase!!!
     - it does not matter, where you place the keys. Just remember the path.
     - this will generate 2 files: `id_rsa` (private key) and `id_rsa.pub` (public key)
 2. Add the contents of the public key as a new line to the file `C:\ProgramData\ssh\administrators_authorized_keys`.
     - If the file does not exist yet, simply copy the public key file via `Copy-Item C:\Users\<username>\.ssh\id_rsa.pub C:\ProgramData\ssh\administrators_authorized_keys` in PowerShell
 3. Place the contents of the private key files (´id_rsa´) in the configuration of your host's data connection in the deployer app.
+4. Restart the SSH services.
+
+**NOTE:** when copying the private key to the data connection configuration, make sure to copy **all** the contents of the file! Do not remove the trailing linebreak! 
 
 **NOTE:** the file `administrators_authorized_keys` **must** only be accessible with elevated permissions. If you just created it, run the following command within `C:\ProgramData\ssh\`: 
 
@@ -97,3 +100,7 @@ Subsystem	sftp	sftp-server.exe
 Match Group administrators
        AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
 ```
+
+### SSH error `Load key "...": invalid format`
+
+Did you really copy ALL the contents of the private key to the connection configuration? See if the trailing linebrak aufter `-----END OPENSSH PRIVATE KEY-----` is there. It is important!
