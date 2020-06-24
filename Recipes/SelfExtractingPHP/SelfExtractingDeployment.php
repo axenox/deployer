@@ -154,7 +154,7 @@ try {
         for ($i = 0; $i < count($uninstallAppsAliases); $i++) {
             $arr = explode('.', $uninstallAppsAliases[$i]);
             $appsVendor = $arr[0];
-            if (is_array($deployConfig['local_vendors'])) {
+            if (array_key_exists('local_vendors', $deployConfig) && is_array($deployConfig['local_vendors'])) {
                 foreach ($deployConfig['local_vendors'] as $vendor) {
                     if (strpos($vendor, $appsVendor) !== FALSE) {                
                         unset ($uninstallAppsAliases[$i]);
@@ -242,7 +242,7 @@ try {
     }
     
     //copy Apps from local vendors
-    if ($oldReleasePath !== null && is_array($deployConfig['local_vendors'])) {
+    if ($oldReleasePath !== null && array_key_exists('local_vendors', $deployConfig) && is_array($deployConfig['local_vendors'])) {
         foreach ($deployConfig['local_vendors'] as $local) {
             if ($local === null || $local === '') {
                 continue;
