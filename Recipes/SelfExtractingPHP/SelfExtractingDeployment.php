@@ -350,7 +350,6 @@ function deleteDirectory(string $dir) : bool
         if ($success === false) {
             $success = rmdir($dir);
         }
-        echo ('DEBUG: Deleting symbolic link: ' . $dir . ($success === true ? ' successful!' : ' failed!') . PHP_EOL);
         
         return $success;
     }
