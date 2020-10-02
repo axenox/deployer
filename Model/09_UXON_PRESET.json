@@ -117,7 +117,7 @@
             "NAME": "Basic MySQL config",
             "DESCRIPTION": "Fill in the DB connection and default locale",
             "PROTOTYPE": "",
-            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MySqlModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MySqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MySqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"localhost\",\"user\":\"root\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"utf8\"},\"SERVER.DEFAULT_LOCALE\":\"\"}}}",
+            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MySqlModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MySqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MySqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"127.0.0.1\",\"user\":\"root\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"utf8\"},\"SERVER.DEFAULT_LOCALE\":\"\"}}}",
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
         },
@@ -159,7 +159,7 @@
             "NAME": "Basic IIS + SQL Server config",
             "DESCRIPTION": "Fill in the DB connection and default server locale",
             "PROTOTYPE": "",
-            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MsSqlModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MsSqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MsSqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"localhost\",\"user\":\"sa\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"UTF-8\"},\"SERVER.DEFAULT_LOCALE\":\"\"},\"exface.Core.config.json\":{\"INSTALLER.SERVER_INSTALLER.CLASS\":\"\\\\exface\\\\Core\\\\CommonLogic\\\\AppInstallers\\\\IISServerInstaller\"}}}",
+            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MsSqlModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MsSqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MsSqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"127.0.0.1\",\"user\":\"sa\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"UTF-8\"},\"SERVER.DEFAULT_LOCALE\":\"\"},\"exface.Core.config.json\":{\"INSTALLER.SERVER_INSTALLER.CLASS\":\"\\\\exface\\\\Core\\\\CommonLogic\\\\AppInstallers\\\\IISServerInstaller\"}}}",
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
         },
@@ -173,7 +173,7 @@
             "NAME": "Basic MariaDB config",
             "DESCRIPTION": "Fill in the DB connection and default locale",
             "PROTOTYPE": "",
-            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MariaDbModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MariaSqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MariaDbSqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"localhost\",\"user\":\"root\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"utf8\"},\"SERVER.DEFAULT_LOCALE\":\"\"}}}",
+            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MariaDbModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MariaSqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MariaDbSqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"127.0.0.1\",\"user\":\"root\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"utf8\"},\"SERVER.DEFAULT_LOCALE\":\"\"}}}",
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
         }
