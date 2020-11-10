@@ -80,16 +80,17 @@ task('self_deployment:show_link', function() {
 
 ⓘ Please transfer the self-extractor PHP file to the server manually and execute it there:
 
-1) Copy/Download "$filePath"
+1) Copy/Download `$filePath`
 2) Upload it to anywhere on the host
 3) Open the host's command line as administrator (IMPORTANT - otherwise you will get symlink-errors!) 
-4) Run the command "$phpPath -d memory_limit=1G path/to/$filename"
+4) Run the command `$phpPath -d memory_limit=1G path/to/$filename`
 
 NOTE: if anything goes wrong and you need to roll back:
 
-1) Delete the "current" symlink in the installation folder
-2) Create a new one pointing to the last working release in the "releases" folder: e.g. "mklink current .\releases\..." on Windows.
-3) Run all installers via "vendor\bin\action axenox.PackageManager:InstallApp"
+1) Delete the `current` symlink in the installation folder
+2) Create a new one pointing to the last working release in the "releases" folder: 
+   e.g. `mklink current .\releases\...` on Windows.
+3) Run all installers via `vendor\bin\action axenox.PackageManager:InstallApp`
 
 cli;
     echo ($text);
