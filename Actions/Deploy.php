@@ -125,7 +125,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 $process->start();
                 foreach ($process as $msg) {
                     // Live output
-                    yield $this->replaceFilePathsWithHyperlinks($msg);
+                    yield $this->escapeCliMessage($this->replaceFilePathsWithHyperlinks($msg));
                     // Save to log
                     $log .= $msg;
                     $deployData->setCellValue('log', 0, $log);
@@ -175,13 +175,21 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function replaceFilePathsWithHyperlinks(string $msg) : string
     {
         $urlMatches = [];
-        if (preg_match_all('/' . preg_quote($this->getBasePath(), '/') . '[^ "`]*/', $msg, $urlMatches) !== false) {
+        if (preg_match_all('/' . preg_quote($this->getBasePath(), '/') . '[^ "]*/', $msg, $urlMatches) !== false) {
             foreach ($urlMatches[0] as $urlPath) {
                 $url = HttpFileServerFacade::buildUrlForDownload($this->getWorkbench(), $urlPath, false);
                 $msg = str_replace($urlPath, $url, $msg);
             }
         }
         return $msg;
+    }
+    
+    protected function escapeCliMessage(string $msg) : string
+    {
+        $replacements = [
+            '\\r' => `\\\\r`
+        ];
+        return str_replace(array_keys($replacements), array_values($replacements), $msg);
     }
      
     /**
