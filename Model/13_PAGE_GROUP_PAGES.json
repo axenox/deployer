@@ -96,6 +96,12 @@
                 "comparator": "=",
                 "value": "0x11e9e072016ba0dd8afae4b318306b9a",
                 "object_alias": "exface.Core.PAGE_GROUP_PAGES"
+            },
+            {
+                "expression": "PAGE_GROUP__APP",
+                "comparator": "=",
+                "value": "0x11e9e072016ba0dd8afae4b318306b9a",
+                "object_alias": "exface.Core.PAGE_GROUP_PAGES"
             }
         ]
     },
