@@ -89,8 +89,8 @@ NOTE: if anything goes wrong and you need to roll back:
 
 1) Delete the "current" symlink in the installation folder
 2) Create a new one pointing to the last working release in the "releases" folder: 
-   e.g. "mklink /D current .\releases\..." on Windows.
-3) Run all installers via "current\vendor\bin\action axenox.PackageManager:InstallApp all"
+   e.g. "mklink /D current .\\releases\\..." on Windows.
+3) Run all installers via "current\\vendor\\bin\\action axenox.PackageManager:InstallApp all"
 
 
 
