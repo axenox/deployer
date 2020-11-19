@@ -187,7 +187,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function escapeCliMessage(string $msg) : string
     {
         $replacements = [
-            '\\r' => `\\\\r`
+            '\\r' => '\\\\r'
         ];
         return str_replace(array_keys($replacements), array_values($replacements), $msg);
     }
