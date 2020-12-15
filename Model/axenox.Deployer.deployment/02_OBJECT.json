@@ -96,7 +96,43 @@
             "SHORT_DESCRIPTION": "",
             "PARENT_OBJECT": "",
             "DATA_ADDRESS_PROPS": null,
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Dialog\",\"widgets\":[{\"attribute_alias\":\"build\"},{\"attribute_alias\":\"host\"},{\"attribute_alias\":\"status\"},{\"attribute_alias\":\"deploy_recipe_file\"},{\"attribute_alias\":\"started_on\"},{\"attribute_alias\":\"completed_on\"},{\"widget_type\":\"WidgetGroup\",\"caption\":\"Log\",\"width\":\"max\",\"widgets\":[{\"attribute_alias\":\"log\",\"hide_caption\":true,\"widget_type\":\"InputText\",\"width\":\"max\",\"height\":20}]}]}",
+            "DEFAULT_EDITOR_UXON": {
+                "widget_type": "Dialog",
+                "widgets": [
+                    {
+                        "attribute_alias": "build"
+                    },
+                    {
+                        "attribute_alias": "host"
+                    },
+                    {
+                        "attribute_alias": "status"
+                    },
+                    {
+                        "attribute_alias": "deploy_recipe_file"
+                    },
+                    {
+                        "attribute_alias": "started_on"
+                    },
+                    {
+                        "attribute_alias": "completed_on"
+                    },
+                    {
+                        "widget_type": "WidgetGroup",
+                        "caption": "Log",
+                        "width": "max",
+                        "widgets": [
+                            {
+                                "attribute_alias": "log",
+                                "hide_caption": true,
+                                "widget_type": "InputText",
+                                "width": "max",
+                                "height": 20
+                            }
+                        ]
+                    }
+                ]
+            },
             "ALIAS": "deployment",
             "DATA_ADDRESS": "axxdep_deployment"
         }

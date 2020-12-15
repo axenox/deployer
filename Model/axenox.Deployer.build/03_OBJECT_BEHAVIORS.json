@@ -54,7 +54,28 @@
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9f63462a2caceb2ce0205857feb80",
             "BEHAVIOR": "exface\/Core\/Behaviors\/StateMachineBehavior.php",
-            "CONFIG_UXON": "{\"state_attribute_alias\":\"status\",\"states\":{\"10\":{\"name\":\"Pending\"},\"50\":{\"name\":\"Building\"},\"90\":{\"name\":\"Failed\",\"color\":\"red\"},\"95\":{\"name\":\"Broken\",\"color\":\"lightgrey\"},\"99\":{\"name\":\"Completed\"}}}",
+            "CONFIG_UXON": {
+                "state_attribute_alias": "status",
+                "states": {
+                    "10": {
+                        "name": "Pending"
+                    },
+                    "50": {
+                        "name": "Building"
+                    },
+                    "90": {
+                        "name": "Failed",
+                        "color": "red"
+                    },
+                    "95": {
+                        "name": "Broken",
+                        "color": "lightgrey"
+                    },
+                    "99": {
+                        "name": "Completed"
+                    }
+                }
+            },
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "State Model",

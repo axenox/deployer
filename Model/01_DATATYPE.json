@@ -66,7 +66,9 @@
             "PROTOTYPE": "axenox\/deployer\/DataTypes\/DeploymentRecipeDataType.php",
             "CONFIG_UXON": null,
             "VALIDATION_ERROR": "",
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"InputSelect\"}",
+            "DEFAULT_EDITOR_UXON": {
+                "widget_type": "InputSelect"
+            },
             "ALIAS": "DeploymentRecipe",
             "SHORT_DESCRIPTION": "Built-in type of deployment recipies"
         },
@@ -81,7 +83,9 @@
             "PROTOTYPE": "axenox\/deployer\/DataTypes\/BuildRecipeDataType.php",
             "CONFIG_UXON": null,
             "VALIDATION_ERROR": "",
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"InputSelect\"}",
+            "DEFAULT_EDITOR_UXON": {
+                "widget_type": "InputSelect"
+            },
             "ALIAS": "BuildRecipe",
             "SHORT_DESCRIPTION": "Built-in type of build recipies"
         },
@@ -94,9 +98,15 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "UXON Deployment Configuration",
             "PROTOTYPE": "exface\/Core\/DataTypes\/JsonDataType.php",
-            "CONFIG_UXON": "{\"schema\":\"\\\\\\\\axenox\\\\\\\\Deployer\\\\\\\\Uxon\\\\\\\\DeploymentConfigSchema\"}",
+            "CONFIG_UXON": {
+                "schema": "\\\\axenox\\\\Deployer\\\\Uxon\\\\DeploymentConfigSchema"
+            },
             "VALIDATION_ERROR": "",
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"InputUxon\",\"width\":\"2\",\"height\":\"6\"}",
+            "DEFAULT_EDITOR_UXON": {
+                "widget_type": "InputUxon",
+                "width": "2",
+                "height": "6"
+            },
             "ALIAS": "UxonDeploymentConfiguration",
             "SHORT_DESCRIPTION": "UXON Schema for deployment configuration"
         },
@@ -109,9 +119,15 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "UXON Composer JSON ",
             "PROTOTYPE": "exface\/Core\/DataTypes\/JsonDataType.php",
-            "CONFIG_UXON": "{\"schema\":\"\\\\\\\\axenox\\\\\\\\Deployer\\\\\\\\Uxon\\\\\\\\ComposerJsonSchema\"}",
+            "CONFIG_UXON": {
+                "schema": "\\\\axenox\\\\Deployer\\\\Uxon\\\\ComposerJsonSchema"
+            },
             "VALIDATION_ERROR": "",
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"InputUxon\",\"width\":\"2\",\"height\":\"6\"}",
+            "DEFAULT_EDITOR_UXON": {
+                "widget_type": "InputUxon",
+                "width": "2",
+                "height": "6"
+            },
             "ALIAS": "UxonComposerJson",
             "SHORT_DESCRIPTION": "UXON schema for composer.json"
         },
@@ -124,9 +140,15 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "UXON Composer Auth JSON",
             "PROTOTYPE": "exface\/Core\/DataTypes\/JsonDataType.php",
-            "CONFIG_UXON": "{\"schema\":\"\\\\\\\\axenox\\\\\\\\Deployer\\\\\\\\Uxon\\\\\\\\ComposerAuthJsonSchema\"}",
+            "CONFIG_UXON": {
+                "schema": "\\\\axenox\\\\Deployer\\\\Uxon\\\\ComposerAuthJsonSchema"
+            },
             "VALIDATION_ERROR": "",
-            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"InputUxon\",\"width\":\"2\",\"height\":\"6\"}",
+            "DEFAULT_EDITOR_UXON": {
+                "widget_type": "InputUxon",
+                "width": "2",
+                "height": "6"
+            },
             "ALIAS": "UxonComposerAuthJson",
             "SHORT_DESCRIPTION": "UXON schema for auth.json"
         }

@@ -380,7 +380,14 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{\"show_values\":false,\"values\":{\"windows\":\"Windows\",\"windowsSsh\":\"Windows 10+ (built-in SSH)\",\"linux\":\"Linux\"}}"
+            "CUSTOM_DATA_TYPE": {
+                "show_values": false,
+                "values": {
+                    "windows": "Windows",
+                    "windowsSsh": "Windows 10+ (built-in SSH)",
+                    "linux": "Linux"
+                }
+            }
         },
         {
             "CREATED_ON": "2019-09-27 09:33:21",

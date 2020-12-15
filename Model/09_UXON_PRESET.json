@@ -48,6 +48,10 @@
         {
             "name": "UXON_SCHEMA",
             "attribute_alias": "UXON_SCHEMA"
+        },
+        {
+            "name": "THUMBNAIL",
+            "attribute_alias": "THUMBNAIL"
         }
     ],
     "rows": [
@@ -61,9 +65,14 @@
             "NAME": "Deployer SSH connection",
             "DESCRIPTION": "Place the entire contents of the SSH key file (typically id_rsa) in ssh_private_key.",
             "PROTOTYPE": "axenox\/deployer\/DataConnectors\/DeployerSshConnector.php",
-            "UXON": "{\"host_name\":\"\",\"user\":\"\",\"ssh_private_key\":\"-----BEGIN RSA PRIVATE KEY-----\\n...\\n-----END RSA PRIVATE KEY-----\"}",
+            "UXON": {
+                "host_name": "",
+                "user": "",
+                "ssh_private_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "connection"
+            "UXON_SCHEMA": "connection",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2019-11-27 19:57:15",
@@ -75,9 +84,21 @@
             "NAME": "HTTP basic auth",
             "DESCRIPTION": "HTTP basic authentication to access composer repos",
             "PROTOTYPE": "",
-            "UXON": "{\"http-basic\":{\"repo.example1.org\":{\"username\":\"\",\"password\":\"\"},\"repo.example2.org\":{\"username\":\"\",\"password\":\"\"}}}",
+            "UXON": {
+                "http-basic": {
+                    "repo.example1.org": {
+                        "username": "",
+                        "password": ""
+                    },
+                    "repo.example2.org": {
+                        "username": "",
+                        "password": ""
+                    }
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2019-11-28 08:17:08",
@@ -89,9 +110,14 @@
             "NAME": "GitHub OAuth token",
             "DESCRIPTION": "Token-authentication for GitHub",
             "PROTOTYPE": "",
-            "UXON": "{\"github-oauth\":{\"github.com\":\"\"}}",
+            "UXON": {
+                "github-oauth": {
+                    "github.com": ""
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2020-04-22 20:23:52",
@@ -103,9 +129,51 @@
             "NAME": "1.x ExFace Essentials (dev)",
             "DESCRIPTION": "jEasyUI, URL-Connector, PackageManager. Includes jEasyUI 1.4.3 (last version under GPL)",
             "PROTOTYPE": "",
-            "UXON": "{\"require\":{\"exface\\\/Core\":\"dev-1.x-dev as 1.99\",\"axenox\\\/PackageManager\":\"dev-1.x-dev as 1.99\",\"exface\\\/UrlDataConnector\":\"dev-1.x-dev as 1.99\",\"exface\\\/JEasyUIFacade\":\"dev-1.x-dev as 1.99\",\"bower-asset\\\/jeasyui\":\"1.4.3\"},\"repositories\":[{\"type\":\"composer\",\"url\":\"https:\\\/\\\/asset-packagist.org\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/Core\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/UrlDataConnector\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/JEasyUiFacade\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/axenox\\\/PackageManager\"}],\"minimum-stability\":\"dev\",\"prefer-stable\":true,\"config\":{\"secure-http\":false},\"optimize-autoloader\":true,\"autoload\":{\"psr-0\":{\"axenox\\\\PackageManager\":\"vendor\\\/\"}}}",
+            "UXON": {
+                "require": {
+                    "exface\/Core": "dev-1.x-dev as 1.99",
+                    "axenox\/PackageManager": "dev-1.x-dev as 1.99",
+                    "exface\/UrlDataConnector": "dev-1.x-dev as 1.99",
+                    "exface\/JEasyUIFacade": "dev-1.x-dev as 1.99",
+                    "bower-asset\/jeasyui": "1.4.3"
+                },
+                "repositories": [
+                    {
+                        "type": "composer",
+                        "url": "https:\/\/asset-packagist.org"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/Core"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/UrlDataConnector"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/JEasyUiFacade"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/axenox\/PackageManager"
+                    }
+                ],
+                "minimum-stability": "dev",
+                "prefer-stable": true,
+                "config": {
+                    "secure-http": false
+                },
+                "optimize-autoloader": true,
+                "autoload": {
+                    "psr-0": {
+                        "axenox\\PackageManager": "vendor\/"
+                    }
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2020-05-25 09:19:49",
@@ -117,9 +185,26 @@
             "NAME": "Basic MySQL config",
             "DESCRIPTION": "Fill in the DB connection and default locale",
             "PROTOTYPE": "",
-            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MySqlModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MySqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MySqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"127.0.0.1\",\"user\":\"root\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"utf8\"},\"SERVER.DEFAULT_LOCALE\":\"\"}}}",
+            "UXON": {
+                "default_app_config": {
+                    "System.config.json": {
+                        "METAMODEL.LOADER_CLASS": "\\exface\\Core\\ModelLoaders\\MySqlModelLoader",
+                        "METAMODEL.QUERY_BUILDER": "\\exface\\Core\\QueryBuilders\\MySqlBuilder",
+                        "METAMODEL.CONNECTOR": "\\exface\\Core\\DataConnectors\\MySqlConnector",
+                        "METAMODEL.CONNECTOR_CONFIG": {
+                            "host": "127.0.0.1",
+                            "user": "root",
+                            "password": "",
+                            "dbase": "",
+                            "charset": "utf8"
+                        },
+                        "SERVER.DEFAULT_LOCALE": ""
+                    }
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2020-05-25 09:25:07",
@@ -131,9 +216,51 @@
             "NAME": "1.x ExFace Essentials (stable)",
             "DESCRIPTION": "jEasyUI, URL-Connector, PackageManager. Includes jEasyUI 1.4.3 (last version under GPL)",
             "PROTOTYPE": "",
-            "UXON": "{\"require\":{\"exface\\\/Core\":\"^1.0\",\"axenox\\\/PackageManager\":\"^1.0\",\"exface\\\/UrlDataConnector\":\"^1.0\",\"exface\\\/JEasyUIFacade\":\"^1.0\",\"bower-asset\\\/jeasyui\":\"1.4.3\"},\"repositories\":[{\"type\":\"composer\",\"url\":\"https:\\\/\\\/asset-packagist.org\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/Core\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/UrlDataConnector\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/JEasyUiFacade\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/axenox\\\/PackageManager\"}],\"minimum-stability\":\"dev\",\"prefer-stable\":true,\"config\":{\"secure-http\":false},\"optimize-autoloader\":true,\"autoload\":{\"psr-0\":{\"axenox\\\\PackageManager\":\"vendor\\\/\"}}}",
+            "UXON": {
+                "require": {
+                    "exface\/Core": "^1.0",
+                    "axenox\/PackageManager": "^1.0",
+                    "exface\/UrlDataConnector": "^1.0",
+                    "exface\/JEasyUIFacade": "^1.0",
+                    "bower-asset\/jeasyui": "1.4.3"
+                },
+                "repositories": [
+                    {
+                        "type": "composer",
+                        "url": "https:\/\/asset-packagist.org"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/Core"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/UrlDataConnector"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/JEasyUiFacade"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/axenox\/PackageManager"
+                    }
+                ],
+                "minimum-stability": "dev",
+                "prefer-stable": true,
+                "config": {
+                    "secure-http": false
+                },
+                "optimize-autoloader": true,
+                "autoload": {
+                    "psr-0": {
+                        "axenox\\PackageManager": "vendor\/"
+                    }
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2020-05-25 09:26:43",
@@ -145,9 +272,61 @@
             "NAME": "1.x SAP UI5 starter kit (dev)",
             "DESCRIPTION": "OpenUI5, SAP connector, jEasyUI, URL-Connector, PackageManager. Includes jEasyUI 1.4.3 (last version under GPL)",
             "PROTOTYPE": "",
-            "UXON": "{\"require\":{\"exface\\\/Core\":\"dev-1.x-dev as 1.99\",\"axenox\\\/PackageManager\":\"dev-1.x-dev as 1.99\",\"exface\\\/UrlDataConnector\":\"dev-1.x-dev as 1.99\",\"exface\\\/SapConnector\":\"dev-1.x-dev as 1.99\",\"exface\\\/UI5Facade\":\"dev-1.x-dev as 1.99\",\"exface\\\/JEasyUIFacade\":\"dev-1.x-dev as 1.99\",\"bower-asset\\\/jeasyui\":\"1.4.3\"},\"repositories\":[{\"type\":\"composer\",\"url\":\"https:\\\/\\\/asset-packagist.org\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/Core\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/UrlDataConnector\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/SapConnector\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/UI5Facade\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/ExFace\\\/JEasyUiFacade\"},{\"type\":\"vcs\",\"url\":\"https:\\\/\\\/github.com\\\/axenox\\\/PackageManager\"}],\"minimum-stability\":\"dev\",\"prefer-stable\":true,\"config\":{\"secure-http\":false},\"optimize-autoloader\":true,\"autoload\":{\"psr-0\":{\"axenox\\\\PackageManager\":\"vendor\\\/\"}}}",
+            "UXON": {
+                "require": {
+                    "exface\/Core": "dev-1.x-dev as 1.99",
+                    "axenox\/PackageManager": "dev-1.x-dev as 1.99",
+                    "exface\/UrlDataConnector": "dev-1.x-dev as 1.99",
+                    "exface\/SapConnector": "dev-1.x-dev as 1.99",
+                    "exface\/UI5Facade": "dev-1.x-dev as 1.99",
+                    "exface\/JEasyUIFacade": "dev-1.x-dev as 1.99",
+                    "bower-asset\/jeasyui": "1.4.3"
+                },
+                "repositories": [
+                    {
+                        "type": "composer",
+                        "url": "https:\/\/asset-packagist.org"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/Core"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/UrlDataConnector"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/SapConnector"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/UI5Facade"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/ExFace\/JEasyUiFacade"
+                    },
+                    {
+                        "type": "vcs",
+                        "url": "https:\/\/github.com\/axenox\/PackageManager"
+                    }
+                ],
+                "minimum-stability": "dev",
+                "prefer-stable": true,
+                "config": {
+                    "secure-http": false
+                },
+                "optimize-autoloader": true,
+                "autoload": {
+                    "psr-0": {
+                        "axenox\\PackageManager": "vendor\/"
+                    }
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2020-06-19 13:37:56",
@@ -159,9 +338,29 @@
             "NAME": "Basic IIS + SQL Server config",
             "DESCRIPTION": "Fill in the DB connection and default server locale",
             "PROTOTYPE": "",
-            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MsSqlModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MsSqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MsSqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"127.0.0.1\",\"user\":\"sa\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"UTF-8\"},\"SERVER.DEFAULT_LOCALE\":\"\"},\"exface.Core.config.json\":{\"INSTALLER.SERVER_INSTALLER.CLASS\":\"\\\\exface\\\\Core\\\\CommonLogic\\\\AppInstallers\\\\IISServerInstaller\"}}}",
+            "UXON": {
+                "default_app_config": {
+                    "System.config.json": {
+                        "METAMODEL.LOADER_CLASS": "\\exface\\Core\\ModelLoaders\\MsSqlModelLoader",
+                        "METAMODEL.QUERY_BUILDER": "\\exface\\Core\\QueryBuilders\\MsSqlBuilder",
+                        "METAMODEL.CONNECTOR": "\\exface\\Core\\DataConnectors\\MsSqlConnector",
+                        "METAMODEL.CONNECTOR_CONFIG": {
+                            "host": "127.0.0.1",
+                            "user": "sa",
+                            "password": "",
+                            "dbase": "",
+                            "charset": "UTF-8"
+                        },
+                        "SERVER.DEFAULT_LOCALE": ""
+                    },
+                    "exface.Core.config.json": {
+                        "INSTALLER.SERVER_INSTALLER.CLASS": "\\exface\\Core\\CommonLogic\\AppInstallers\\IISServerInstaller"
+                    }
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema",
+            "THUMBNAIL": null
         },
         {
             "CREATED_ON": "2020-06-22 07:33:50",
@@ -173,9 +372,26 @@
             "NAME": "Basic MariaDB config",
             "DESCRIPTION": "Fill in the DB connection and default locale",
             "PROTOTYPE": "",
-            "UXON": "{\"default_app_config\":{\"System.config.json\":{\"METAMODEL.LOADER_CLASS\":\"\\\\exface\\\\Core\\\\ModelLoaders\\\\MariaDbModelLoader\",\"METAMODEL.QUERY_BUILDER\":\"\\\\exface\\\\Core\\\\QueryBuilders\\\\MariaSqlBuilder\",\"METAMODEL.CONNECTOR\":\"\\\\exface\\\\Core\\\\DataConnectors\\\\MariaDbSqlConnector\",\"METAMODEL.CONNECTOR_CONFIG\":{\"host\":\"127.0.0.1\",\"user\":\"root\",\"password\":\"\",\"dbase\":\"\",\"charset\":\"utf8\"},\"SERVER.DEFAULT_LOCALE\":\"\"}}}",
+            "UXON": {
+                "default_app_config": {
+                    "System.config.json": {
+                        "METAMODEL.LOADER_CLASS": "\\exface\\Core\\ModelLoaders\\MariaDbModelLoader",
+                        "METAMODEL.QUERY_BUILDER": "\\exface\\Core\\QueryBuilders\\MariaSqlBuilder",
+                        "METAMODEL.CONNECTOR": "\\exface\\Core\\DataConnectors\\MariaDbSqlConnector",
+                        "METAMODEL.CONNECTOR_CONFIG": {
+                            "host": "127.0.0.1",
+                            "user": "root",
+                            "password": "",
+                            "dbase": "",
+                            "charset": "utf8"
+                        },
+                        "SERVER.DEFAULT_LOCALE": ""
+                    }
+                }
+            },
             "WRAP_PATH": "",
-            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema",
+            "THUMBNAIL": null
         }
     ],
     "totals_rows": [],
