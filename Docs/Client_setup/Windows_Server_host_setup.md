@@ -8,7 +8,11 @@ Make sure your web server (i.e. Apache/WAMP or IIS) and PHP are properly configu
 
 ## 1. Install OpenSSH
 
-**NOTE:** on Windows Server 2019 and later OpenSSH is supposed to be built in. Try the [official tutorial](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) from Microsoft. 
+### Built-in SSH on Windows Server 2019 and Windows 10
+
+On Windows Server 2019 and later OpenSSH is supposed to be built in: see the [official tutorial](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) from Microsoft. 
+
+### Manual installation on other Windows versions
 
 1. Download [OpenSSH from GitHub](https://github.com/PowerShell/Win32-OpenSSH/releases). Choose latest 64bit version in most cases.
 2. Extract archive to `C:\Program Files`.
@@ -29,7 +33,7 @@ New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH SSH Server' -Enabled True -
 
 ## 2. Generate an SSH key pair
 
-1. Open PowerShell and run `'C:\Program Files\OpenSSH-Win64\ssh-keygen.exe' -t rsa -b 4096`
+1. Open PowerShell as Administrator and run `ssh-keygen.exe -t rsa -b 4096` (if you had installed OpenSSH manually, you may need to `cd` to its folder first: e.g. `C:\Program Files\OpenSSH-Win64\`)
     - don't use a passphrase!!!
     - it does not matter, where you place the keys. Just remember the path.
     - this will generate 2 files: `id_rsa` (private key) and `id_rsa.pub` (public key)
