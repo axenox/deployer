@@ -86,6 +86,10 @@
             "attribute_alias": "TYPE"
         },
         {
+            "name": "COPYABLEFLAG",
+            "attribute_alias": "COPYABLEFLAG"
+        },
+        {
             "name": "ALIAS",
             "attribute_alias": "ALIAS"
         },
@@ -189,6 +193,7 @@
             "NAME": "Build",
             "RELATION_CARDINALITY": "",
             "TYPE": "D",
+            "COPYABLEFLAG": "1",
             "ALIAS": "build",
             "DATATYPE": "0x11e8091315d97da6b5b5e4b318306b9a",
             "DATA_ADDRESS": "build_oid",
@@ -232,6 +237,7 @@
             "NAME": "Host",
             "RELATION_CARDINALITY": "",
             "TYPE": "D",
+            "COPYABLEFLAG": "1",
             "ALIAS": "host",
             "DATATYPE": "0x11e8091315d97da6b5b5e4b318306b9a",
             "DATA_ADDRESS": "host_oid",
@@ -275,6 +281,7 @@
             "NAME": "Log",
             "RELATION_CARDINALITY": "",
             "TYPE": "D",
+            "COPYABLEFLAG": "0",
             "ALIAS": "log",
             "DATATYPE": "0x31310000000000000000000000000000",
             "DATA_ADDRESS": "log",
@@ -318,6 +325,7 @@
             "NAME": "Deploy recipe file",
             "RELATION_CARDINALITY": "",
             "TYPE": "D",
+            "COPYABLEFLAG": "0",
             "ALIAS": "deploy_recipe_file",
             "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "deploy_recipe_file",
@@ -363,6 +371,7 @@
             "NAME": "Status",
             "RELATION_CARDINALITY": "",
             "TYPE": "D",
+            "COPYABLEFLAG": "0",
             "ALIAS": "status",
             "DATATYPE": "0x11e7c39621725c1e8001e4b318306b9a",
             "DATA_ADDRESS": "status",
@@ -415,6 +424,7 @@
             "NAME": "Started on",
             "RELATION_CARDINALITY": "",
             "TYPE": "D",
+            "COPYABLEFLAG": "0",
             "ALIAS": "started_on",
             "DATATYPE": "0x11e93b4b3d1f22188c660205857feb80",
             "DATA_ADDRESS": "started_on",
@@ -458,6 +468,7 @@
             "NAME": "Completed on",
             "RELATION_CARDINALITY": "",
             "TYPE": "D",
+            "COPYABLEFLAG": "0",
             "ALIAS": "completed_on",
             "DATATYPE": "0x11e93b4b3d1f22188c660205857feb80",
             "DATA_ADDRESS": "completed_on",
