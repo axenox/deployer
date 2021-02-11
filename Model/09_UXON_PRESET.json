@@ -121,7 +121,7 @@
         },
         {
             "CREATED_ON": "2020-04-22 20:23:52",
-            "MODIFIED_ON": "2020-05-25 09:25:18",
+            "MODIFIED_ON": "2021-02-10 11:19:55",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ea84d72bc68ab797940205857feb80",
@@ -131,10 +131,10 @@
             "PROTOTYPE": "",
             "UXON": {
                 "require": {
-                    "exface\/Core": "dev-1.x-dev as 1.99",
-                    "axenox\/PackageManager": "dev-1.x-dev as 1.99",
-                    "exface\/UrlDataConnector": "dev-1.x-dev as 1.99",
-                    "exface\/JEasyUIFacade": "dev-1.x-dev as 1.99",
+                    "exface\/core": "dev-1.x-dev as 1.99",
+                    "axenox\/packagemanager": "dev-1.x-dev as 1.99",
+                    "exface\/urldataconnector": "dev-1.x-dev as 1.99",
+                    "exface\/jeasyuifacade": "dev-1.x-dev as 1.99",
                     "bower-asset\/jeasyui": "1.4.3"
                 },
                 "repositories": [
@@ -173,7 +173,7 @@
             },
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema",
-            "THUMBNAIL": null
+            "THUMBNAIL": ""
         },
         {
             "CREATED_ON": "2020-05-25 09:19:49",
@@ -208,7 +208,7 @@
         },
         {
             "CREATED_ON": "2020-05-25 09:25:07",
-            "MODIFIED_ON": "2020-05-25 09:25:07",
+            "MODIFIED_ON": "2021-02-10 11:21:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ea9e6998b38f85bba0e4b318306b9a",
@@ -218,10 +218,10 @@
             "PROTOTYPE": "",
             "UXON": {
                 "require": {
-                    "exface\/Core": "^1.0",
-                    "axenox\/PackageManager": "^1.0",
-                    "exface\/UrlDataConnector": "^1.0",
-                    "exface\/JEasyUIFacade": "^1.0",
+                    "exface\/core": "^1.0",
+                    "axenox\/packagemanager": "^1.0",
+                    "exface\/urldataconnector": "^1.0",
+                    "exface\/jeasyuifacade": "^1.0",
                     "bower-asset\/jeasyui": "1.4.3"
                 },
                 "repositories": [
@@ -246,11 +246,6 @@
                         "url": "https:\/\/github.com\/axenox\/PackageManager"
                     }
                 ],
-                "minimum-stability": "dev",
-                "prefer-stable": true,
-                "config": {
-                    "secure-http": false
-                },
                 "optimize-autoloader": true,
                 "autoload": {
                     "psr-0": {
@@ -260,11 +255,11 @@
             },
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema",
-            "THUMBNAIL": null
+            "THUMBNAIL": ""
         },
         {
             "CREATED_ON": "2020-05-25 09:26:43",
-            "MODIFIED_ON": "2020-05-25 09:27:20",
+            "MODIFIED_ON": "2021-02-10 11:22:23",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ea9e69d1e7855cbba0e4b318306b9a",
@@ -274,12 +269,12 @@
             "PROTOTYPE": "",
             "UXON": {
                 "require": {
-                    "exface\/Core": "dev-1.x-dev as 1.99",
-                    "axenox\/PackageManager": "dev-1.x-dev as 1.99",
-                    "exface\/UrlDataConnector": "dev-1.x-dev as 1.99",
-                    "exface\/SapConnector": "dev-1.x-dev as 1.99",
-                    "exface\/UI5Facade": "dev-1.x-dev as 1.99",
-                    "exface\/JEasyUIFacade": "dev-1.x-dev as 1.99",
+                    "exface\/core": "dev-1.x-dev as 1.99",
+                    "axenox\/packagemanager": "dev-1.x-dev as 1.99",
+                    "exface\/urldataconnector": "dev-1.x-dev as 1.99",
+                    "exface\/sapconnector": "dev-1.x-dev as 1.99",
+                    "exface\/ui5facade": "dev-1.x-dev as 1.99",
+                    "exface\/jeasyuifacade": "dev-1.x-dev as 1.99",
                     "bower-asset\/jeasyui": "1.4.3"
                 },
                 "repositories": [
@@ -326,7 +321,7 @@
             },
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema",
-            "THUMBNAIL": null
+            "THUMBNAIL": ""
         },
         {
             "CREATED_ON": "2020-06-19 13:37:56",
