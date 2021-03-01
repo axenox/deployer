@@ -23,6 +23,8 @@ use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use exface\Core\Interfaces\Events\TaskEventInterface;
 use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
 use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Interfaces\Tasks\ResultMessageStreamInterface;
+use exface\Core\Exceptions\InvalidArgumentException;
 
 /**
  * Creates a build from an instance of a project and a version number.
@@ -69,13 +71,13 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         $this->setInputRowsMax(1);
         $this->setInputObjectAlias('axenox.Deployer.build');
     }
-
+    
     /**
      *
-     * {@inheritdoc}
-     * @see \exface\Core\CommonLogic\AbstractAction::perform()
+     * {@inheritDoc}
+     * @see \exface\Core\CommonLogic\AbstractActionDeferred::performImmediately()
      */
-    protected function perform(TaskInterface $task, DataTransactionInterface $transaction): ResultInterface
+    protected function performImmediately(TaskInterface $task, DataTransactionInterface $transaction, ResultMessageStreamInterface $result) : array
     {
         // $buildData based on object axenox.Deployer.build
         try {
@@ -91,100 +93,108 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'composer_auth_json' => $this->getComposerAuthJson($task)
             ]);
         }
-        $result = new ResultMessageStream($task);
-
-        $generator = function () use ($task, $buildData, $result, $transaction) {
-
-            $buildName = $this->generateBuildName($task);
-            
-            $log = '';
-            
-            $msg = 'Building ' . $buildName . '...' . PHP_EOL;
-            yield $msg;
-            $log .= $msg;
+        
+        return [$task, $buildData];
+    }
     
-            // Create build entry and mark it as "in progress"
-            $buildData->setCellValue('status', 0, 50);
-            $buildData->setCellValue('name', 0, $buildName);
-            // Do not use the transaction to force force creating a separate one for this operation.
-            $buildData->dataCreate(false);
-
-            try {
-                // Prepare project folder and deployer task file
-                $projectFolder = $this->prepareDeployerProjectFolder($task);
-                $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
-                
-                $composerJson = $this->createComposerJson($task, $projectFolder);
-                $buildData->setCellValue('composer_json', 0, $composerJson);
-                
-                $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
-                $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
-                
-                $buildData->setCellValue('comment', 0, $this->getComment($task));
-                $buildData->setCellValue('notes', 0, $this->getNotes($task));
-    
-                // run the deployer task via CLI
-                if (getcwd() !== $this->getBasePath()) {
-                    chdir($this->getBasePath());
-                }
-                $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
-    
-                $seconds = time();
-                
-                $environmentVars = $this->getCmdEnvironmentVars($projectFolder);
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\CommonLogic\AbstractActionDeferred::performDeferred()
+     */
+    protected function performDeferred(TaskInterface $task = null, DataSheetInterface $buildData = null) : \Generator
+    {
+        if ($task === null) {
+            throw new InvalidArgumentException('Missing argument $task in deferred action call!');
+        }
+        
+        if ($buildData === null) {
+            throw new InvalidArgumentException('Missing argument $buildData in deferred action call!');
+        }
+        
+        $buildName = $this->generateBuildName($task);
+        
+        $log = '';
+        
+        $msg = 'Building ' . $buildName . '...' . PHP_EOL;
+        yield $msg;
+        $log .= $msg;
+        
+        // Create build entry and mark it as "in progress"
+        $buildData->setCellValue('status', 0, 50);
+        $buildData->setCellValue('name', 0, $buildName);
+        // Do not use the transaction to force force creating a separate one for this operation.
+        $buildData->dataCreate(false);
+        
+        try {
+            // Prepare project folder and deployer task file
+            $projectFolder = $this->prepareDeployerProjectFolder($task);
+            $buildTask = $this->prepareDeployerTask($task, $projectFolder, $buildName);
             
-                $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
-                $process->start();
-                foreach ($process as $msg) {
-                    // Live output
-                    yield $msg;
-                    // Save to log
-                    $log .= $msg;
-                    // Save current log to DB
-                    $buildData->setCellValue('log', 0, $log);
-                    $buildData->dataUpdate(false);
-                }            
+            $composerJson = $this->createComposerJson($task, $projectFolder);
+            $buildData->setCellValue('composer_json', 0, $composerJson);
             
-                if ($process->isSuccessful() === false) {
-                    $buildData->setCellValue('status', 0, 90); // failed                
-                    $msg = '✘ FAILED building ' . $buildName . '.'; 
-                } else {
-                    $buildData->setCellValue('status', 0, 99); // completed                
-                    $seconds = time() - $seconds;
-                    $msg = '✔ SUCCEEDED building ' . $buildName . ' in ' . $seconds . ' seconds.';
-                }
-                $buildData->dataUpdate(false);
-                
-                $composerLockPath = $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.lock';
-                if (file_exists($composerLockPath)) {
-                    $buildData->setCellValue('composer_lock', 0, file_get_contents($composerLockPath)); 
-                }
-                
-                // Delete temporary files
-                $this->cleanupFiles($projectFolder);
-                
-                // Send success/failure message
+            $composerAuthJson = $this->createComposerAuthJson($task, $projectFolder);
+            $buildData->setCellValue('composer_auth_json', 0, $composerAuthJson);
+            
+            $buildData->setCellValue('comment', 0, $this->getComment($task));
+            $buildData->setCellValue('notes', 0, $this->getNotes($task));
+            
+            // run the deployer task via CLI
+            if (getcwd() !== $this->getBasePath()) {
+                chdir($this->getBasePath());
+            }
+            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
+            
+            $seconds = time();
+            
+            $environmentVars = $this->getCmdEnvironmentVars($projectFolder);
+            
+            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
+            $process->start();
+            foreach ($process as $msg) {
+                // Live output
                 yield $msg;
+                // Save to log
                 $log .= $msg;
-               
-                $buildData->setCellValue('log', 0, $log); 
-                
-                // Update build entry's state and save log to data source 
-                $buildData->dataUpdate(false);
-            } catch (\Throwable $e) {
-                $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+                // Save current log to DB
                 $buildData->setCellValue('log', 0, $log);
-                $buildData->setCellValue('status', 0, 90); // failed 
-                $this->getWorkbench()->getLogger()->logException($e);
                 $buildData->dataUpdate(false);
             }
             
-            // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
-            $this->performAfterDeferred($result, $transaction);
-        };
-
-        $result->setMessageStreamGenerator($generator);
-        return $result;
+            if ($process->isSuccessful() === false) {
+                $buildData->setCellValue('status', 0, 90); // failed
+                $msg = '✘ FAILED building ' . $buildName . '.';
+            } else {
+                $buildData->setCellValue('status', 0, 99); // completed
+                $seconds = time() - $seconds;
+                $msg = '✔ SUCCEEDED building ' . $buildName . ' in ' . $seconds . ' seconds.';
+            }
+            $buildData->dataUpdate(false);
+            
+            $composerLockPath = $this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.lock';
+            if (file_exists($composerLockPath)) {
+                $buildData->setCellValue('composer_lock', 0, file_get_contents($composerLockPath));
+            }
+            
+            // Delete temporary files
+            $this->cleanupFiles($projectFolder);
+            
+            // Send success/failure message
+            yield $msg;
+            $log .= $msg;
+            
+            $buildData->setCellValue('log', 0, $log);
+            
+            // Update build entry's state and save log to data source
+            $buildData->dataUpdate(false);
+        } catch (\Throwable $e) {
+            $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+            $buildData->setCellValue('log', 0, $log);
+            $buildData->setCellValue('status', 0, 90); // failed
+            $this->getWorkbench()->getLogger()->logException($e);
+            $buildData->dataUpdate(false);
+        }
     }
     
     /**

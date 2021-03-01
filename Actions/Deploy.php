@@ -21,6 +21,8 @@ use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use Symfony\Component\Process\Process;
 use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Facades\HttpFileServerFacade;
+use exface\Core\Interfaces\Tasks\ResultMessageStreamInterface;
+use exface\Core\Exceptions\InvalidArgumentException;
 
 /**
  * Deploys a build to a specific host.
@@ -69,10 +71,10 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     
     /**
      *
-     * {@inheritdoc}
-     * @see \exface\Core\CommonLogic\AbstractAction::perform()
+     * {@inheritDoc}
+     * @see \exface\Core\CommonLogic\AbstractActionDeferred::performImmediately()
      */
-    protected function perform(TaskInterface $task, DataTransactionInterface $transaction) : ResultInterface
+    protected function performImmediately(TaskInterface $task, DataTransactionInterface $transaction, ResultMessageStreamInterface $result) : array
     {
         // $buildData based on object axenox.Deployer.deployment
         try {
@@ -84,86 +86,92 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'host' => $this->getHostData($task, 'name')
             ]);
         }
-           
-        $result = new ResultMessageStream($task);
+        return [$task, $deployData];
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\CommonLogic\AbstractActionDeferred::performDeferred()
+     */
+    protected function performDeferred(TaskInterface $task = null, DataSheetInterface $deployData = null) : \Generator
+    {
+        if ($task === null) {
+            throw new InvalidArgumentException('Missing argument $task in deferred action call!');
+        }
         
-        $generator = function () use ($task, $deployData, $result, $transaction) {
+        if ($deployData === null) {
+            throw new InvalidArgumentException('Missing argument $deployData in deferred action call!');
+        }
+        
+        $seconds = time();
+        
+        // Create deploy entry and mark it as "in progress"
+        $deployData->setCellValue('status', 0, 50);
+        $deployData->setCellValue('host', 0, $this->getHostData($task, 'uid'));
+        $deployData->setCellValue('build', 0, $this->getBuildData($task, 'uid'));
+        $deployData->setCellValue('started_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
+        $deployData->setCellValue('deploy_recipe_file', 0, $this->getDeployRecipeFile($task));
+        // Do not use the transaction to force force creating a separate one for this operation.
+        $deployData->dataCreate(false);
+        
+        try {
+            $buildName = $this->getBuildData($task, 'name');
+            $hostName = $this->getHostData($task, 'name');
             
-            $seconds = time();
+            // run the deployer task via CLI
+            if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
+                chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
+            }
             
-            // Create deploy entry and mark it as "in progress"
-            $deployData->setCellValue('status', 0, 50);
-            $deployData->setCellValue('host', 0, $this->getHostData($task, 'uid'));
-            $deployData->setCellValue('build', 0, $this->getBuildData($task, 'uid'));
-            $deployData->setCellValue('started_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
-            $deployData->setCellValue('deploy_recipe_file', 0, $this->getDeployRecipeFile($task));
-            // Do not use the transaction to force force creating a separate one for this operation.
-            $deployData->dataCreate(false);
+            //create directories
+            $projectFolder = $this->getProjectFolderRelativePath($task);
+            $this->createDeployerProjectFolder($task);
             
-            try {
-                $buildName = $this->getBuildData($task, 'name');
-                $hostName = $this->getHostData($task, 'name');
-                
-                // run the deployer task via CLI
-                if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
-                    chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
-                }
-                
-                //create directories
-                $projectFolder = $this->getProjectFolderRelativePath($task);
-                $this->createDeployerProjectFolder($task);
-                
-                //build the command used for the actual deployment
-                $deployTask = $this->createDeployerTask($task); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
-                $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
-                $environmentVars = $this->getCmdEnvirontmentVars();
-                
-                $log = '';
-    
-                //execute deploy command
-                $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
-                $process->start();
-                foreach ($process as $msg) {
-                    // Live output
-                    yield $this->escapeCliMessage($this->replaceFilePathsWithHyperlinks($msg));
-                    // Save to log
-                    $log .= $msg;
-                    $deployData->setCellValue('log', 0, $log);
-                    $deployData->dataUpdate(false);
-                }
-                
-                if ($process->isSuccessful() === false) {
-                    $deployData->setCellValue('status', 0, 90); // failed
-                    $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
-                } else {
-                    $deployData->setCellValue('status', 0, 99); // completed
-                    $seconds = time() - $seconds;
-                    $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
-                }
-                yield $msg;
+            //build the command used for the actual deployment
+            $deployTask = $this->createDeployerTask($task); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
+            $environmentVars = $this->getCmdEnvirontmentVars();
+            
+            $log = '';
+            
+            //execute deploy command
+            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
+            $process->start();
+            foreach ($process as $msg) {
+                // Live output
+                yield $this->escapeCliMessage($this->replaceFilePathsWithHyperlinks($msg));
+                // Save to log
                 $log .= $msg;
-                
-                $deployData->setCellValue('completed_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
-                $deployData->setCellValue('log', 0, $log); 
-    
-                // Update deployment entry's state and save log to data source
-                $deployData->dataUpdate(false);
-                
-                $this->cleanupFiles($projectFolder);
-            } catch (\Throwable $e) {
-                $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
                 $deployData->setCellValue('log', 0, $log);
-                $deployData->setCellValue('status', 0, 90); // failed
-                $this->getWorkbench()->getLogger()->logException($e);
                 $deployData->dataUpdate(false);
             }
-
-            // IMPORTANT: Trigger regular action post-processing as required by AbstractActionDeferred.
-            $this->performAfterDeferred($result, $transaction);
-        };
-        
-        $result->setMessageStreamGenerator($generator);
-        return $result;
+            
+            if ($process->isSuccessful() === false) {
+                $deployData->setCellValue('status', 0, 90); // failed
+                $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
+            } else {
+                $deployData->setCellValue('status', 0, 99); // completed
+                $seconds = time() - $seconds;
+                $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
+            }
+            yield $msg;
+            $log .= $msg;
+            
+            $deployData->setCellValue('completed_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
+            $deployData->setCellValue('log', 0, $log);
+            
+            // Update deployment entry's state and save log to data source
+            $deployData->dataUpdate(false);
+            
+            $this->cleanupFiles($projectFolder);
+        } catch (\Throwable $e) {
+            $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+            $deployData->setCellValue('log', 0, $log);
+            $deployData->setCellValue('status', 0, 90); // failed
+            $this->getWorkbench()->getLogger()->logException($e);
+            $deployData->dataUpdate(false);
+        }
     }
     
     /**
