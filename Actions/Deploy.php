@@ -199,7 +199,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function escapeCliMessage(string $msg) : string
     {
         // TODO handle strange empty spaces in composer output
-        return $msg;
+        return str_replace(["\r", "\n"], PHP_EOL, $msg);
     }
      
     /**
