@@ -23,6 +23,10 @@ use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Facades\HttpFileServerFacade;
 use exface\Core\Interfaces\Tasks\ResultMessageStreamInterface;
 use exface\Core\Exceptions\InvalidArgumentException;
+use exface\Core\DataTypes\FilePathDataType;
+use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Exceptions\Actions\ActionRuntimeError;
+use exface\Core\DataTypes\JsonDataType;
 
 /**
  * Deploys a build to a specific host.
@@ -359,7 +363,18 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         $recipePath = $this->getDeployRecipeFile($task);
         $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
         $deployConfigJson = $this->getHostData($task, 'deploy_config') ?? '{}';
-        $deployConfigPHP = var_export(json_decode($deployConfigJson, true), true);
+        try {
+            $deployConfig = JsonDataType::decodeJson($deployConfigJson);
+        } catch (\Throwable $e) {
+            throw new ActionRuntimeError($this, 'Cannot parse deployment configuration: not a valid JSON!');
+        }
+        if (($deployConfig['default_app_config'] ?? null) && ($deployConfig['default_app_config']['System.config.json'] ?? null)) {
+            if ($deployConfig['default_app_config']['System.config.json']['SERVER.INSTALLATION_NAME'] ?? null === null) {
+                $deployFolderName = FilePathDataType::findFileName($basicDeployPath, false);
+                $deployConfig['default_app_config']['System.config.json']['SERVER.INSTALLATION_NAME'] = $deployFolderName;
+            }
+        }
+        $deployConfigPHP = var_export($deployConfig, true);
         
         $content = <<<PHP
 <?php
