@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-10-22 13:31:13",
-            "MODIFIED_ON": "2020-06-22 07:45:30",
+            "MODIFIED_ON": "2021-03-30 13:31:00",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
             "UID": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
@@ -111,23 +111,28 @@
                                     {
                                         "attribute_alias": "project",
                                         "widget_type": "InputComboTable",
-                                        "id": "project_selector",
+                                        "id": "project_selector"
+                                    },
+                                    {
+                                        "attribute_alias": "build_variant",
+                                        "widget_type": "InputComboTable",
+                                        "id": "variant_selector",
                                         "table": {
-                                            "object_alias": "axenox.Deployer.project",
+                                            "object_alias": "axenox.Deployer.build_variant",
                                             "columns": [
                                                 {
                                                     "attribute_group_alias": "~DEFAULT_DISPLAY"
                                                 },
                                                 {
-                                                    "attribute_alias": "default_composer_json",
+                                                    "attribute_alias": "composer_json",
                                                     "hidden": true
                                                 },
                                                 {
-                                                    "attribute_alias": "alias",
+                                                    "attribute_alias": "name",
                                                     "hidden": true
                                                 },
                                                 {
-                                                    "attribute_alias": "default_composer_auth_json",
+                                                    "attribute_alias": "composer_auth_json",
                                                     "hidden": true
                                                 }
                                             ]
@@ -161,11 +166,12 @@
                                 "caption": "composer.json",
                                 "widgets": [
                                     {
+                                        "disabled": true,
                                         "attribute_alias": "composer_json",
                                         "height": "100%",
                                         "width": "max",
                                         "hide_caption": true,
-                                        "value": "=project_selector!default_composer_json"
+                                        "value": "=variant_selector!composer_json"
                                     }
                                 ]
                             },
@@ -173,12 +179,13 @@
                                 "caption": "auth.json",
                                 "widgets": [
                                     {
+                                        "disabled": true,
                                         "attribute_alias": "composer_auth_json",
                                         "widget_type": "InputJson",
                                         "height": "100%",
                                         "width": "max",
                                         "hide_caption": true,
-                                        "value": "=project_selector!default_composer_auth_json"
+                                        "value": "=variant_selector!composer_auth_json"
                                     }
                                 ]
                             },
