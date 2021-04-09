@@ -120,6 +120,34 @@
             "HINT": "",
             "TYPE": "ERROR",
             "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2021-03-31 12:48:33",
+            "MODIFIED_ON": "2021-03-31 12:48:33",
+            "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "UID": "0x11eba8b5a3d75470a8b58c04ba002958",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "CODE": "7FGBG9F",
+            "TITLE": "Cannot create build without a build variant",
+            "DESCRIPTION": "Either provide a build variant directly or use input data with `axenox.Deployer.build` object.",
+            "HINT": "",
+            "TYPE": "ERROR",
+            "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2021-03-31 13:19:35",
+            "MODIFIED_ON": "2021-03-31 13:19:35",
+            "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "UID": "0x11eb9d30f9b23b869d308c04ba002958",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "CODE": "7FGBUMO",
+            "TITLE": "Cannot create build. No build variant matching the name or UID found for that project.",
+            "DESCRIPTION": "Provide a build variant alias or UID that is associated with the provided project.",
+            "HINT": "",
+            "TYPE": "ERROR",
+            "DOCS": ""
         }
     ],
     "totals_rows": [],

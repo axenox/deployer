@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-09-27 07:21:01",
-            "MODIFIED_ON": "2020-06-22 08:25:01",
+            "MODIFIED_ON": "2021-03-30 12:36:47",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
             "UID": "0x11e9e0f75c1bf571bacde4b318306b9a",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
@@ -230,25 +230,41 @@
                                                 "visibility": "optional"
                                             }
                                         ]
-                                    }
-                                ]
-                            },
-                            {
-                                "caption": "Composer.json",
-                                "widgets": [
+                                    },
                                     {
-                                        "attribute_alias": "default_composer_json",
-                                        "height": "100%",
-                                        "hide_caption": true
-                                    }
-                                ]
-                            },
-                            {
-                                "caption": "Configuration",
-                                "widgets": [
-                                    {
-                                        "attribute_alias": "default_composer_auth_json",
-                                        "height": "100%"
+                                        "widget_type": "DataTable",
+                                        "caption": "Build Variants",
+                                        "object_alias": "axenox.Deployer.build_variant",
+                                        "paginate": false,
+                                        "filters": [
+                                            {
+                                                "attribute_alias": "project",
+                                                "required": true,
+                                                "comparator": "==",
+                                                "widget_type": "InputHidden"
+                                            }
+                                        ],
+                                        "columns": [
+                                            {
+                                                "attribute_alias": "LABEL"
+                                            }
+                                        ],
+                                        "buttons": [
+                                            {
+                                                "action_alias": "exface.Core.ShowObjectCreateDialog"
+                                            },
+                                            {
+                                                "action_alias": "exface.Core.ShowObjectEditDialog",
+                                                "bind_to_double_click": true
+                                            },
+                                            {
+                                                "action_alias": "exface.Core.ShowObjectCopyDialog"
+                                            },
+                                            {
+                                                "action_alias": "exface.Core.DeleteObject",
+                                                "visibility": "optional"
+                                            }
+                                        ]
                                     }
                                 ]
                             },

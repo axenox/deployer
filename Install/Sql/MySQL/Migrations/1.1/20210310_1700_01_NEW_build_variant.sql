@@ -58,14 +58,12 @@ ALTER TABLE `axxdep_build`
 	
 ALTER TABLE `axxdep_project`
 	DROP COLUMN `default_composer_json`,
-	DROP COLUMN `default_composer_auth_json`,
-	DROP COLUMN `default_config`;
+	DROP COLUMN `default_composer_auth_json`;
 
 -- DOWN
 
 ALTER TABLE `axxdep_project`
 	ADD COLUMN `default_composer_json` LONGTEXT NULL DEFAULT NULL AFTER `build_recipe_custom_path`,
-	ADD COLUMN `default_config` TEXT NULL DEFAULT NULL AFTER `default_composer_json`,
 	ADD COLUMN `default_composer_auth_json` TEXT NULL AFTER `default_composer_json`;
 	
 ALTER TABLE `axxdep_build`

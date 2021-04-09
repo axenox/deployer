@@ -25,6 +25,8 @@ use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\Tasks\ResultMessageStreamInterface;
 use exface\Core\Exceptions\InvalidArgumentException;
+use exface\Core\Factories\ConditionGroupFactory;
+use exface\Core\Exceptions\Actions\ActionInputError;
 
 /**
  * Creates a build from an instance of a project and a version number.
@@ -58,6 +60,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     use BuildProjectTrait;
     
     private $projectData = null;
+    private $buildVariantData = null;
 
     /**
      *
@@ -89,8 +92,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'project' => $this->getProjectData($task, 'uid'),
                 'comment' => $this->getComment($task),
                 'notes' => $this->getNotes($task),
-                'composer_json' => $this->getComposerJson($task),
-                'composer_auth_json' => $this->getComposerAuthJson($task)
+                'build_variant' => $this->getBuildVariantData($task, 'uid'),
+                'composer_json' => $this->getBuildVariantData($task, 'composer_json'),
+                'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json')
             ]);
         }
         
@@ -226,9 +230,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $ds->getColumns()->addMultiple([
                 'alias',
                 'build_recipe',
-                'build_recipe_custom_path',
-                'default_composer_json',
-                'default_composer_auth_json'
+                'build_recipe_custom_path'
             ]);
             $ds->getFilters()->addConditionFromString('uid', $projectUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
@@ -236,6 +238,59 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $this->projectData = $ds;
         }
         return $this->projectData->getCellValue($projectAttributeAlias, 0);
+    }
+    
+    /**
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks build variant data, stored under the attribute passed as a parameter.
+     * 
+     * @param TaskInterface $task
+     * @param string $buildVariantAttributeAlias
+     * @throws ActionInputMissingError
+     * @return string
+     */
+    protected function getBuildVariantData(TaskInterface $task, string $buildVariantAttributeAlias): string
+    {
+        if ($this->buildVariantData === null) {
+            if ($task->hasParameter('build_variant')) {
+                $buildVariant = $task->getParameter('build_variant');
+            } else {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('build_variant')) {
+                    $buildVariant = $col->getCellValue(0);
+                }
+            }
+            
+            if ($buildVariant === null) {
+                throw new ActionInputMissingError($this, 'Cannot create build: No Build Variant provided!', '7FGBG9F');
+            } else if ($buildVariant === '') {
+                throw new ActionInputMissingError($this, 'Cannot create build: Invalid/empty Build Variant provided!', '7FGBG9F');
+            }
+            
+            $projectUid = $this->getProjectData($task, 'uid');
+            $projectAlias = $this->getProjectData($task, 'alias');
+            
+            $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build_variant');
+            $ds->getColumns()->addMultiple([
+                'project',
+                'name',
+                'composer_json',
+                'composer_auth_json'
+            ]);            
+            $variantFilter = ConditionGroupFactory::createForDataSheet($ds, EXF_LOGICAL_OR);
+            $variantFilter->addConditionFromString('uid', $buildVariant, ComparatorDataType::EQUALS);
+            $variantFilter->addConditionFromString('name', $buildVariant, ComparatorDataType::EQUALS);
+            $filterGroup = ConditionGroupFactory::createForDataSheet($ds, EXF_LOGICAL_AND);
+            $filterGroup->addConditionFromString('project', $projectUid, ComparatorDataType::EQUALS);
+            $filterGroup->addNestedGroup($variantFilter);
+            $ds->getFilters()->addNestedGroup($filterGroup);
+            $ds->dataRead();
+            if ($ds->isEmpty()) {
+                throw new ActionInputError($this, "There is no build variant with alias or UID '{$buildVariant}' associated with the project '{$projectAlias}'", '7FGBUMO');
+            }
+            $this->buildVariantData = $ds;
+        }
+        return $this->buildVariantData->getCellValue($buildVariantAttributeAlias, 0);
     }
     
     /**
@@ -453,7 +508,7 @@ PHP;
             }
         }
 
-        return $this->getRelevantObject($defaultComposerJson, $customComposerJson);
+        return $this->getRelevantObject($defaultComposerJson, $customComposerJson);       
     }
     
     /**
@@ -465,7 +520,7 @@ PHP;
      */
     protected function createComposerJson(TaskInterface $task, string $projectFolder) : string
     {
-        $content = $this->getComposerJson($task);
+        $content = $this->getBuildVariantData($task, 'composer_json');
         file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
         return $content;
     }
@@ -507,7 +562,7 @@ PHP;
      */
     protected function createComposerAuthJson(TaskInterface $task, string $projectFolder) : string
     {
-        $content = $this->getComposerAuthJson($task);
+        $content = $this->getBuildVariantData($task, 'composer_auth_json');
         file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'auth.json', $content);
         return $content;
     }
@@ -551,7 +606,11 @@ PHP;
             (new ServiceParameter($this))
                 ->setName('version')
                 ->setDescription('Version number - e.g. 1.0.12 or 2.0-beta. Use sematic versioning!')
-                ->setRequired(true)
+                ->setRequired(true),
+            (new ServiceParameter($this))
+            ->setName('build_variant')
+            ->setDescription('Build Variant alias or UID')
+            ->setRequired(true)
         ];
     }
 
@@ -568,13 +627,7 @@ PHP;
                 ->setDescription('Comment to give a short description about the build.'),
             (new ServiceParameter($this))
                 ->setName('notes')
-                ->setDescription('You can save a note to the build to give further information.'),
-            (new ServiceParameter($this))
-                ->setName('composer_json')
-                ->setDescription('You can put in a custom object for composer.json, which overwrites the default one from the project data.'),
-            (new ServiceParameter($this))
-                ->setName('composer_auth_json')
-                ->setDescription('You can put in a custom object for auth.json used by the composer, which overwrites the default one from the project data.')
+                ->setDescription('You can save a note to the build to give further information.')
         ];
     }
     
