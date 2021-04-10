@@ -25,29 +25,56 @@ use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\Tasks\ResultMessageStreamInterface;
 use exface\Core\Exceptions\InvalidArgumentException;
+use exface\Core\Factories\ConditionGroupFactory;
+use exface\Core\Exceptions\Actions\ActionInputError;
 
 /**
- * Creates a build from an instance of a project and a version number.
+ * Creates a new build for a project from one of the build variants configured for it.
  * 
- * The parameters of this action are an instance of a existing `axenox.Deployer.project` object, a version number
- * and a comment or notes to the build, which are optional. The action might be either called via the UI, or with use of an CLI-command.
- * The action creates a build, named after a comination of the verison number and current time, seperated by a '+' character.
- * The name of the resulting build is as following: `[version]+yyyymmddhhmmss`, e.g. `1.0-beta+20191108145134`
- * In the building process the action will create some temporary files and directories, and saves the 
- * crated build at `[config:PROJECTS_FOLDER][hostname]/[buildfolder]/[buildname].tar.gz`. Apart from the default json structures 
- * you may set in the projects data, you can also pass the objects for `composer.json` and `auth.json` to the building action.
- * The given objects will then overwrite the equivalent default object given in the project.
- * After completing the building process, you might deploy the build to a host of your choice, using the action `axenox.Deployer:Deploy`. 
+ * ## Parameters
+ * 
+ * This action takes the following parameters
+ * 
+ * - project alias
+ * - build number for the new build (see below)
+ * - name of the build variant to use
+ * - build comment - optional - a short text describing the build
+ * - notes - optional - a (longer) text for side-notes
+ * 
+ * The parameters can either be passed via command line or with input data (as values for the
+ * respective meta attributes of the build object).
+ * 
+ * The action creates a build archive named after a comination of the verison number and current time seperated 
+ * by a '+' character: `[version]+yyyymmddhhmmss`, e.g. `1.0-beta+20191108145134`. The achrive-file is saved 
+ * within the deployers data folder in `[config:PROJECTS_FOLDER][hostname]/[buildfolder]/[buildname].tar.gz`. 
+ * 
+ * After completing the building process, you can deploy the build to a host of your choice, using the action 
+ * `axenox.Deployer.Deploy` or the corresponding the CLI command `axenox.Deployer:Deploy`. 
+ * 
+ * ## Build numbers
+ * 
+ * The build number can be anything you like, but it is recommended to use [semantic versioning](https://semver.org/) 
+ * to make build number well readable and ensure proper sorting by build number.
+ * 
+ * Examples:
+ * 
+ * - `1.0`
+ * - `1.0.01`
+ * - `1.1-beta01`
+ * 
+ * Remember, that a build name derived from the current time will be added automatically!
  * 
  * ## Commandline Usage:
  * 
  * ```
- * action axenox.Deployer:Build [Project] [Version] <--comment Comment> <--notes Notes> <--composer_json ComposerJson> <--composer_auth_json AuthJson>
+ * vendor\bin\action axenox.Deployer:Build [project alias] [version] [variant name] <--comment some text> <--notes some text>
+ * 
  * ```
  * 
  * For example:
  * ```
- * action axenox.Deployer:Build testProject 1.0-beta
+ * action axenox.Deployer:Build testProject 1.0-beta "test build"
+ * 
  * ```
  * 
  * @author Andrej Kabachnik
@@ -58,6 +85,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     use BuildProjectTrait;
     
     private $projectData = null;
+    private $buildVariantData = null;
 
     /**
      *
@@ -89,8 +117,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'project' => $this->getProjectData($task, 'uid'),
                 'comment' => $this->getComment($task),
                 'notes' => $this->getNotes($task),
-                'composer_json' => $this->getComposerJson($task),
-                'composer_auth_json' => $this->getComposerAuthJson($task)
+                'build_variant' => $this->getBuildVariantData($task, 'uid'),
+                'composer_json' => $this->getBuildVariantData($task, 'composer_json'),
+                'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json')
             ]);
         }
         
@@ -226,9 +255,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $ds->getColumns()->addMultiple([
                 'alias',
                 'build_recipe',
-                'build_recipe_custom_path',
-                'default_composer_json',
-                'default_composer_auth_json'
+                'build_recipe_custom_path'
             ]);
             $ds->getFilters()->addConditionFromString('uid', $projectUid, ComparatorDataType::EQUALS);
             $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
@@ -236,6 +263,58 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $this->projectData = $ds;
         }
         return $this->projectData->getCellValue($projectAttributeAlias, 0);
+    }
+    
+    /**
+     * This function takes an task, and an attribute as parameter, and returns the data of
+     * the tasks build variant data, stored under the attribute passed as a parameter.
+     * 
+     * @param TaskInterface $task
+     * @param string $buildVariantAttributeAlias
+     * @throws ActionInputMissingError
+     * @return string
+     */
+    protected function getBuildVariantData(TaskInterface $task, string $buildVariantAttributeAlias): string
+    {
+        if ($this->buildVariantData === null) {
+            if ($task->hasParameter('variant')) {
+                $buildVariant = $task->getParameter('variant');
+            } else {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('build_variant')) {
+                    $buildVariant = $col->getCellValue(0);
+                }
+            }
+            
+            if ($buildVariant === null) {
+                throw new ActionInputMissingError($this, 'Cannot create build: No Build Variant provided!', '7FGBG9F');
+            } else if ($buildVariant === '') {
+                throw new ActionInputMissingError($this, 'Cannot create build: Invalid/empty Build Variant provided!', '7FGBG9F');
+            }
+            
+            $projectUid = $this->getProjectData($task, 'uid');
+            $projectAlias = $this->getProjectData($task, 'alias');
+            
+            $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build_variant');
+            $ds->getColumns()->addMultiple([
+                'project',
+                'name',
+                'composer_json',
+                'composer_auth_json'
+            ]);            
+            $filterNameOrUID = ConditionGroupFactory::createForDataSheet($ds, EXF_LOGICAL_OR);
+            $filterNameOrUID->addConditionFromString('uid', $buildVariant, ComparatorDataType::EQUALS);
+            $filterNameOrUID->addConditionFromString('name', $buildVariant, ComparatorDataType::EQUALS);
+            $ds->getFilters()
+                ->addConditionFromString('project', $projectUid, ComparatorDataType::EQUALS)
+                ->addNestedGroup($filterNameOrUID);
+            $ds->dataRead();
+            if ($ds->isEmpty()) {
+                throw new ActionInputError($this, "There is no build variant with alias or UID '{$buildVariant}' associated with the project '{$projectAlias}'", '7FGBUMO');
+            }
+            $this->buildVariantData = $ds;
+        }
+        return $this->buildVariantData->getCellValue($buildVariantAttributeAlias, 0);
     }
     
     /**
@@ -453,7 +532,7 @@ PHP;
             }
         }
 
-        return $this->getRelevantObject($defaultComposerJson, $customComposerJson);
+        return $this->getRelevantObject($defaultComposerJson, $customComposerJson);       
     }
     
     /**
@@ -465,7 +544,7 @@ PHP;
      */
     protected function createComposerJson(TaskInterface $task, string $projectFolder) : string
     {
-        $content = $this->getComposerJson($task);
+        $content = $this->getBuildVariantData($task, 'composer_json');
         file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
         return $content;
     }
@@ -507,7 +586,7 @@ PHP;
      */
     protected function createComposerAuthJson(TaskInterface $task, string $projectFolder) : string
     {
-        $content = $this->getComposerAuthJson($task);
+        $content = $this->getBuildVariantData($task, 'composer_auth_json');
         file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'auth.json', $content);
         return $content;
     }
@@ -551,6 +630,10 @@ PHP;
             (new ServiceParameter($this))
                 ->setName('version')
                 ->setDescription('Version number - e.g. 1.0.12 or 2.0-beta. Use sematic versioning!')
+                ->setRequired(true),
+            (new ServiceParameter($this))
+                ->setName('variant')
+                ->setDescription('Build variant name or UID')
                 ->setRequired(true)
         ];
     }
@@ -568,13 +651,7 @@ PHP;
                 ->setDescription('Comment to give a short description about the build.'),
             (new ServiceParameter($this))
                 ->setName('notes')
-                ->setDescription('You can save a note to the build to give further information.'),
-            (new ServiceParameter($this))
-                ->setName('composer_json')
-                ->setDescription('You can put in a custom object for composer.json, which overwrites the default one from the project data.'),
-            (new ServiceParameter($this))
-                ->setName('composer_auth_json')
-                ->setDescription('You can put in a custom object for auth.json used by the composer, which overwrites the default one from the project data.')
+                ->setDescription('You can save a note to the build to give further information.')
         ];
     }
     

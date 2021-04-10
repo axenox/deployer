@@ -61,9 +61,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-11-04 12:07:07",
-            "MODIFIED_ON": "2020-06-22 08:20:12",
+            "MODIFIED_ON": "2021-04-01 14:21:00",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
             "UID": "0x11e9fef33e544e21822b847beb3e34e8",
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface\/Core\/Actions\/ShowDialog.php",
@@ -83,14 +83,6 @@
                             {
                                 "from": "alias",
                                 "to": "project__alias"
-                            },
-                            {
-                                "from": "default_composer_json",
-                                "to": "composer_json"
-                            },
-                            {
-                                "from": "default_composer_auth_json",
-                                "to": "composer_auth_json"
                             }
                         ]
                     }
@@ -119,15 +111,39 @@
                                                         "attribute_group_alias": "~DEFAULT_DISPLAY"
                                                     },
                                                     {
-                                                        "attribute_alias": "default_composer_json",
-                                                        "hidden": true
-                                                    },
-                                                    {
                                                         "attribute_alias": "alias",
                                                         "hidden": true
                                                     },
                                                     {
-                                                        "attribute_alias": "default_composer_auth_json",
+                                                        "attribute_alias": "uid",
+                                                        "hidden": true
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "attribute_alias": "build_variant",
+                                            "filters": [
+                                                {
+                                                    "attribute_alias": "project",
+                                                    "value": "=project_selector!uid",
+                                                    "comparator": "=="
+                                                }
+                                            ],
+                                            "widget_type": "InputComboTable",
+                                            "id": "variant_selector",
+                                            "table": {
+                                                "object_alias": "axenox.Deployer.build_variant",
+                                                "columns": [
+                                                    {
+                                                        "attribute_group_alias": "~DEFAULT_DISPLAY"
+                                                    },
+                                                    {
+                                                        "attribute_alias": "name",
+                                                        "hidden": true
+                                                    },
+                                                    {
+                                                        "attribute_alias": "composer_json",
                                                         "hidden": true
                                                     }
                                                 ]
@@ -137,6 +153,11 @@
                                             "attribute_alias": "project__alias",
                                             "widget_type": "InputHidden",
                                             "value": "=project_selector!alias"
+                                        },
+                                        {
+                                            "data_column_name": "variant_name",
+                                            "widget_type": "InputHidden",
+                                            "value": "=variant_selector!name"
                                         },
                                         {
                                             "attribute_alias": "comment",
@@ -154,23 +175,12 @@
                                     "caption": "composer.json",
                                     "widgets": [
                                         {
-                                            "attribute_alias": "composer_json",
+                                            "attribute_alias": "build_variant__composer_json",
                                             "height": "100%",
                                             "width": "max",
                                             "hide_caption": true,
-                                            "value": "=project_selector!default_composer_json"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "caption": "auth.json",
-                                    "widgets": [
-                                        {
-                                            "attribute_alias": "composer_auth_json",
-                                            "height": "100%",
-                                            "width": "max",
-                                            "hide_caption": true,
-                                            "value": "=project_selector!default_composer_auth_json"
+                                            "disabled": true,
+                                            "value": "=variant_selector!composer_json"
                                         }
                                     ]
                                 },
@@ -202,7 +212,7 @@
                                             "widget_type": "Console",
                                             "disabled": true,
                                             "start_commands": [
-                                                "action axenox.Deployer:Build [#project__alias#] [#version#] --comment \"[#comment#]\" --notes \"[#notes#]\" --composer_json \"[#composer_json#]\" --composer_auth_json \"[#composer_auth_json#]\""
+                                                "action axenox.Deployer:Build [#project__alias#] [#version#] \"[#variant_name#]\" --comment \"[#comment#]\" --notes \"[#notes#]\""
                                             ],
                                             "working_directory_path": "vendor\/bin"
                                         }

@@ -1,0 +1,204 @@
+{
+    "uid": "0x11eb95198a4201c69519025041000001",
+    "alias_with_namespace": "axenox.deployer.build-variants",
+    "menu_parent_page_selector": "0xb9bb4be0e10011e99b6800a0c6000009",
+    "menu_index": 1,
+    "menu_visible": true,
+    "name": "Build Variants",
+    "description": "",
+    "intro": "",
+    "replaces_page_selector": null,
+    "created_by_user_selector": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+    "created_on": "2021-03-31 15:18:10",
+    "modified_by_user_selector": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+    "modified_on": "2021-04-01 14:47:34",
+    "contents": {
+        "object_alias": "axenox.Deployer.build_variant",
+        "widget_type": "SplitHorizontal",
+        "panels": [
+            {
+                "width": "50%",
+                "widgets": [
+                    {
+                        "widget_type": "DataTable",
+                        "id": "master_table",
+                        "filters": [
+                            {
+                                "widget_type": "InputComboTable",
+                                "attribute_alias": "LABEL"
+                            },
+                            {
+                                "widget_type": "InputComboTable",
+                                "attribute_alias": "project__LABEL"
+                            }
+                        ],
+                        "sorters": [
+                            {
+                                "attribute_alias": "project__LABEL",
+                                "direction": "asc"
+                            },
+                            {
+                                "attribute_alias": "LABEL",
+                                "direction": "asc"
+                            }
+                        ],
+                        "columns": [
+                            {
+                                "hidden": true,
+                                "attribute_alias": "uid"
+                            },
+                            {
+                                "attribute_alias": "LABEL"
+                            },
+                            {
+                                "attribute_alias": "project__LABEL"
+                            },
+                            {
+                                "caption": "Builds",
+                                "attribute_alias": "build__uid:COUNT"
+                            },
+                            {
+                                "caption": "Deployments",
+                                "attribute_alias": "build__currently_deployed__uid:COUNT"
+                            },
+                            {
+                                "caption": "In use on",
+                                "attribute_alias": "build__currently_deployed__host__LABEL:LIST"
+                            },
+                            {
+                                "caption": "Last Build on",
+                                "attribute_alias": "build__build_datetime:MAX"
+                            },
+                            {
+                                "attribute_alias": "modified_on"
+                            },
+                            {
+                                "attribute_alias": "modified_by_user__LABEL"
+                            }
+                        ],
+                        "row_grouper": {
+                            "group_by_attribute_alias": "project__LABEL",
+                            "hide_caption": false
+                        },
+                        "buttons": [
+                            {
+                                "action_alias": "exface.Core.ShowObjectCreateDialog"
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectEditDialog",
+                                "bind_to_double_click": true
+                            },
+                            {
+                                "action_alias": "exface.Core.ShowObjectCopyDialog"
+                            },
+                            {
+                                "action": {
+                                    "alias": "axenox.Deployer.ShowBuildDialog",
+                                    "prefill_with_input_data": true,
+                                    "input_rows_min": 1,
+                                    "input_rows_max": 1
+                                }
+                            },
+                            {
+                                "action_alias": "exface.Core.DeleteObject",
+                                "visibility": "optional"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "widgets": [
+                    {
+                        "id": "builds_table",
+                        "widget_type": "DataTable",
+                        "object_alias": "axenox.Deployer.build",
+                        "filters": [
+                            {
+                                "attribute_alias": "build_variant",
+                                "comparator": "==",
+                                "value": "=master_table!uid",
+                                "apply_on_change": true,
+                                "required": true,
+                                "input_widget": {
+                                    "widget_type": "InputHidden"
+                                }
+                            },
+                            {
+                                "attribute_alias": "status"
+                            }
+                        ],
+                        "sorters": [
+                            {
+                                "attribute_alias": "currently_deployed__host__LABEL:LIST",
+                                "direction": "desc"
+                            },
+                            {
+                                "attribute_alias": "status",
+                                "direction": "desc"
+                            }
+                        ],
+                        "columns": [
+                            {
+                                "attribute_alias": "version"
+                            },
+                            {
+                                "attribute_alias": "build_datetime"
+                            },
+                            {
+                                "attribute_alias": "status"
+                            },
+                            {
+                                "caption": "In use on",
+                                "attribute_alias": "currently_deployed__host__LABEL:LIST"
+                            },
+                            {
+                                "attribute_alias": "comment"
+                            },
+                            {
+                                "attribute_alias": "name"
+                            }
+                        ],
+                        "buttons": [
+                            {
+                                "action_alias": "exface.Core.ShowObjectInfoDialog",
+                                "bind_to_double_click": true
+                            },
+                            {
+                                "caption": "Repeat Build",
+                                "action": {
+                                    "alias": "axenox.Deployer.ShowBuildDialog",
+                                    "prefill_with_input_data": true,
+                                    "input_rows_min": 1,
+                                    "input_rows_max": 1
+                                }
+                            },
+                            {
+                                "caption": "Deploy selected",
+                                "action": {
+                                    "alias": "axenox.Deployer.ShowDeployDialog",
+                                    "prefill_with_input_data": true,
+                                    "input_rows_min": 1,
+                                    "input_rows_max": 1
+                                },
+                                "disabled_if": {
+                                    "operator": "AND",
+                                    "conditions": [
+                                        {
+                                            "value_left": "=builds_table!status",
+                                            "comparator": "!==",
+                                            "value_right": 99
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "action_alias": "axenox.Deployer.MarkBuildBroken"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
