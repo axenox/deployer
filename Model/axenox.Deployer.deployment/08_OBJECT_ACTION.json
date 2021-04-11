@@ -61,9 +61,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-11-05 11:52:51",
-            "MODIFIED_ON": "2020-11-11 08:15:04",
+            "MODIFIED_ON": "2021-04-11 07:34:16",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9ffba69eea0888ca0847beb3e34e8",
             "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface\/Core\/Actions\/ShowDialog.php",
@@ -100,6 +100,11 @@
                             }
                         ]
                     }
+                ],
+                "effected_objects": [
+                    "axenox.Deployer.deployment",
+                    "axenox.Deployer.currently_deployed",
+                    "axenox.Deployer.build"
                 ],
                 "widget": {
                     "object_alias": "axenox.Deployer.deployment",
@@ -217,9 +222,9 @@
         },
         {
             "CREATED_ON": "2019-12-09 10:26:28",
-            "MODIFIED_ON": "2019-12-09 10:29:47",
+            "MODIFIED_ON": "2021-04-11 07:35:07",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11ea1a6e59cb7c18b3fd0205857feb80",
             "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface\/Core\/Actions\/UpdateData.php",
@@ -237,7 +242,12 @@
                             "formula": "=98"
                         }
                     ]
-                }
+                },
+                "effected_objects": [
+                    "axenox.Deployer.currently_deployed",
+                    "axenox.Deployer.deployment",
+                    "axenox.Deployer.build"
+                ]
             },
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "USE_IN_OBJECT_BASKET_FLAG": "0",

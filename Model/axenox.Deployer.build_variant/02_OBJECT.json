@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2021-03-29 13:33:56",
-            "MODIFIED_ON": "2021-03-31 11:42:54",
+            "MODIFIED_ON": "2021-04-11 07:27:05",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
-            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11ebb908a5c82562b9088c04ba002958",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
@@ -97,36 +97,43 @@
             "PARENT_OBJECT": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_EDITOR_UXON": {
+                "widget_type": "Tabs",
                 "object_alias": "axenox.Deployer.build_variant",
-                "widget_type": "SplitVertical",
-                "panels": [
+                "tabs": [
                     {
-                        "caption": "Build Variant",
-                        "height": "10%",
+                        "caption": "Composer.json",
                         "widgets": [
                             {
-                                "attribute_alias": "name"
-                            },
-                            {
-                                "widget_type": "InputComboTable",
-                                "attribute_alias": "project"
-                            }
-                        ]
-                    },
-                    {
-                        "caption": "composer.json",
-                        "height": "60%",
-                        "widgets": [
-                            {
-                                "attribute_alias": "composer_json",
-                                "height": "100%",
-                                "hide_caption": true
+                                "widget_type": "SplitVertical",
+                                "panels": [
+                                    {
+                                        "height": 2,
+                                        "widgets": [
+                                            {
+                                                "attribute_alias": "name"
+                                            },
+                                            {
+                                                "widget_type": "InputComboTable",
+                                                "attribute_alias": "project"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "caption": "composer.json",
+                                        "widgets": [
+                                            {
+                                                "attribute_alias": "composer_json",
+                                                "height": "100%",
+                                                "hide_caption": true
+                                            }
+                                        ]
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
                         "caption": "auth.json",
-                        "height": "30%",
                         "widgets": [
                             {
                                 "attribute_alias": "composer_auth_json",

@@ -61,9 +61,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-11-04 12:07:07",
-            "MODIFIED_ON": "2021-04-01 14:21:00",
+            "MODIFIED_ON": "2021-04-11 07:33:33",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
-            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9fef33e544e21822b847beb3e34e8",
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface\/Core\/Actions\/ShowDialog.php",
@@ -86,6 +86,10 @@
                             }
                         ]
                     }
+                ],
+                "effected_objects": [
+                    "axenox.Deployer.build",
+                    "axenox.Deployer.build_file"
                 ],
                 "widget": {
                     "widget_type": "Dialog",
@@ -155,7 +159,7 @@
                                             "value": "=project_selector!alias"
                                         },
                                         {
-                                            "data_column_name": "variant_name",
+                                            "attribute_alias": "build_variant__name",
                                             "widget_type": "InputHidden",
                                             "value": "=variant_selector!name"
                                         },
@@ -172,7 +176,7 @@
                                     ]
                                 },
                                 {
-                                    "caption": "composer.json",
+                                    "caption": "Composer.json (preview)",
                                     "widgets": [
                                         {
                                             "attribute_alias": "build_variant__composer_json",
@@ -181,18 +185,6 @@
                                             "hide_caption": true,
                                             "disabled": true,
                                             "value": "=variant_selector!composer_json"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "caption": "Log",
-                                    "widgets": [
-                                        {
-                                            "attribute_alias": "log",
-                                            "widget_type": "InputText",
-                                            "height": "100%",
-                                            "width": "max",
-                                            "hide_caption": true
                                         }
                                     ]
                                 }
@@ -212,7 +204,7 @@
                                             "widget_type": "Console",
                                             "disabled": true,
                                             "start_commands": [
-                                                "action axenox.Deployer:Build [#project__alias#] [#version#] \"[#variant_name#]\" --comment \"[#comment#]\" --notes \"[#notes#]\""
+                                                "action axenox.Deployer:Build [#project__alias#] [#version#] \"[#build_variant__name#]\" --comment \"[#comment#]\" --notes \"[#notes#]\""
                                             ],
                                             "working_directory_path": "vendor\/bin"
                                         }
@@ -229,9 +221,9 @@
         },
         {
             "CREATED_ON": "2020-04-22 20:39:10",
-            "MODIFIED_ON": "2020-06-22 08:18:21",
+            "MODIFIED_ON": "2021-04-11 07:35:31",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11ea84d94edb6e9c97940205857feb80",
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface\/Core\/Actions\/UpdateData.php",
@@ -258,7 +250,11 @@
                             "to": "modified_on"
                         }
                     ]
-                }
+                },
+                "effected_objects": [
+                    "axenox.Deployer.build",
+                    "axenox.Deployer.build_file"
+                ]
             },
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "USE_IN_OBJECT_BASKET_FLAG": "0",

@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-09-27 07:21:01",
-            "MODIFIED_ON": "2021-03-30 12:36:47",
+            "MODIFIED_ON": "2021-04-11 07:37:37",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9e0f75c1bf571bacde4b318306b9a",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
@@ -328,10 +328,7 @@
                                                     "prefill_with_input_data": true,
                                                     "input_rows_min": 1,
                                                     "input_rows_max": 1
-                                                },
-                                                "refresh_widget_ids": [
-                                                    "build_files_table"
-                                                ]
+                                                }
                                             },
                                             {
                                                 "caption": "Deploy selected",
@@ -350,11 +347,7 @@
                                                             "value_right": 99
                                                         }
                                                     ]
-                                                },
-                                                "refresh_widget_ids": [
-                                                    "deployments_table",
-                                                    "build_files_table"
-                                                ]
+                                                }
                                             },
                                             {
                                                 "action_alias": "axenox.Deployer.MarkBuildBroken"
@@ -422,10 +415,7 @@
                                                     "widget_link": "deployments_table!status",
                                                     "comparator": "!==",
                                                     "value": 99
-                                                },
-                                                "refresh_widget_ids": [
-                                                    "builds_table"
-                                                ]
+                                                }
                                             }
                                         ]
                                     }
