@@ -173,9 +173,9 @@
     "rows": [
         {
             "CREATED_ON": "2021-03-29 13:33:56",
-            "MODIFIED_ON": "2021-03-30 12:35:12",
+            "MODIFIED_ON": "2021-04-12 14:28:43",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
-            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eb8aa7a5e931da8aa78c04ba002958",
             "SORTABLEFLAG": "1",
             "FILTERABLEFLAG": "1",
@@ -217,9 +217,9 @@
         },
         {
             "CREATED_ON": "2021-03-29 13:33:56",
-            "MODIFIED_ON": "2021-03-30 12:44:17",
+            "MODIFIED_ON": "2021-04-12 14:28:43",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
-            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eb9942a5e9794c99428c04ba002958",
             "SORTABLEFLAG": "1",
             "FILTERABLEFLAG": "1",
@@ -263,9 +263,9 @@
         },
         {
             "CREATED_ON": "2021-03-29 13:33:56",
-            "MODIFIED_ON": "2021-03-29 13:35:47",
+            "MODIFIED_ON": "2021-04-12 14:28:43",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
-            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eba2dea5e90804a2de8c04ba002958",
             "SORTABLEFLAG": "1",
             "FILTERABLEFLAG": "1",
@@ -289,7 +289,7 @@
             "DATA_ADDRESS": "name",
             "OBJECT": "0x11ebb908a5c82562b9088c04ba002958",
             "FORMATTER": "",
-            "DISPLAYORDER": null,
+            "DISPLAYORDER": "1",
             "LABELFLAG": "1",
             "UIDFLAG": "0",
             "HIDDENFLAG": "0",
@@ -304,14 +304,14 @@
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
             "CUSTOM_DATA_TYPE": {
-                "length_max": "50"
+                "length_max": "100"
             }
         },
         {
             "CREATED_ON": "2021-03-29 13:33:56",
-            "MODIFIED_ON": "2021-03-30 12:44:41",
+            "MODIFIED_ON": "2021-04-12 14:28:43",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
-            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ebaeeea5e952c8aeee8c04ba002958",
             "SORTABLEFLAG": "1",
             "FILTERABLEFLAG": "1",
@@ -351,6 +351,52 @@
             "FIXED_VALUE": "",
             "CUSTOM_DATA_TYPE": {
                 "length_max": 4294967295
+            }
+        },
+        {
+            "CREATED_ON": "2021-04-12 13:48:14",
+            "MODIFIED_ON": "2021-04-12 14:28:43",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11eb8c89f71acf488c89025041000001",
+            "SORTABLEFLAG": "1",
+            "FILTERABLEFLAG": "1",
+            "AGGREGATABLEFLAG": "1",
+            "DEFAULT_AGGREGATE_FUNCTION": null,
+            "VALUE_LIST_DELIMITER": ",",
+            "READABLEFLAG": "1",
+            "WRITABLEFLAG": "1",
+            "SYSTEMFLAG": "0",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
+            "NAME": "Description",
+            "RELATION_CARDINALITY": "",
+            "TYPE": "D",
+            "COPYABLEFLAG": "1",
+            "ALIAS": "description",
+            "DATATYPE": "0x31310000000000000000000000000000",
+            "DATA_ADDRESS": "description",
+            "OBJECT": "0x11ebb908a5c82562b9088c04ba002958",
+            "FORMATTER": null,
+            "DISPLAYORDER": "2",
+            "LABELFLAG": "0",
+            "UIDFLAG": "0",
+            "HIDDENFLAG": "0",
+            "EDITABLEFLAG": "1",
+            "REQUIREDFLAG": "0",
+            "RELATED_OBJ": "",
+            "SORTERPOS": null,
+            "SORTERDIR": null,
+            "RELATED_OBJ_ATTR": "",
+            "SHORT_DESCRIPTION": "",
+            "DATA_ADDRESS_PROPS": null,
+            "DEFAULT_VALUE": "",
+            "FIXED_VALUE": "",
+            "CUSTOM_DATA_TYPE": {
+                "length_max": 65535
             }
         }
     ],

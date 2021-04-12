@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2021-03-29 13:33:56",
-            "MODIFIED_ON": "2021-04-11 07:27:05",
+            "MODIFIED_ON": "2021-04-12 14:27:19",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
-            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ebb908a5c82562b9088c04ba002958",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
@@ -107,13 +107,16 @@
                                 "widget_type": "SplitVertical",
                                 "panels": [
                                     {
-                                        "height": 2,
+                                        "height": 3,
                                         "widgets": [
                                             {
                                                 "attribute_alias": "name"
                                             },
                                             {
-                                                "widget_type": "InputComboTable",
+                                                "attribute_alias": "description",
+                                                "height": 3
+                                            },
+                                            {
                                                 "attribute_alias": "project"
                                             }
                                         ]
