@@ -61,9 +61,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-11-05 11:52:51",
-            "MODIFIED_ON": "2021-04-11 07:34:16",
+            "MODIFIED_ON": "2021-04-12 13:36:48",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
-            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9ffba69eea0888ca0847beb3e34e8",
             "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface\/Core\/Actions\/ShowDialog.php",
@@ -100,11 +100,6 @@
                             }
                         ]
                     }
-                ],
-                "effected_objects": [
-                    "axenox.Deployer.deployment",
-                    "axenox.Deployer.currently_deployed",
-                    "axenox.Deployer.build"
                 ],
                 "widget": {
                     "object_alias": "axenox.Deployer.deployment",
@@ -199,6 +194,11 @@
                             "visibility": "promoted",
                             "action": {
                                 "alias": "exface.Core.ShowDialog",
+                                "effected_objects": [
+                                    "axenox.Deployer.deployment",
+                                    "axenox.Deployer.currently_deployed",
+                                    "axenox.Deployer.build"
+                                ],
                                 "widget": {
                                     "widgets": [
                                         {
