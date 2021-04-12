@@ -11,7 +11,7 @@
     "created_by_user_selector": "0x11e8fe1c902c8ebea23ee4b318306b9a",
     "created_on": "2021-03-31 15:18:10",
     "modified_by_user_selector": "0x31000000000000000000000000000000",
-    "modified_on": "2021-04-12 13:37:54",
+    "modified_on": "2021-04-12 14:55:02",
     "contents": {
         "object_alias": "axenox.Deployer.build_variant",
         "widget_type": "SplitHorizontal",
@@ -22,13 +22,12 @@
                     {
                         "widget_type": "DataTable",
                         "id": "master_table",
+                        "caption": "Variants",
                         "filters": [
                             {
-                                "widget_type": "InputComboTable",
                                 "attribute_alias": "LABEL"
                             },
                             {
-                                "widget_type": "InputComboTable",
                                 "attribute_alias": "project__LABEL"
                             }
                         ],
@@ -44,14 +43,13 @@
                         ],
                         "columns": [
                             {
-                                "hidden": true,
-                                "attribute_alias": "uid"
-                            },
-                            {
-                                "attribute_alias": "LABEL"
+                                "attribute_alias": "name"
                             },
                             {
                                 "attribute_alias": "project__LABEL"
+                            },
+                            {
+                                "calculation": "=LEFT(description, 100)"
                             },
                             {
                                 "caption": "Builds",
@@ -113,6 +111,7 @@
                         "id": "builds_table",
                         "widget_type": "DataTable",
                         "object_alias": "axenox.Deployer.build",
+                        "caption": "Builds",
                         "filters": [
                             {
                                 "attribute_alias": "build_variant",
