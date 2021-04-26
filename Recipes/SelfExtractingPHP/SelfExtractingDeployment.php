@@ -168,7 +168,7 @@ try {
             echo("Uninstalling old apps...\n");
         }
         foreach ($uninstallAppsAliases as $alias) {
-            $command = "cd {$currentPath} && {$actionPath} axenox.packagemanager:uninstallApp {$alias}";
+            $command = "cd {$currentPath} && {$actionPath} axenox.PackageManager:UninstallApp {$alias}";
             $cmdarray = [];
             try {
                 exec("{$command}", $cmdarray);
