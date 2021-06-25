@@ -118,8 +118,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'comment' => $this->getComment($task),
                 'notes' => $this->getNotes($task),
                 'build_variant' => $this->getBuildVariantData($task, 'uid'),
-                'composer_json' => $this->getBuildVariantData($task, 'composer_json'),
-                'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json')
+                'composer_json' => $this->getBuildVariantData($task, 'composer_json') ?? '{}',
+                'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json') ?? '{}'
             ]);
         }
         
@@ -272,9 +272,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
      * @param TaskInterface $task
      * @param string $buildVariantAttributeAlias
      * @throws ActionInputMissingError
-     * @return string
+     * @return mixed
      */
-    protected function getBuildVariantData(TaskInterface $task, string $buildVariantAttributeAlias): string
+    protected function getBuildVariantData(TaskInterface $task, string $buildVariantAttributeAlias)
     {
         if ($this->buildVariantData === null) {
             if ($task->hasParameter('variant')) {
@@ -288,7 +288,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             
             if ($buildVariant === null) {
                 throw new ActionInputMissingError($this, 'Cannot create build: No Build Variant provided!', '7FGBG9F');
-            } else if ($buildVariant === '') {
+            } elseif ($buildVariant === '') {
                 throw new ActionInputMissingError($this, 'Cannot create build: Invalid/empty Build Variant provided!', '7FGBG9F');
             }
             
@@ -297,6 +297,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build_variant');
             $ds->getColumns()->addMultiple([
+                'uid',
                 'project',
                 'name',
                 'composer_json',
