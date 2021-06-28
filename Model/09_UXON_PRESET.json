@@ -102,13 +102,13 @@
         },
         {
             "CREATED_ON": "2019-11-28 08:17:08",
-            "MODIFIED_ON": "2019-11-28 08:17:27",
+            "MODIFIED_ON": "2021-06-28 07:51:49",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ea11b774e1975184aee4b318306b9a",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "GitHub OAuth token",
-            "DESCRIPTION": "Token-authentication for GitHub",
+            "DESCRIPTION": "Token-authentication for GitHub. To create a new access token, head to your [token settings section on Github](https:\/\/github.com\/settings\/tokens) and [generate a new token](https:\/\/github.com\/settings\/tokens). For public repositories when rate limited, the public_repo scope is required, for private repositories the repo:status scope is needed.",
             "PROTOTYPE": "",
             "UXON": {
                 "github-oauth": {
@@ -117,7 +117,7 @@
             },
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema",
-            "THUMBNAIL": null
+            "THUMBNAIL": ""
         },
         {
             "CREATED_ON": "2020-04-22 20:23:52",
@@ -325,7 +325,7 @@
         },
         {
             "CREATED_ON": "2020-06-19 13:37:56",
-            "MODIFIED_ON": "2020-06-22 07:34:51",
+            "MODIFIED_ON": "2021-06-28 07:45:02",
             "CREATED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaba9a51da9e20ba9a025041000001",
@@ -346,16 +346,14 @@
                             "dbase": "",
                             "charset": "UTF-8"
                         },
-                        "SERVER.DEFAULT_LOCALE": ""
-                    },
-                    "exface.Core.config.json": {
+                        "SERVER.DEFAULT_LOCALE": "",
                         "INSTALLER.SERVER_INSTALLER.CLASS": "\\exface\\Core\\CommonLogic\\AppInstallers\\IISServerInstaller"
                     }
                 }
             },
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema",
-            "THUMBNAIL": null
+            "THUMBNAIL": ""
         },
         {
             "CREATED_ON": "2020-06-22 07:33:50",
@@ -387,6 +385,28 @@
             "WRAP_PATH": "",
             "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema",
             "THUMBNAIL": null
+        },
+        {
+            "CREATED_ON": "2021-06-28 07:53:54",
+            "MODIFIED_ON": "2021-06-28 07:54:34",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11ebbcd838d9eb26bcd8025041000001",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "GitLab OAuth token",
+            "DESCRIPTION": "Token-authentication for GitLab. To create a new access token, go to your [access tokens section on GitLab](https:\/\/gitlab.com\/-\/profile\/personal_access_tokens) (or the equivalent URL on your private instance) and create a new token.",
+            "PROTOTYPE": "",
+            "UXON": {
+                "gitlab-token": {
+                    "github.com": ""
+                },
+                "gitlab-domains": [
+                    ""
+                ]
+            },
+            "WRAP_PATH": "",
+            "UXON_SCHEMA": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema",
+            "THUMBNAIL": ""
         }
     ],
     "totals_rows": [],

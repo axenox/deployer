@@ -106,5 +106,14 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
         
         return $ds->getRows();
     }
-
+    
+    public function getUxonType(UxonObject $uxon, array $path, string $rootPrototypeClass = null) : ?string
+    {
+        return 'string';
+    }
+    
+    public function getPropertiesByAnnotation(string $annotation, $value, string $prototypeClass = null): array
+    {
+        return [];
+    }
 }

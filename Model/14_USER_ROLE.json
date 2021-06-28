@@ -40,6 +40,10 @@
         {
             "name": "SYNC_WITH_EXT_ROLE",
             "attribute_alias": "SYNC_WITH_EXT_ROLE"
+        },
+        {
+            "name": "START_PAGE",
+            "attribute_alias": "START_PAGE"
         }
     ],
     "rows": [
@@ -53,7 +57,8 @@
             "DESCRIPTION": "Build\/deploy for all projects",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "ALIAS": "BUILDMASTER",
-            "SYNC_WITH_EXT_ROLE": ""
+            "SYNC_WITH_EXT_ROLE": "",
+            "START_PAGE": ""
         }
     ],
     "totals_rows": [],
