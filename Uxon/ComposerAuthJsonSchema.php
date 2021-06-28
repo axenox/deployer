@@ -56,8 +56,10 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
     public function getPropertiesTemplates(string $prototypeClass): array
     {
         return [
-            'github-oauth' => '{"github.com": ""}',
-            'http-basic' => '{"example1.org": {"username": "", "password": ""}}'
+            'http-basic' => '{"example1.org": {"username": "", "password": ""}}',
+            'github-oauth' => '{"github.com": "// PLACE TOKEN HERE"}',
+            'gitlab-token' => '{"// PLACE DOMAIN HERE": "// PLACE TOKEN HERE"}',
+            'gitlab-oauth' => '{"// PLACE DOMAIN HERE": "// PLACE TOKEN HERE"}'
         ];
     }
 
@@ -69,8 +71,10 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
     public function getProperties(string $prototypeClass): array
     {
         return [
+            'http-basic',
             'github-oauth',
-            'http-basic'
+            'gitlab-token',
+            'gitlab-oauth'
         ];
     }
 

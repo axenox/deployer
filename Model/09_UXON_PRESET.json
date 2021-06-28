@@ -388,7 +388,7 @@
         },
         {
             "CREATED_ON": "2021-06-28 07:53:54",
-            "MODIFIED_ON": "2021-06-28 07:54:34",
+            "MODIFIED_ON": "2021-06-28 08:02:22",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ebbcd838d9eb26bcd8025041000001",
@@ -398,10 +398,10 @@
             "PROTOTYPE": "",
             "UXON": {
                 "gitlab-token": {
-                    "github.com": ""
+                    "\/\/ DOMAIN HERE": "\/\/ TOKEN HERE"
                 },
                 "gitlab-domains": [
-                    ""
+                    "\/\/ DOMAIN HERE"
                 ]
             },
             "WRAP_PATH": "",
