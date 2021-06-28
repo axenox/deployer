@@ -11,9 +11,7 @@ use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\ComparatorDataType;
 
 /**
- * UXON-schema class for actions.
- * 
- * @see UxonSchema for general information.
+ * UXON-schema class depoyment configuration for hosts.
  * 
  * @author Andrej Kabachnik
  *

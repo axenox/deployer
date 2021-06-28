@@ -11,9 +11,9 @@ use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\ComparatorDataType;
 
 /**
- * UXON-schema class for actions.
+ * UXON-schema class for composer.json files.
  * 
- * @see UxonSchema for general information.
+ * @link https://getcomposer.org/doc/04-schema.md.
  * 
  * @author Andrej Kabachnik
  *

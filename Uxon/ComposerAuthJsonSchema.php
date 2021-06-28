@@ -11,9 +11,9 @@ use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\ComparatorDataType;
 
 /**
- * UXON-schema class for actions.
+ * UXON-schema class for Composer auth.json.
  * 
- * @see UxonSchema for general information.
+ * @link https://getcomposer.org/doc/articles/authentication-for-private-packages.md
  * 
  * @author Andrej Kabachnik
  *
