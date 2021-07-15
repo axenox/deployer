@@ -23,9 +23,17 @@ Now whenever the service will be started automatically it will be run by its ded
 
 ## Access private Git repos
 
-If you need the build server to access private Git repos (e.g. GitLab), you can use the dedicated PHP-user from above to set up any required access technique. 
+If you need the build server to access private Git repos (e.g. GitLab), you need to store credentials like access tokens somewhere in order for the build server to gain access to the repos.
 
-This is an alternative to using composer-authentication, which is configurable within the deployer project. Using regular Git authentication is more versatile though - you can use anything, that Git supports. It is probably also more secure.
+### Using Composer (for each build variant separately)
+
+You can store credentials for every build variant separately by puttin them in the `auth.json` section of the variant. These credentials will be used by PHP Composer directly. Available options are described in the [official documentation of Composer](https://getcomposer.org/doc/articles/authentication-for-private-packages.md).
+
+### Using Git credential storage (globally on the server)
+
+**NOTE:** depending on the configuration of Git on the build server, this may or may not work properly!
+
+This is an alternative to using composer-authentication, which is configurable within the deployers build variant. Using regular Git authentication is more native (to Git), but it requires Get to be set up in a way, that credentials are stored globally or at least for the dedicated PHP user (see above).
 
 In most cases it is enough to clone a repo manually in the name of the PHP-user:
 
