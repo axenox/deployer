@@ -81,9 +81,9 @@
     "rows": [
         {
             "CREATED_ON": "2019-09-27 07:21:01",
-            "MODIFIED_ON": "2021-04-11 07:37:37",
+            "MODIFIED_ON": "2021-08-02 18:30:43",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9e0f75c1bf571bacde4b318306b9a",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
@@ -188,6 +188,7 @@
                                         "caption": "Hosts",
                                         "object_alias": "axenox.Deployer.host",
                                         "paginate": false,
+                                        "height": "max",
                                         "filters": [
                                             {
                                                 "attribute_alias": "project",
@@ -236,6 +237,7 @@
                                         "caption": "Build Variants",
                                         "object_alias": "axenox.Deployer.build_variant",
                                         "paginate": false,
+                                        "height": "max",
                                         "filters": [
                                             {
                                                 "attribute_alias": "project",
