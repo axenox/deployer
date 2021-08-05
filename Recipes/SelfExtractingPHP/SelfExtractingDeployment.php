@@ -29,9 +29,10 @@ $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
 $oldReleasePath = null;
 if (is_dir($currentPath)) {
     chdir($currentPath);
-    $oldReleasePath = getcwd();
+    $oldReleasePath = readlink(getcwd());
     chdir($basicDeployPath);
 }
+echo("Old release path '{$oldReleasePath}'\n");
 
 if (is_dir($releasePath)) {
     exit("The selected release '{$releaseName}' does already exist on the server!\n");
@@ -220,7 +221,7 @@ try {
         } else {
             echo("Symlink to exface created!\n");
         }
-    }
+    }    
     
     //Install Apps
     //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
@@ -233,6 +234,7 @@ try {
         //TODO not tested yet on Linux!
         $command = "cd {$currentPath} && {$phpPath} composer.phar run-script post-install-cmd";
     }
+    
     echo ("Installing apps...\n");
     echo ("Execute command: {$command} \n");
     $cmdarray = [];
@@ -243,16 +245,18 @@ try {
     
     //copy Apps from local vendors
     if ($oldReleasePath !== null && array_key_exists('local_vendors', $deployConfig) && is_array($deployConfig['local_vendors'])) {
+        echo ("Copying local vendors: " . implode(', ', $deployConfig['local_vendors']) . " ...\n");
         foreach ($deployConfig['local_vendors'] as $local) {
             if ($local === null || $local === '') {
                 continue;
             }
+            echo ("Copying local vendor '" . $local . "' ...\n");
             $releaseLocalDir = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local;
             if (!is_dir($releaseLocalDir)) {
                 if (mkdir($releaseLocalDir) === true) {
-                    echo("Directory {$releasePath}\\{$dir} created!\n");
+                    echo("Directory '{$releaseLocalDir}' created!\n");
                 } else {
-                    throw new Exception("Directory {$releaseLocalDir} could not be created!\n");
+                    throw new Exception("Directory '{$releaseLocalDir}' could not be created!\n");
                 }
             }
             foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
@@ -260,8 +264,9 @@ try {
                 $appPathRelative = array_pop($tmp);
                 $appPathNew = $releaseLocalDir . $appPathRelative;
                 if ( !is_dir($appPathNew)) {
-                    echo ("Copying local app: " . $appPathRelative . "\n");
+                    echo ("Copying local app: '" . $local . $appPathRelative . "' ...\n");
                     recurseCopy($appPath, $appPathNew);
+                    echo ("Local app: '" . $local . $appPathRelative . "' copied\n");
                 }
             }
         }
@@ -331,6 +336,11 @@ function recurseCopy(string $src, string $dst) : void
         throw new Exception("Directory {$dst} could not be created!\n");
     }
     closedir($dir);
+    
+    //check if dir really got created, if not throw an exception
+    if (! is_dir($dst)) {
+        throw new Exception("Directory {$dst} could not be created!\n");
+    }
     return;
 }
 
