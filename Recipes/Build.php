@@ -115,7 +115,7 @@ task('build:create_from_composer', function() {
     $jsonData = json_encode($tempArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     file_put_contents($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR. 'composer.json', $jsonData);
     
-    runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}}');
+    runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}}', ['timeout' => $composer_timeout]);
 
-    runLocally('rm -rf {{builds_archives_path}}\..\vendor');
+    runLocally('rm -rf {{builds_archives_path}}\..\vendor', ['timeout' => $composer_timeout]);
 });
