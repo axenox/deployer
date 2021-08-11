@@ -55,7 +55,7 @@
             {
                 "action_alias": "exface.Core.ShowObjectEditDialog",
                 "bind_to_double_click": true,
-                "caption": "=TRANSLATE('exface.Core', 'ACTION.GENERIC.OPEN')",
+                "caption": "=Translate('exface.Core', 'ACTION.GENERIC.OPEN')",
                 "icon": "external-link"
             },
             {

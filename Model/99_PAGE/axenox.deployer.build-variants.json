@@ -49,7 +49,7 @@
                                 "attribute_alias": "project__LABEL"
                             },
                             {
-                                "calculation": "=LEFT(description, 100)"
+                                "calculation": "=Left(description, 100)"
                             },
                             {
                                 "caption": "Builds",
