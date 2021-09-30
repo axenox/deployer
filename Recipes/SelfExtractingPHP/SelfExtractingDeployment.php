@@ -1,6 +1,6 @@
 <?php
 
-ini_set('memory_limit', '1G'); // or you could use -1
+ini_set('memory_limit', '2G'); // or you could use -1
 set_time_limit(0);
 ini_set('max_execution_time', 0);
 
@@ -152,17 +152,19 @@ try {
         $oldAppsAliases = axenox\PackageManager\Actions\ListApps::findAppAliasesInVendorFolders($oldVendorPath);
         $uninstallAppsAliases = array_diff($oldAppsAliases, $newAppsAliases);
         $uninstallAppsAliases = array_values($uninstallAppsAliases);
+        $keepAppsAliases = [];
         for ($i = 0; $i < count($uninstallAppsAliases); $i++) {
             $arr = explode('.', $uninstallAppsAliases[$i]);
             $appsVendor = $arr[0];
             if (array_key_exists('local_vendors', $deployConfig) && is_array($deployConfig['local_vendors'])) {
                 foreach ($deployConfig['local_vendors'] as $vendor) {
-                    if (strpos($vendor, $appsVendor) !== FALSE) {                
-                        unset ($uninstallAppsAliases[$i]);
+                    if (stripos($vendor, $appsVendor) !== FALSE) {
+                        $keepAppsAliases[] = $uninstallAppsAliases[$i];
                     }
                 }
             }
         }
+        $uninstallAppsAliases = array_diff($uninstallAppsAliases, $keepAppsAliases);
         $uninstallAppsAliases = array_values($uninstallAppsAliases);
         $actionPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'action';
         if (count($uninstallAppsAliases) > 0) {
@@ -252,14 +254,17 @@ try {
             }
             echo ("Copying local vendor '" . $local . "' ...\n");
             $releaseLocalDir = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local;
-            if (!is_dir($releaseLocalDir)) {
+            $appPaths = glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR);
+            if (empty($appPaths)) {
+                echo("No apps from vendor '{$local}' exist.\n");
+            } elseif (!is_dir($releaseLocalDir)) {
                 if (mkdir($releaseLocalDir) === true) {
                     echo("Directory '{$releaseLocalDir}' created!\n");
                 } else {
                     throw new Exception("Directory '{$releaseLocalDir}' could not be created!\n");
                 }
             }
-            foreach (glob($oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $local . DIRECTORY_SEPARATOR . '*' , GLOB_ONLYDIR) as $appPath) {
+            foreach ($appPaths as $appPath) {
                 $tmp = explode($local, $appPath);
                 $appPathRelative = array_pop($tmp);
                 $appPathNew = $releaseLocalDir . $appPathRelative;

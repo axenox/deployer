@@ -50,7 +50,7 @@ task('self_deployment:upload', function () {
  * run self deployment php file on remote host
  */
 task('self_deployment:run', function () {
-    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=500M {{self_extractor_filename}}', ['timeout' => null]);;
+    $composerOutput = run('cd {{basic_deploy_path_cygwin}} && {{php_path}} -d memory_limit=2G {{self_extractor_filename}}', ['timeout' => null]);;
     write($composerOutput);
     writeln('');
 });
@@ -83,7 +83,7 @@ task('self_deployment:show_link', function() {
 1) Copy/Download "$filePath"
 2) Upload it to anywhere on the host
 3) Open the host's command line as administrator (IMPORTANT - otherwise you will get symlink-errors!) 
-4) Run the command "$phpPath -d memory_limit=1G path/to/$filename"
+4) Run the command "$phpPath -d memory_limit=2G path/to/$filename"
 
 NOTE: if anything goes wrong and you need to roll back:
 
