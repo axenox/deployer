@@ -111,4 +111,19 @@ Match Group administrators
 
 ### SSH error `Load key "...": invalid format`
 
-Did you really copy ALL the contents of the private key to the connection configuration? See if the trailing linebrak aufter `-----END OPENSSH PRIVATE KEY-----` is there. It is important!
+Did you really copy ALL the contents of the private key to the connection configuration? See if the trailing linebreak after `-----END OPENSSH PRIVATE KEY-----` is there - it is important!
+
+### SSH error `Permission denied`
+
+Use debug logs on client (see above) to get more info.
+
+#### SSH log-entry `Bad owner on C:/ProgramData/ssh/administrators_authorized_keys`
+
+Can happen after a new local user was added on the client machine. 
+
+1. Right-click `C:/ProgramData/ssh/administrators_authorized_keys` > Properties > Security
+2. Click on `Advanced` at the bottom
+3. Click on `Disable inheritance` at the lower left and let windows convert inherited permissions
+4. Remove all permissions accept for `SYSTEM` and `Administrators` with `Full control`.
+
+If this does not help, try recreating the file and apply the above fix to the new one.
