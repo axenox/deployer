@@ -252,6 +252,39 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "USE_IN_OBJECT_BASKET_FLAG": "0",
             "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2021-10-05 18:24:23",
+            "MODIFIED_ON": "2021-10-05 18:24:23",
+            "CREATED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "UID": "0x11ec8895b391ac708895005056be5d52",
+            "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
+            "ACTION_PROTOTYPE": "exface\/Core\/Actions\/UpdateData.php",
+            "ALIAS": "MarkFailed",
+            "NAME": "Mark as failed",
+            "SHORT_DESCRIPTION": "Changes the status of the deployment even if no error was detected",
+            "CONFIG_UXON": {
+                "input_object_alias": "axenox.Deployer.deployment",
+                "icon": "ban",
+                "input_data_sheet": {
+                    "object_alias": "axenox.Deployer.deployment",
+                    "columns": [
+                        {
+                            "attribute_alias": "status",
+                            "formula": "=90"
+                        }
+                    ]
+                },
+                "effected_objects": [
+                    "axenox.Deployer.currently_deployed",
+                    "axenox.Deployer.deployment",
+                    "axenox.Deployer.build"
+                ]
+            },
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "USE_IN_OBJECT_BASKET_FLAG": "0",
+            "DOCS": ""
         }
     ],
     "totals_rows": [],

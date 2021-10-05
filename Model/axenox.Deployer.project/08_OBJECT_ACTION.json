@@ -61,7 +61,7 @@
     "rows": [
         {
             "CREATED_ON": "2020-05-28 09:21:08",
-            "MODIFIED_ON": "2021-04-11 07:36:15",
+            "MODIFIED_ON": "2021-10-05 18:31:02",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11eaa0c47fa38871bba0e4b318306b9a",
@@ -229,6 +229,14 @@
                                 {
                                     "action_alias": "exface.Core.ShowObjectInfoDialog",
                                     "bind_to_double_click": true
+                                },
+                                {
+                                    "action_alias": "axenox.Deployer.MarkFailed",
+                                    "disable_condition": {
+                                        "widget_link": "deployments_table!status",
+                                        "comparator": "==",
+                                        "value": 90
+                                    }
                                 },
                                 {
                                     "action_alias": "axenox.Deployer.MarkRolledBack",
