@@ -81,7 +81,7 @@
     "rows": [
         {
             "CREATED_ON": "2019-09-27 07:22:43",
-            "MODIFIED_ON": "2020-06-22 09:50:14",
+            "MODIFIED_ON": "2021-10-05 17:28:10",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9e0f798c74f73bacde4b318306b9a",
@@ -160,6 +160,65 @@
                                                 "hide_caption": true,
                                                 "width": "max",
                                                 "height": 14
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "caption": "Infrastructure",
+                                "widgets": [
+                                    {
+                                        "widget_type": "DataTable",
+                                        "object_alias": "axenox.Deployer.host_infrastructure",
+                                        "filters": [
+                                            {
+                                                "attribute_alias": "host",
+                                                "hidden": true,
+                                                "required": true,
+                                                "comparator": "=="
+                                            },
+                                            {
+                                                "attribute_alias": "system__LABEL"
+                                            }
+                                        ],
+                                        "columns": [
+                                            {
+                                                "attribute_alias": "system__LABEL"
+                                            },
+                                            {
+                                                "attribute_alias": "current_version"
+                                            },
+                                            {
+                                                "attribute_alias": "system__latest_version"
+                                            },
+                                            {
+                                                "attribute_alias": "system__least_version"
+                                            },
+                                            {
+                                                "attribute_alias": "last_updated_on"
+                                            }
+                                        ],
+                                        "sorters": [
+                                            {
+                                                "attribute_alias": "host__LABEL",
+                                                "direction": "asc"
+                                            }
+                                        ],
+                                        "buttons": [
+                                            {
+                                                "action_alias": "exface.Core.ShowObjectCreateDialog"
+                                            },
+                                            {
+                                                "action_alias": "exface.Core.ShowObjectEditDialog",
+                                                "bind_to_double_click": true
+                                            },
+                                            {
+                                                "action_alias": "exface.Core.ShowObjectCopyDialog"
+                                            },
+                                            {
+                                                "action_alias": "exface.Core.DeleteObject",
+                                                "visibility": "optional"
                                             }
                                         ]
                                     }
