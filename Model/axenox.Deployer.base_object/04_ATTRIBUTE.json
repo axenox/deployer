@@ -305,7 +305,7 @@
         },
         {
             "CREATED_ON": "2020-06-22 07:42:49",
-            "MODIFIED_ON": "2020-06-22 07:43:30",
+            "MODIFIED_ON": "2021-11-18 21:30:22",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaa3d9f8c6130ea3d90205857feb80",
@@ -342,7 +342,7 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{\"SQL_DATA_TYPE\":\"binary\",\"SQL_USE_OPTIMIZED_UID\":\"true\"}",
+            "DATA_ADDRESS_PROPS": "{\"SQL_DATA_TYPE\":\"binary\",\"SQL_INSERT_UUID_OPTIMIZED\":\"true\"}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
             "CUSTOM_DATA_TYPE": null
