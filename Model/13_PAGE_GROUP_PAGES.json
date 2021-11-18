@@ -93,15 +93,6 @@
             "UID": "0x11eb82a88a51900082a8025041000001",
             "PAGE": "0x11eb95198a4201c69519025041000001",
             "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
-        },
-        {
-            "CREATED_ON": "2021-10-05 18:32:36",
-            "MODIFIED_ON": "2021-10-05 18:32:36",
-            "CREATED_BY_USER": "0x11ea11bb12970e55882500505689aada",
-            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
-            "UID": "0x11ec848fd98a3702848f005056be5d52",
-            "PAGE": "0x11ecadcb48ed3008adcb025041000001",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
         }
     ],
     "totals_rows": [],
