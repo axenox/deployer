@@ -166,65 +166,6 @@
                                 ]
                             },
                             {
-                                "caption": "Infrastructure",
-                                "widgets": [
-                                    {
-                                        "widget_type": "DataTable",
-                                        "object_alias": "axenox.Deployer.host_infrastructure",
-                                        "filters": [
-                                            {
-                                                "attribute_alias": "host",
-                                                "hidden": true,
-                                                "required": true,
-                                                "comparator": "=="
-                                            },
-                                            {
-                                                "attribute_alias": "system__LABEL"
-                                            }
-                                        ],
-                                        "columns": [
-                                            {
-                                                "attribute_alias": "system__LABEL"
-                                            },
-                                            {
-                                                "attribute_alias": "current_version"
-                                            },
-                                            {
-                                                "attribute_alias": "system__latest_version"
-                                            },
-                                            {
-                                                "attribute_alias": "system__least_version"
-                                            },
-                                            {
-                                                "attribute_alias": "last_updated_on"
-                                            }
-                                        ],
-                                        "sorters": [
-                                            {
-                                                "attribute_alias": "host__LABEL",
-                                                "direction": "asc"
-                                            }
-                                        ],
-                                        "buttons": [
-                                            {
-                                                "action_alias": "exface.Core.ShowObjectCreateDialog"
-                                            },
-                                            {
-                                                "action_alias": "exface.Core.ShowObjectEditDialog",
-                                                "bind_to_double_click": true
-                                            },
-                                            {
-                                                "action_alias": "exface.Core.ShowObjectCopyDialog"
-                                            },
-                                            {
-                                                "action_alias": "exface.Core.DeleteObject",
-                                                "visibility": "optional"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
                                 "caption": "Deploys",
                                 "widgets": [
                                     {
