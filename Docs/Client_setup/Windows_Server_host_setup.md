@@ -56,7 +56,8 @@ Right-click the file, select `Properties` > `Security` and make sure only Admini
 
 1. Download [cygwin](https://cygwin.com/install.html)
 2. Install without chaging any options
-3. Add cygwin to the `PATH` variable via PowerShell: 
+3. Add cygwin to the `PATH` variable (e.g. via PowerShell as shown below). 
+4. **Restart**
 
 ```   
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\cygwin64\bin", "Machine")
@@ -127,3 +128,7 @@ Can happen after a new local user was added on the client machine.
 4. Remove all permissions accept for `SYSTEM` and `Administrators` with `Full control`.
 
 If this does not help, try recreating the file and apply the above fix to the new one.
+
+#### SSH log-entry get_user_token - unable to generate token on 2nd attempt for user xxx
+
+Logging in via SSH does not always work for domain users. If the referenced user is one from active directory, try using a local user instead.

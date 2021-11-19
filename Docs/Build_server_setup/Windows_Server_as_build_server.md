@@ -27,7 +27,7 @@ If you need the build server to access private Git repos (e.g. GitLab), you need
 
 ### Using Composer (for each build variant separately)
 
-You can store credentials for every build variant separately by puttin them in the `auth.json` section of the variant. These credentials will be used by PHP Composer directly. Available options are described in the [official documentation of Composer](https://getcomposer.org/doc/articles/authentication-for-private-packages.md).
+You can store credentials for every build variant separately by putting them in the `auth.json` section of the variant. These credentials will be used by PHP Composer directly. Available options are described in the [official documentation of Composer](https://getcomposer.org/doc/articles/authentication-for-private-packages.md).
 
 ### Using Git credential storage (globally on the server)
 
