@@ -29,7 +29,13 @@ $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
 $oldReleasePath = null;
 if (is_dir($currentPath)) {
     chdir($currentPath);
-    $oldReleasePath = readlink(getcwd());
+    switch (PHP_OS_FAMILY) {
+        case 'Linux':
+            $oldReleasePath = getcwd();
+            break;
+        default:
+            $oldReleasePath = readlink(getcwd());
+    }
     chdir($basicDeployPath);
 }
 echo("Old release path '{$oldReleasePath}'\n");
@@ -195,7 +201,7 @@ try {
     //create 'current' symlink to new release
     chdir($deployPath);
     if (is_dir($currentPath)) {
-        rmdir($currentPath);
+        deleteDirectory($currentPath);
     }
     $target_pointer = $releasePath;
     $test = symlink($target_pointer, $relativeCurrentPath);
@@ -213,12 +219,11 @@ try {
         //create 'exface' symlink to 'current'
         chdir($basicDeployPath);
         if (is_dir($exfacePath)) {
-            rmdir($exfacePath);
+            deleteDirectory($exfacePath);
         }
         $target_pointer = $currentPath;
         $test = symlink($target_pointer, $exfaceFolderName);
-        if (!$test)
-        {
+        if (!$test) {
             throw new Exception("Symlink to exface could not be created");
         } else {
             echo("Symlink to exface created!\n");
@@ -290,30 +295,29 @@ try {
         //create 'current' symlink to old release
         chdir($deployPath);
         if (is_dir($currentPath)) {
-            rmdir($currentPath);
+            deleteDirectory($currentPath);
         }
         if ($oldReleasePath !== null) {
             $target_pointer = $oldReleasePath;
             $test = symlink($target_pointer, $relativeCurrentPath);
-            if (!$test)
-            {
+            if (!$test) {
                 echo("Symlink to {$relativeCurrentPath} could not be created: from old release {$target_pointer}!\n");
             } else {
                 echo("Symlink to {$relativeCurrentPath} created: from old release {$target_pointer}!\n");
             }
             //create 'exface' symlink to 'current'
-            chdir($basicDeployPath);
-            chdir($basicDeployPath);
-            if (is_dir($exfacePath)) {
-                rmdir($exfacePath);
-            }
-            $target_pointer = $currentPath;
-            $test = symlink($target_pointer, $exfaceFolderName);
-            if (!$test)
-            {
-                echo("Symlink to exface could not be created!\n");
-            } else {
-                echo("Symlink to exface created!\n");
+            if ($relativeDeployPath != '' && $relativeDeployPath != null) {
+                chdir($basicDeployPath);
+                if (is_dir($exfacePath)) {
+                    deleteDirectory($exfacePath);
+                }
+                $target_pointer = $currentPath;
+                $test = symlink($target_pointer, $exfaceFolderName);
+                if (!$test) {
+                    echo("Symlink to exface could not be created!\n");
+                } else {
+                    echo("Symlink to exface created!\n");
+                }
             }
         }       
     }
