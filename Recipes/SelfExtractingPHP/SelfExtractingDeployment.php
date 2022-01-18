@@ -472,6 +472,12 @@ function createHtaccess($path) : void
 {
     $content = <<<TXT
 RewriteEngine On
+
+# Allow access to existing files in the root folder (e.g. favicon.ico, robots.txt, etc.)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^([^\/]+)$ $1 [L]
+
+# Redirect everything else to the current symlink
 RewriteRule ^(.*)$ current/$1 [L,QSA]
 TXT;
     file_put_contents($path . DIRECTORY_SEPARATOR . '.htaccess', trim($content));
