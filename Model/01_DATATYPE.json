@@ -111,8 +111,8 @@
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputUxon",
-                "width": "2",
-                "height": "6"
+                "width": 2,
+                "height": 6
             },
             "ALIAS": "UxonDeploymentConfiguration",
             "SHORT_DESCRIPTION": "UXON Schema for deployment configuration"
@@ -133,8 +133,8 @@
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputUxon",
-                "width": "2",
-                "height": "6"
+                "width": 2,
+                "height": 6
             },
             "ALIAS": "UxonComposerJson",
             "SHORT_DESCRIPTION": "UXON schema for composer.json"
@@ -155,8 +155,8 @@
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputUxon",
-                "width": "2",
-                "height": "6"
+                "width": 2,
+                "height": 6
             },
             "ALIAS": "UxonComposerAuthJson",
             "SHORT_DESCRIPTION": "UXON schema for auth.json"

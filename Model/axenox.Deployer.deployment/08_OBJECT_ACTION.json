@@ -127,7 +127,7 @@
                                     {
                                         "attribute_alias": "status",
                                         "comparator": "==",
-                                        "value": "99"
+                                        "value": 99
                                     }
                                 ],
                                 "columns": [
@@ -217,7 +217,7 @@
                 }
             },
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
-            "USE_IN_OBJECT_BASKET_FLAG": "0",
+            "USE_IN_OBJECT_BASKET_FLAG": 0,
             "DOCS": ""
         },
         {
@@ -250,7 +250,7 @@
                 ]
             },
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
-            "USE_IN_OBJECT_BASKET_FLAG": "0",
+            "USE_IN_OBJECT_BASKET_FLAG": 0,
             "DOCS": ""
         },
         {
@@ -283,7 +283,7 @@
                 ]
             },
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
-            "USE_IN_OBJECT_BASKET_FLAG": "0",
+            "USE_IN_OBJECT_BASKET_FLAG": 0,
             "DOCS": ""
         }
     ],

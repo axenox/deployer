@@ -64,8 +64,8 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "DEFAULT_CONNECTION": "0x11ea72c00f0fadeca3480205857feb80",
             "DEFAULT_QUERY_BUILDER": "exface\/Core\/QueryBuilders\/ModelLoaderQueryBuilder.php",
-            "READABLE_FLAG": "1",
-            "WRITABLE_FLAG": "1",
+            "READABLE_FLAG": 1,
+            "WRITABLE_FLAG": 1,
             "BASE_OBJECT": "0x11eab16ef7f1f6fab16e0205857feb80",
             "LABEL": "Deployer DB",
             "ALIAS": "DEPLOYER_DB"
