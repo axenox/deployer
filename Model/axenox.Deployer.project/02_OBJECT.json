@@ -81,16 +81,16 @@
     "rows": [
         {
             "CREATED_ON": "2019-09-27 07:21:01",
-            "MODIFIED_ON": "2021-11-19 08:24:41",
+            "MODIFIED_ON": "2022-03-16 16:31:22",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9e0f75c1bf571bacde4b318306b9a",
-            "READABLE_FLAG": "1",
-            "WRITABLE_FLAG": "1",
+            "READABLE_FLAG": 1,
+            "WRITABLE_FLAG": 1,
             "COMMENTS": "",
             "DOCS": "",
             "NAME": "Deployment Project",
-            "INHERIT_DATA_SOURCE_BASE_OBJECT": "1",
+            "INHERIT_DATA_SOURCE_BASE_OBJECT": 1,
             "DATA_SOURCE": "0x11eab5facf6370bab5fa0205857feb80",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "SHORT_DESCRIPTION": "",
@@ -497,6 +497,13 @@
                                             {
                                                 "attribute_alias": "SIZE",
                                                 "footer": "SUM"
+                                            },
+                                            {
+                                                "attribute_alias": "build__status"
+                                            },
+                                            {
+                                                "attribute_alias": "build__currently_deployed__host__LABEL:LIST",
+                                                "caption": "In use on"
                                             },
                                             {
                                                 "attribute_alias": "PATH_RELATIVE"
