@@ -288,7 +288,14 @@ try {
     echo ("Self deployment successful!\n");
     
 } catch (Exception $e) {
-    echo("Error - Line {$e->getLine()}: {$e->getMessage()}");
+    echo("Error - Line {$e->getLine()}: {$e->getMessage()} \n");
+    echo("Logged in as: \n");
+    $cmdarray = [];
+    exec("whoami", $cmdarray);
+    foreach($cmdarray as $line) {
+        echo ($line . "\n");
+    }
+    echo("\n -------------------- \n");
     if (is_dir($releasePath)) {
         deleteDirectory($releasePath);
         echo("Directory {$releasePath} removed!\n");
@@ -534,6 +541,7 @@ function extractArchive() : bool
         }
         unlink($pharfilename);
     } catch (Exception $e) {
+        echo ("Extraction failed with message: {$e->getMessage()} \n");
         return false;
     }
     return true;
