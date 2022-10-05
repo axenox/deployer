@@ -29,7 +29,7 @@ task('azure:upload', function() {
 
 1) Copy/Download "$filePath" to your downloads folder (`C:\Users\%USERNAME%\Downloads`)
 2) Open the command line on your PC and copy/paste the following command 
-cd c:\Users\%USERNAME%\Downloads && powershell Compress-Archive "$filename" $filename.zip && curl -v -X POST -u {Username}:{Password} https://{AppServiceName}.scm.azurewebsites.net/api/zipdeploy -T azure.zip && del $filename.zip
+    cd c:\Users\%USERNAME%\Downloads && powershell Compress-Archive "$filename" $filename.zip && curl -v -X POST -u {Username}:{Password} https://{AppServiceName}.scm.azurewebsites.net/api/zipdeploy -T $filename.zip && del $filename.zip
     Replace placehodlers as follows: 
         - {Username} and {Password} are the credntials of an Azure FTP(S) user. The {Username} must NOT include any domain like `{AppServiceName}\`!
         - {AppServiceName} is the name of the service (i.e. the "xxx" in https://xxx.azurewebsites.net)
