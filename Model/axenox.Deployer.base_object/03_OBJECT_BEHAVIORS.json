@@ -1,0 +1,142 @@
+{
+    "object_alias": "exface.Core.OBJECT_BEHAVIORS",
+    "columns": [
+        {
+            "name": "CREATED_ON",
+            "attribute_alias": "CREATED_ON"
+        },
+        {
+            "name": "MODIFIED_ON",
+            "attribute_alias": "MODIFIED_ON"
+        },
+        {
+            "name": "CREATED_BY_USER",
+            "attribute_alias": "CREATED_BY_USER"
+        },
+        {
+            "name": "MODIFIED_BY_USER",
+            "attribute_alias": "MODIFIED_BY_USER"
+        },
+        {
+            "name": "UID",
+            "attribute_alias": "UID"
+        },
+        {
+            "name": "BEHAVIOR",
+            "attribute_alias": "BEHAVIOR"
+        },
+        {
+            "name": "CONFIG_UXON",
+            "attribute_alias": "CONFIG_UXON"
+        },
+        {
+            "name": "OBJECT",
+            "attribute_alias": "OBJECT"
+        },
+        {
+            "name": "APP",
+            "attribute_alias": "APP"
+        },
+        {
+            "name": "NAME",
+            "attribute_alias": "NAME"
+        },
+        {
+            "name": "DESCRIPTION",
+            "attribute_alias": "DESCRIPTION"
+        }
+    ],
+    "rows": [
+        {
+            "CREATED_ON": "2022-12-19 18:59:01",
+            "MODIFIED_ON": "2022-12-19 19:00:30",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11ed95dcd209e2a295dc025041000001",
+            "BEHAVIOR": "exface\/Core\/Behaviors\/TimeStampingBehavior.php",
+            "CONFIG_UXON": {
+                "created_on_attribute_alias": "created_on",
+                "created_by_attribute_alias": "created_by_user",
+                "updated_on_attribute_alias": "modified_on",
+                "updated_by_attribute_alias": "modified_by_user"
+            },
+            "OBJECT": "0x11eab16ef7f1f6fab16e0205857feb80",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "Create\/Update tracking + optimistic locking",
+            "DESCRIPTION": ""
+        },
+        {
+            "CREATED_ON": "2022-12-19 18:59:27",
+            "MODIFIED_ON": "2022-12-19 19:00:59",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11edba39e0f73b48ba39025041000001",
+            "BEHAVIOR": "exface\/Core\/Behaviors\/GlobalActionsBehavior.php",
+            "CONFIG_UXON": {
+                "buttons": [
+                    {
+                        "icon": "info",
+                        "caption": "Object info",
+                        "action": {
+                            "alias": "exface.Core.ShowDialog",
+                            "input_rows_min": 1,
+                            "input_rows_max": 1,
+                            "dialog": {
+                                "maximized": false,
+                                "width": 1,
+                                "height": "auto",
+                                "readonly": true,
+                                "widgets": [
+                                    {
+                                        "attribute_alias": "uid"
+                                    },
+                                    {
+                                        "attribute_alias": "created_on"
+                                    },
+                                    {
+                                        "attribute_alias": "created_by_user__LABEL"
+                                    },
+                                    {
+                                        "attribute_alias": "modified_on"
+                                    },
+                                    {
+                                        "attribute_alias": "modified_by_user__LABEL"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            "OBJECT": "0x11eab16ef7f1f6fab16e0205857feb80",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "Info-button for system attributes",
+            "DESCRIPTION": ""
+        }
+    ],
+    "totals_rows": [],
+    "filters": {
+        "operator": "AND",
+        "base_object_alias": "exface.Core.OBJECT_BEHAVIORS",
+        "conditions": [
+            {
+                "expression": "APP",
+                "comparator": "=",
+                "value": "0x11e9e072016ba0dd8afae4b318306b9a",
+                "object_alias": "exface.Core.OBJECT_BEHAVIORS"
+            }
+        ]
+    },
+    "rows_limit": null,
+    "rows_offset": 0,
+    "sorters": [
+        {
+            "attribute_alias": "CREATED_ON",
+            "direction": "ASC"
+        },
+        {
+            "attribute_alias": "UID",
+            "direction": "ASC"
+        }
+    ]
+}
