@@ -44,6 +44,14 @@
         {
             "name": "DESCRIPTION",
             "attribute_alias": "DESCRIPTION"
+        },
+        {
+            "name": "DISABLED_FLAG",
+            "attribute_alias": "DISABLED_FLAG"
+        },
+        {
+            "name": "PRIORITY",
+            "attribute_alias": "PRIORITY"
         }
     ],
     "rows": [
@@ -79,7 +87,9 @@
             "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "State Model",
-            "DESCRIPTION": ""
+            "DESCRIPTION": "",
+            "DISABLED_FLAG": 0,
+            "PRIORITY": null
         }
     ],
     "totals_rows": [],
