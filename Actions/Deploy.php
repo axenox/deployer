@@ -155,9 +155,15 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 $deployData->setCellValue('status', 0, 90); // failed
                 $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
             } else {
-                $deployData->setCellValue('status', 0, 99); // completed
-                $seconds = time() - $seconds;
-                $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
+                if (strpos($deployTask, 'LocalBldUpdaterPublish') !== false) {
+                    $deployData->setCellValue('status', 0, 60); // published
+                    $seconds = time() - $seconds;
+                    $msg = '✔ SUCCEEDED publishing build ' . $buildName . ' for download by ' . $hostName . ' in ' . $seconds . ' seconds.';
+                } else {
+                    $deployData->setCellValue('status', 0, 99); // completed
+                    $seconds = time() - $seconds;
+                    $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
+                }
             }
             yield $msg;
             $log .= $msg;
@@ -376,6 +382,13 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         }
         $deployConfigPHP = var_export($deployConfig, true);
         
+        $connection = $this->getSshConnection($task);
+        if (! $connection instanceof DeployerSshConnector) {
+            $connectionConfigPHP = var_export($connection->exportUxonObject(), true);
+        } else {
+            $connectionConfigPHP = '[]';
+        }
+        
         $content = <<<PHP
 <?php
 namespace Deployer;
@@ -397,6 +410,7 @@ set('relative_deploy_path', '{$relativeDeployPath}');
 set('builds_archives_path', '{$buildsArchivesPath}');
 set('php_path', '{$phpPath}');
 set('deploy_config', $deployConfigPHP);
+set('connection_config', $connectionConfigPHP);
 
 require '{$recipePath}';
 
