@@ -383,7 +383,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         $deployConfigPHP = var_export($deployConfig, true);
         
         $connection = $this->getSshConnection($task);
-        if (! $connection instanceof DeployerSshConnector) {
+        if ($connection && ! $connection instanceof DeployerSshConnector) {
             $connectionConfigPHP = var_export($connection->exportUxonObject(), true);
         } else {
             $connectionConfigPHP = '[]';
