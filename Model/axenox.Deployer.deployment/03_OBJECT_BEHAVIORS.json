@@ -57,7 +57,7 @@
     "rows": [
         {
             "CREATED_ON": "2019-10-24 08:15:25",
-            "MODIFIED_ON": "2023-03-29 12:33:56",
+            "MODIFIED_ON": "2023-04-06 16:17:28",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9f63665e2c17db2ce0205857feb80",
@@ -72,7 +72,7 @@
                         "name": "Deploying"
                     },
                     "60": {
-                        "name": "Published for updater"
+                        "name": "Awaiting self-update"
                     },
                     "90": {
                         "name": "Failed",

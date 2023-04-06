@@ -4,6 +4,9 @@ namespace axenox\Deployer;
 use exface\Core\Interfaces\InstallerInterface;
 use exface\Core\CommonLogic\AppInstallers\MySqlDatabaseInstaller;
 use exface\Core\CommonLogic\Model\App;
+use exface\Core\Facades\AbstractHttpFacade\HttpFacadeInstaller;
+use exface\Core\Factories\FacadeFactory;
+use axenox\Deployer\Facades\DeployerFacade;
 
 class DeployerApp extends App
 {
@@ -24,6 +27,12 @@ class DeployerApp extends App
             // core schema!
             ->setMigrationsTableName($sqlInstaller->getMigrationsTableName() . '_deployer');
         $installer->addInstaller($sqlInstaller);
+        
+        // Deployer facade
+        $facadeInstaller = new HttpFacadeInstaller($this->getSelector());
+        $facadeInstaller->setFacade(FacadeFactory::createFromString(DeployerFacade::class, $this->getWorkbench()));
+        $installer->addInstaller($facadeInstaller);
+        
         return $installer;
     }
 }

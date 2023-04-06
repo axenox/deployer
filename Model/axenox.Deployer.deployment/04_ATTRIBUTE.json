@@ -349,7 +349,7 @@
         },
         {
             "CREATED_ON": "2019-10-24 08:14:02",
-            "MODIFIED_ON": "2019-12-09 10:34:48",
+            "MODIFIED_ON": "2023-04-06 16:17:37",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9f636342889c3b2ce0205857feb80",
@@ -395,6 +395,7 @@
                 "values": {
                     "10": "10 Pending",
                     "50": "50 Deploying",
+                    "60": "60 Awaiting self-update",
                     "90": "90 Failed",
                     "98": "98 Rolled Back",
                     "99": "99 Completed"

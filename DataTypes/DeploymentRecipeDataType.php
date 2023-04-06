@@ -24,8 +24,8 @@ class DeploymentRecipeDataType extends StringDataType implements EnumDataTypeInt
     const LOCAL_BLD_SSH_INSTALL = "LocalBldSshInstall";
     const LOCAL_BLD_SSH_INSTALL_WAIT = "LocalBldSshInstallWait";
     const LOCAL_BLD_AZURE_APP_SERVICE_MANUAL_INSTALL = "LocalBldAzureAppServiceManualInstall";
-    const LOCAL_BLD_UPDATER_PUSH = 'LocalBldUpdaterUpload';
-    const LOCAL_BLD_UPDATER_PULL = 'LocalBldUpdaterPublish';
+    const LOCAL_BLD_UPDATER_PUSH = 'LocalBldUpdaterPush';
+    const LOCAL_BLD_UPDATER_PULL = 'LocalBldUpdaterPull';
     const CUSTOM_DEPLOY = "CustomDeploy";
     
     /**

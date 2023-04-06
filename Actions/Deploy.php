@@ -155,7 +155,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 $deployData->setCellValue('status', 0, 90); // failed
                 $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
             } else {
-                if (strpos($deployTask, 'LocalBldUpdaterPublish') !== false) {
+                if (strpos($deployTask, 'LocalBldUpdaterPull') !== false) {
                     $deployData->setCellValue('status', 0, 60); // published
                     $seconds = time() - $seconds;
                     $msg = '✔ SUCCEEDED publishing build ' . $buildName . ' for download by ' . $hostName . ' in ' . $seconds . ' seconds.';
@@ -485,14 +485,20 @@ PHP;
             // If no connection exists, generate the host alias from the host name.
             $sshConfigFilePath = null;
             $hostName = $this->getHostData($task, 'name');
-            $hostAlias = str_replace(' ', '_', $hostName);
-            $hostAlias = preg_replace('/[^a-z0-9_]/i', '', $hostAlias);
+            $hostAlias = self::getHostAlias($hostName);
         }
         
         $projectFolderPath = $this->getProjectFolderRelativePath($task);
         $this->createDeployPhp($task, $basePath, $projectFolderPath, $hostAlias, $sshConfigFilePath);
         
         return $basePath . $projectFolderPath;
+    }
+    
+    public static function getHostAlias(string $hostName) : string
+    {
+        $hostAlias = str_replace(' ', '_', $hostName);
+        $hostAlias = preg_replace('/[^a-z0-9_]/i', '', $hostAlias);
+        return $hostAlias;
     }
     
     /**

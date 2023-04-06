@@ -71,7 +71,7 @@ cli);
     }
 });
 
-task('LocalBldUpdaterUpload', [
+task('LocalBldUpdaterPush', [
     'config:setup_deploy_config',
     'build:find',
     'self_deployment:create',
