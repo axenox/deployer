@@ -42,6 +42,10 @@ task('self_extractor:delete_remote_file', function() {
  * delete self extracting php file on local machine
  */
 task('self_extractor:delete_local_file', function() {
-    runLocally('rm -f {{builds_archives_path}}\{{self_extractor_filename}}');
+    if (substr(php_uname(), 0, 7) == "Windows"){
+        runLocally('del /f /q "{{builds_archives_path}}' . DIRECTORY_SEPARATOR . '{{self_extractor_filename}}"');
+    } else {
+        runLocally('rm -f {{builds_archives_path}}/{{self_extractor_filename}}');
+    }
 });
                     
