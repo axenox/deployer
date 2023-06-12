@@ -195,7 +195,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         $urlMatches = [];
         if (preg_match_all('/' . preg_quote($this->getBasePath(), '/') . '[^ "]*/', $msg, $urlMatches) !== false) {
             foreach ($urlMatches[0] as $urlPath) {
-                $url = HttpFileServerFacade::buildUrlForDownload($this->getWorkbench(), $urlPath, false);
+                $url = HttpFileServerFacade::buildUrlToDownloadFile($this->getWorkbench(), $urlPath, false);
                 $msg = str_replace($urlPath, $url, $msg);
             }
         }
