@@ -14,6 +14,8 @@ use exface\Core\DataTypes\FilePathDataType;
 use exface\Core\Exceptions\FileNotFoundError;
 use function GuzzleHttp\Psr7\stream_for;
 use exface\Core\DataTypes\SortingDirectionsDataType;
+use exface\Core\Exceptions\Facades\HttpBadRequestError;
+use exface\Core\Exceptions\DataSheets\DataNotFoundError;
 
 class DeployerFacade extends AbstractHttpFacade
 {
@@ -49,7 +51,7 @@ class DeployerFacade extends AbstractHttpFacade
                 
         }
         
-        return new Response(404);
+        return $this->createResponseFromError(new HttpBadRequestError($request, 'Cannot match route'), $request);
     }
     
     /**
@@ -80,7 +82,7 @@ class DeployerFacade extends AbstractHttpFacade
         $ds->dataRead();
         
         if ($ds->isEmpty()) {
-            return new Response(404);
+            throw new DataNotFoundError($ds, 'Host "' . $hostName . '" not found in project "' . $projectAlias . '"');
         }
         
         $filename = $ds->getCellValue('build__name', 0) . '_' . Deploy::getHostAlias($ds->getCellValue('host__name', 0)) . '.phx';
