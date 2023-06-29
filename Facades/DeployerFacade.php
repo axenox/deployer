@@ -17,6 +17,17 @@ use exface\Core\DataTypes\SortingDirectionsDataType;
 use exface\Core\Exceptions\Facades\HttpBadRequestError;
 use exface\Core\Exceptions\DataSheets\DataNotFoundError;
 
+/**
+ * Handles over-the-air (OTA) updates
+ * 
+ * Routes: 
+ * 
+ * - GET api/ota/<project_alias>/<host_name>
+ * - POST api/ota/<project_alias>/<host_name>
+ * 
+ * @author andrej.kabachnik
+ *
+ */
 class DeployerFacade extends AbstractHttpFacade
 {
     /**
