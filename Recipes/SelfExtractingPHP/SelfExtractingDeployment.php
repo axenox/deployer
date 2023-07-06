@@ -117,7 +117,7 @@ try {
         $target_pointer = $sharedPath . DIRECTORY_SEPARATOR . $dir;
         $test = symlink($target_pointer, $dir);
         if (! $test) {
-            throw new Exception("Symlink to {$releasesPath}\\{$dir} could not be created: from {$target_pointer}");
+            throw new Exception("Symlink to {$releasePath}\\{$dir} could not be created: from {$target_pointer}");
         }
         echo("Symlink to {$dir} created!\n");
     }
@@ -289,17 +289,16 @@ try {
     echo ("Self deployment successful!\n");
     
 } catch (Exception $e) {
-    echo("Error - Line {$e->getLine()}: {$e->getMessage()} \n");
+    echo("\n -------------------- \n\n");
+    echo("✘ ERROR - Line {$e->getLine()}: {$e->getMessage()} \n");
     echo("Logged in as: \n");
     $cmdarray = [];
     exec("whoami", $cmdarray);
     foreach($cmdarray as $line) {
         echo ($line . "\n");
     }
-    echo("\n -------------------- \n");
+    echo("\n -------------------- \n\n");
     if (is_dir($releasePath)) {
-        deleteDirectory($releasePath);
-        echo("Directory {$releasePath} removed!\n");
         //create 'current' symlink to old release
         chdir($deployPath);
         if (is_dir($currentPath)) {
@@ -309,7 +308,9 @@ try {
             $target_pointer = $oldReleasePath;
             $test = symlink($target_pointer, $relativeCurrentPath);
             if (!$test) {
-                echo("Symlink to {$relativeCurrentPath} could not be created: from old release {$target_pointer}!\n");
+                echo("\n -------------------- \n\n");
+                echo("✘ ERROR - Symlink to {$relativeCurrentPath} could not be created: from old release {$target_pointer}!\n");
+                echo("\n -------------------- \n\n");
             } else {
                 echo("Symlink to {$relativeCurrentPath} created: from old release {$target_pointer}!\n");
             }
@@ -322,12 +323,16 @@ try {
                 $target_pointer = $currentPath;
                 $test = symlink($target_pointer, $exfaceFolderName);
                 if (!$test) {
-                    echo("Symlink to exface could not be created!\n");
+                    echo("\n -------------------- \n\n");
+                    echo("✘ ERROR - Symlink to exface could not be created!\n");
+                    echo("\n -------------------- \n\n");
                 } else {
                     echo("Symlink to exface created!\n");
                 }
             }
-        }       
+        }
+        deleteDirectory($releasePath);
+        echo("Directory {$releasePath} removed!\n");
     }
 }
 

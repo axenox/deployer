@@ -151,7 +151,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 $deployData->dataUpdate(false);
             }
             
-            if ($process->isSuccessful() === false) {
+            if (strpos($log, '✘ ERROR') !== false || $process->isSuccessful() === false) {
                 $deployData->setCellValue('status', 0, 90); // failed
                 $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
             } else {
