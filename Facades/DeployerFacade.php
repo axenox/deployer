@@ -91,9 +91,9 @@ class DeployerFacade extends AbstractHttpFacade
         
         $log = $request->getBody()->__toString() ?? '';
         if (mb_stripos($log, 'error:') !== false) {
-            $status = 99;
-        } else {
             $status = 90;
+        } else {
+            $status = 99;
         }
         
         $ds->setCellValue('log', 0, $ds->getCellValue('log', 0) . PHP_EOL . PHP_EOL . $log);
