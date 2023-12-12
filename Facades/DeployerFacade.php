@@ -16,14 +16,15 @@ use function GuzzleHttp\Psr7\stream_for;
 use exface\Core\DataTypes\SortingDirectionsDataType;
 use exface\Core\Exceptions\Facades\HttpBadRequestError;
 use exface\Core\Exceptions\DataSheets\DataNotFoundError;
+use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 
 /**
  * Handles over-the-air (OTA) updates
  * 
  * Routes: 
  * 
- * - GET api/ota/<project_alias>/<host_name>
- * - POST api/ota/<project_alias>/<host_name>
+ * - GET api/deployer/ota/<project_alias>/<host_uid>
+ * - POST api/deployer/ota/<project_alias>/<host_uid>
  * 
  * @author andrej.kabachnik
  *
@@ -53,16 +54,53 @@ class DeployerFacade extends AbstractHttpFacade
         
         switch (mb_strtolower($route)) {
             case 'ota': 
+                list($projectAlias, $hostName) = explode('/', urldecode($innerPath), 2);
                 switch ($request->getMethod()) {
-                    case 'GET': return $this->createResponseForOTA(...explode('/', $innerPath));
-                    // TODO receive the result of a OTA self-update via POST to the same route
-                    // case 'POST':
+                    case 'GET': 
+                        return $this->createResponseForOTA($projectAlias, $hostName);
+                    case 'POST':
+                        return $this->createResponseForLog($projectAlias, $hostName, $request);
                 }
                 break;
                 
         }
         
-        return $this->createResponseFromError(new HttpBadRequestError($request, 'Cannot match route'), $request);
+        $e = new HttpBadRequestError($request, 'Cannot match route ' . $route);
+        $this->getWorkbench()->getLogger()->logException($e);
+        return $this->createResponseFromError($e, $request);
+    }
+    
+    /**
+     * 
+     * @param string $projectAlias
+     * @param string $hostName
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    protected function createResponseForLog(string $projectAlias, string $hostName, ServerRequestInterface $request) : ResponseInterface
+    {
+        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
+        $ds->getColumns()->addMultiple([
+            'log'
+        ]);
+        $ds->dataRead();
+                
+        if ($ds->isEmpty()) {
+            throw new DataNotFoundError($ds, 'Host "' . $hostName . '" not found in project "' . $projectAlias . '"');
+        }
+        
+        $log = $request->getBody()->__toString() ?? '';
+        if (mb_stripos($log, 'error:') !== false) {
+            $status = 99;
+        } else {
+            $status = 90;
+        }
+        
+        $ds->setCellValue('log', 0, $ds->getCellValue('log', 0) . PHP_EOL . PHP_EOL . $log);
+        $ds->setCellValue('status', 0, $status);
+        $ds->dataUpdate();
+        
+        return new Response(200, $this->buildHeadersCommon());
     }
     
     /**
@@ -79,17 +117,11 @@ class DeployerFacade extends AbstractHttpFacade
      */
     protected function createResponseForOTA(string $projectAlias, string $hostName) : ResponseInterface
     {
-        $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.deployment');
-        $ds->getColumns()->addFromSystemAttributes();
+        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
         $ds->getColumns()->addMultiple([
             'build__name',
             'host__name'
         ]);
-        $ds->getFilters()->addConditionFromString('host__project__alias', $projectAlias, ComparatorDataType::EQUALS);
-        $ds->getFilters()->addConditionFromString('host', $hostName);
-        $ds->getFilters()->addConditionFromString('status', 60);
-        $ds->getSorters()->addFromString('started_on', SortingDirectionsDataType::DESC);
-        $ds->setRowsLimit(1);
         $ds->dataRead();
         
         if ($ds->isEmpty()) {
@@ -122,6 +154,26 @@ class DeployerFacade extends AbstractHttpFacade
     }
     
     /**
+     * 
+     * @param string $projectAlias
+     * @param string $hostName
+     * @return DataSheetInterface
+     */
+    protected function createDeploymentSheet(string $projectAlias, string $hostName) : DataSheetInterface
+    {
+        $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.deployment');
+        $ds->getColumns()->addFromSystemAttributes();
+        
+        $ds->getFilters()->addConditionFromString('host__project__alias', $projectAlias, ComparatorDataType::EQUALS);
+        $ds->getFilters()->addConditionFromString('host', $hostName);
+        $ds->getFilters()->addConditionFromString('status', 60);
+        
+        $ds->getSorters()->addFromString('started_on', SortingDirectionsDataType::DESC);
+        $ds->setRowsLimit(1);;
+        return $ds;
+    }
+    
+    /**
      *
      * {@inheritDoc}
      * @see \exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade::getMiddleware()
@@ -139,6 +191,11 @@ class DeployerFacade extends AbstractHttpFacade
         return $middleware;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade::buildHeadersCommon()
+     */
     protected function buildHeadersCommon() : array
     {
         // TODO
