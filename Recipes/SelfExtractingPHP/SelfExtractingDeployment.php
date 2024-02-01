@@ -128,7 +128,7 @@ try {
     if (extractArchive() === true) {        
         echo("Archive extracted!\n");
     } else {
-        throw new Exception("Archive could not be extracted from file!\n");
+        throw new Exception("FAILED to extract archive from *.phx file!");
     }
     
     //copy needed app configs, if not already exist
@@ -235,7 +235,7 @@ try {
     //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
     //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
     
-    if (substr(php_uname(), 0, 7) == "Windows"){
+    if (isWindows() === true){
         $command = "cd {$currentPath} && {$phpPath} composer.phar run-script post-install-cmd";
     }
     else {
@@ -337,6 +337,12 @@ try {
 }
 
 //Functions
+// check if OS is Windows
+function isWindows()
+{
+    return substr(php_uname(), 0, 7) === "Windows";
+}
+
 //copy whole directory (with subdirectories)
 function recurseCopy(string $src, string $dst) : void
 {
@@ -530,7 +536,7 @@ TXT;
 function extractArchive() : bool
 {
     try {
-        $pharfilename = md5(time()).'archive.tar'; //remove with tempname()
+        $pharfilename = md5(time()).'archive.tar.gz'; //remove with tempname()
         $fp_tmp = fopen($pharfilename,'w');
         $fp_cur = fopen(__FILE__, 'r');
         fseek($fp_cur, __COMPILER_HALT_OFFSET__);
@@ -539,16 +545,26 @@ function extractArchive() : bool
         }
         fclose($fp_cur);
         fclose($fp_tmp);
-        try {
-            $phar = new PharData($pharfilename);
-            $phar->extractTo('.');
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
+        $phar = new PharData($pharfilename);
+        $phar->extractTo('.');
         unlink($pharfilename);
     } catch (Exception $e) {
-        echo ("Extraction failed with message: {$e->getMessage()} \n");
-        return false;
+        echo ("Extracting PHAR failed with message: {$e->getMessage()} from {$e->getFile()} on line {$e->getLine()}") . PHP_EOL;
+        
+        if (isWindows() === true) {
+            echo ("Trying 7zip...") . PHP_EOL;
+            $output = [];
+            $resultCode = null;
+            $tarfilename = mb_substr($pharfilename, 0, -3);
+            $resultGz = exec('"C:\Program Files\7-Zip\7z.exe" x ' . $pharfilename . ' -y', $output, $resultCode);
+            $resultTar = exec('"C:\Program Files\7-Zip\7z.exe" x ' . $tarfilename . ' -y', $output, $resultCode);
+            // Another idea: 7z x "somename.tar.gz" -so | 7z x -aoa -si -ttar -o"somename"
+            // see https://superuser.com/a/546694
+            echo(implode(PHP_EOL, $output));
+            if ($resultGz === false || $resultTar === false) {
+                return false;
+            }
+        }
     }
     return true;
 }
