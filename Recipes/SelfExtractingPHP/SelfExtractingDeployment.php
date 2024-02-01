@@ -27,6 +27,15 @@ $releaseName = pathinfo(__FILE__,  PATHINFO_FILENAME);
 $releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
 $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
 
+if (isWindows() === true) {
+    $externalZip = '"C:\Program Files\7-Zip\7z.exe" x %s -y';
+    // Another (better?) idea: 7z x "somename.tar.gz" -so | 7z x -aoa -si -ttar -o"somename"
+    // see https://superuser.com/a/546694
+} else {
+    // TODO how to extract tar.gz on linux?
+    $externalZip = null;
+}
+
 $oldReleasePath = null;
 if (is_dir($currentPath)) {
     chdir($currentPath);
@@ -125,7 +134,7 @@ try {
     //extract archive
     echo("Extracting archive ...\n");
     chdir($releasePath);
-    if (extractArchive() === true) {        
+    if (extractArchive($externalZip) === true) {        
         echo("Archive extracted!\n");
     } else {
         throw new Exception("FAILED to extract archive from *.phx file!");
@@ -533,7 +542,7 @@ TXT;
 }
 
 //extracting archive that is appended to this php file
-function extractArchive() : bool
+function extractArchive(string $fallbackCommand = null) : bool
 {
     try {
         $pharfilename = md5(time()).'archive.tar.gz'; //remove with tempname()
@@ -551,22 +560,27 @@ function extractArchive() : bool
     } catch (Exception $e) {
         echo ("Extracting PHAR failed with message: {$e->getMessage()} from {$e->getFile()} on line {$e->getLine()}") . PHP_EOL;
         
-        if (isWindows() === true) {
-            echo ("Trying 7zip...") . PHP_EOL;
+        if ($fallbackCommand !== null) {
+            echo ("Trying fallback to external extractor") . PHP_EOL;
             $output = [];
             $resultCode = null;
             $tarfilename = mb_substr($pharfilename, 0, -3);
-            $resultGz = exec('"C:\Program Files\7-Zip\7z.exe" x ' . $pharfilename . ' -y', $output, $resultCode);
-            $resultTar = exec('"C:\Program Files\7-Zip\7z.exe" x ' . $tarfilename . ' -y', $output, $resultCode);
-            // Another idea: 7z x "somename.tar.gz" -so | 7z x -aoa -si -ttar -o"somename"
-            // see https://superuser.com/a/546694
+            $cmd = sprintf($fallbackCommand, $pharfilename);
+            echo($cmd) . PHP_EOL;
+            $resultGz = exec($cmd, $output, $resultCode);
+            $cmd = sprintf($fallbackCommand, $tarfilename);
+            echo($cmd) . PHP_EOL;
+            $resultTar = exec($cmd, $output, $resultCode);
             echo(implode(PHP_EOL, $output));
             if ($resultGz === false || $resultTar === false) {
                 return false;
             }
+            unlink($pharfilename);
+            unlink($tarfilename);
         }
     }
     return true;
 }
+
 //IMPORTANT: no empty lines after "____HALT_COMPILER();" else archive extraction wont work!
 __HALT_COMPILER();
