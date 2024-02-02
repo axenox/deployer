@@ -28,12 +28,13 @@ $releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
 $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
 
 if (isWindows() === true) {
-    $externalZip = '"C:\Program Files\7-Zip\7z.exe" x %s -y';
+    $externalZip = 'tar -xzf %s';
+    // Alternatively use 7-Zip
+    // $externalZip = '"C:\Program Files\7-Zip\7z.exe" x %s -y';
     // Another (better?) idea: 7z x "somename.tar.gz" -so | 7z x -aoa -si -ttar -o"somename"
     // see https://superuser.com/a/546694
 } else {
-    // TODO how to extract tar.gz on linux?
-    $externalZip = null;
+    $externalZip = 'tar -xf %s';
 }
 
 $oldReleasePath = null;
@@ -564,19 +565,14 @@ function extractArchive(string $fallbackCommand = null) : bool
             echo ("Trying fallback to external extractor") . PHP_EOL;
             $output = [];
             $resultCode = null;
-            $tarfilename = mb_substr($pharfilename, 0, -3);
             $cmd = sprintf($fallbackCommand, $pharfilename);
             echo($cmd) . PHP_EOL;
             $resultGz = exec($cmd, $output, $resultCode);
-            $cmd = sprintf($fallbackCommand, $tarfilename);
-            echo($cmd) . PHP_EOL;
-            $resultTar = exec($cmd, $output, $resultCode);
             echo(implode(PHP_EOL, $output));
-            if ($resultGz === false || $resultTar === false) {
+            if ($resultGz === false) {
                 return false;
             }
             unlink($pharfilename);
-            unlink($tarfilename);
         }
     }
     return true;
