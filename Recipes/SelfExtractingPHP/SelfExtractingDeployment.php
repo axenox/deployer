@@ -278,6 +278,8 @@ try {
                     echo ("Copying local app: '" . $local . $appPathRelative . "' ...\n");
                     recurseCopy($appPath, $appPathNew);
                     echo ("Local app: '" . $local . $appPathRelative . "' copied\n");
+                } else {
+                    echo ("Skipping local app: '" . $local . $appPathRelative . "' as folder already exists\n");
                 }
             }
         }
