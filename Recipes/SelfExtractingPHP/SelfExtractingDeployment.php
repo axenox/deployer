@@ -27,6 +27,16 @@ $releaseName = pathinfo(__FILE__,  PATHINFO_FILENAME);
 $releasePath = $releasesPath . DIRECTORY_SEPARATOR . $releaseName;
 $configPath = $releasePath . DIRECTORY_SEPARATOR . 'config';
 
+if (isWindows() === true) {
+    $externalZip = 'tar -xzf %s';
+    // Alternatively use 7-Zip
+    // $externalZip = '"C:\Program Files\7-Zip\7z.exe" x %s -y';
+    // Another (better?) idea: 7z x "somename.tar.gz" -so | 7z x -aoa -si -ttar -o"somename"
+    // see https://superuser.com/a/546694
+} else {
+    $externalZip = 'tar -xf %s';
+}
+
 $oldReleasePath = null;
 if (is_dir($currentPath)) {
     chdir($currentPath);
@@ -125,10 +135,10 @@ try {
     //extract archive
     echo("Extracting archive ...\n");
     chdir($releasePath);
-    if (extractArchive() === true) {        
+    if (extractArchive($externalZip) === true) {        
         echo("Archive extracted!\n");
     } else {
-        throw new Exception("Archive could not be extracted from file!\n");
+        throw new Exception("FAILED to extract archive from *.phx file!");
     }
     
     //copy needed app configs, if not already exist
@@ -235,7 +245,7 @@ try {
     //require $release_path . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
     //echo axenox\PackageManager\StaticInstaller::composerFinishInstall();
     
-    if (substr(php_uname(), 0, 7) == "Windows"){
+    if (isWindows() === true){
         $command = "cd {$currentPath} && {$phpPath} composer.phar run-script post-install-cmd";
     }
     else {
@@ -339,6 +349,12 @@ try {
 }
 
 //Functions
+// check if OS is Windows
+function isWindows()
+{
+    return substr(php_uname(), 0, 7) === "Windows";
+}
+
 //copy whole directory (with subdirectories)
 function recurseCopy(string $src, string $dst) : void
 {
@@ -529,10 +545,10 @@ TXT;
 }
 
 //extracting archive that is appended to this php file
-function extractArchive() : bool
+function extractArchive(string $fallbackCommand = null) : bool
 {
     try {
-        $pharfilename = md5(time()).'archive.tar'; //remove with tempname()
+        $pharfilename = md5(time()).'archive.tar.gz'; //remove with tempname()
         $fp_tmp = fopen($pharfilename,'w');
         $fp_cur = fopen(__FILE__, 'r');
         fseek($fp_cur, __COMPILER_HALT_OFFSET__);
@@ -541,18 +557,28 @@ function extractArchive() : bool
         }
         fclose($fp_cur);
         fclose($fp_tmp);
-        try {
-            $phar = new PharData($pharfilename);
-            $phar->extractTo('.');
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
+        $phar = new PharData($pharfilename);
+        $phar->extractTo('.');
         unlink($pharfilename);
     } catch (Exception $e) {
-        echo ("Extraction failed with message: {$e->getMessage()} \n");
-        return false;
+        echo ("Extracting PHAR failed with message: {$e->getMessage()} from {$e->getFile()} on line {$e->getLine()}") . PHP_EOL;
+        
+        if ($fallbackCommand !== null) {
+            echo ("Trying fallback to external extractor") . PHP_EOL;
+            $output = [];
+            $resultCode = null;
+            $cmd = sprintf($fallbackCommand, $pharfilename);
+            echo($cmd) . PHP_EOL;
+            $resultGz = exec($cmd, $output, $resultCode);
+            echo(implode(PHP_EOL, $output));
+            if ($resultGz === false) {
+                return false;
+            }
+            unlink($pharfilename);
+        }
     }
     return true;
 }
+
 //IMPORTANT: no empty lines after "____HALT_COMPILER();" else archive extraction wont work!
 __HALT_COMPILER();

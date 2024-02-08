@@ -210,7 +210,9 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{\"SQL_DATA_TYPE\":\"binary\"}",
+            "DATA_ADDRESS_PROPS": {
+                "SQL_DATA_TYPE": "binary"
+            },
             "DEFAULT_VALUE": "=User('id')",
             "FIXED_VALUE": "",
             "CUSTOM_DATA_TYPE": null
@@ -298,7 +300,9 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{\"SQL_DATA_TYPE\":\"binary\"}",
+            "DATA_ADDRESS_PROPS": {
+                "SQL_DATA_TYPE": "binary"
+            },
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "=User('id')",
             "CUSTOM_DATA_TYPE": null
@@ -342,7 +346,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{\"SQL_DATA_TYPE\":\"binary\",\"SQL_INSERT_UUID_OPTIMIZED\":\"true\"}",
+            "DATA_ADDRESS_PROPS": {
+                "SQL_DATA_TYPE": "binary",
+                "SQL_INSERT_UUID_OPTIMIZED": "true"
+            },
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
             "CUSTOM_DATA_TYPE": null

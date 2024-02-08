@@ -68,6 +68,10 @@
         {
             "name": "TARGET_FACADE",
             "attribute_alias": "TARGET_FACADE"
+        },
+        {
+            "name": "TARGET_APP",
+            "attribute_alias": "TARGET_APP"
         }
     ],
     "rows": [
@@ -88,7 +92,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11eaa0c47fa38871bba0e4b318306b9a",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:07:52",
@@ -107,7 +112,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11eaa0c47fa38871bba0e4b318306b9a",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:09:04",
@@ -126,7 +132,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11e9fef33e544e21822b847beb3e34e8",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:09:29",
@@ -145,7 +152,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11e9ffba69eea0888ca0847beb3e34e8",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:09:45",
@@ -164,7 +172,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11ea1a6e59cb7c18b3fd0205857feb80",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:10:39",
@@ -183,7 +192,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11ea84d94edb6e9c97940205857feb80",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:11:32",
@@ -202,7 +212,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11e9fef33e544e21822b847beb3e34e8",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:11:55",
@@ -221,7 +232,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11e9ffba69eea0888ca0847beb3e34e8",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:12:18",
@@ -240,7 +252,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11ea1a6e59cb7c18b3fd0205857feb80",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:12:38",
@@ -259,7 +272,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11ea84d94edb6e9c97940205857feb80",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2020-05-28 10:19:14",
@@ -278,7 +292,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2021-10-05 18:25:51",
@@ -297,7 +312,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11ec8895b391ac708895005056be5d52",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         },
         {
             "CREATED_ON": "2021-10-05 18:26:32",
@@ -316,7 +332,8 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": "0x11ec8895b391ac708895005056be5d52",
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": ""
+            "TARGET_FACADE": "",
+            "TARGET_APP": ""
         }
     ],
     "totals_rows": [],

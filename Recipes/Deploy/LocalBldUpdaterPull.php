@@ -23,7 +23,9 @@ task('Updater:publish', function() {
 
 Deployment file "$filePath" is now ready for download
 
-Please perform self-update on target host.
+Please perform self-update on target host - e.g. via CLI command "vendor/bin/action axenox.PackageManager:SelfUpdate".
+
+To download the file without immediate installation, use the command "vendor/bin/action axenox.PackageManager:SelfUpdate --download-only=true".
 
 Alternatively, the deployment file can be uploaded manually:
 

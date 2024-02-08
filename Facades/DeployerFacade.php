@@ -198,7 +198,7 @@ class DeployerFacade extends AbstractHttpFacade
      */
     protected function buildHeadersCommon() : array
     {
-        // TODO
-        return array_filter([]);
+        // TODO add more headers
+        return parent::buildHeadersCommon();
     }
 }
