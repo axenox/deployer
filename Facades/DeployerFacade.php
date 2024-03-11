@@ -90,7 +90,7 @@ class DeployerFacade extends AbstractHttpFacade
         }
         
         $log = $request->getBody()->__toString() ?? '';
-        if (mb_stripos($log, 'error:') !== false) {
+        if (mb_strpos($log, 'ERROR') !== false || mb_strpos($log, 'FAILED') !== false) {
             $status = 90;
         } else {
             $status = 99;
