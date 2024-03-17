@@ -124,8 +124,10 @@ class DeployerFacade extends AbstractHttpFacade
         ]);
         $ds->dataRead();
         
+        $headers = $this->buildHeadersCommon();
+        
         if ($ds->isEmpty()) {
-            throw new DataNotFoundError($ds, 'Host "' . $hostName . '" not found in project "' . $projectAlias . '"');
+            return new Response(304, $headers, 'No updates found for project "' . $projectAlias . '"');
         }
         
         $filename = $ds->getCellValue('build__name', 0) . '_' . Deploy::getHostAlias($ds->getCellValue('host__name', 0)) . '.phx';
@@ -139,7 +141,7 @@ class DeployerFacade extends AbstractHttpFacade
             throw new FileNotFoundError('Deployment file ' . $path . $filename . ' not found!');
         }
         
-        $headers = array_merge($this->buildHeadersCommon(), [
+        $headers = array_merge($headers, [
             'Expires' => 0,
             'Cache-Control', 'must-revalidate, post-check=0, pre-check=0',
             'Pragma' => 'public',
