@@ -26,6 +26,7 @@ class DeploymentRecipeDataType extends StringDataType implements EnumDataTypeInt
     const LOCAL_BLD_AZURE_APP_SERVICE_MANUAL_INSTALL = "LocalBldAzureAppServiceManualInstall";
     const LOCAL_BLD_UPDATER_PUSH = 'LocalBldUpdaterPush';
     const LOCAL_BLD_UPDATER_PULL = 'LocalBldUpdaterPull';
+    const LOCAL_BLD_UPDATER_CRON = 'LocalBldUpdaterCron';
     const CUSTOM_DEPLOY = "CustomDeploy";
     
     /**
@@ -38,6 +39,7 @@ class DeploymentRecipeDataType extends StringDataType implements EnumDataTypeInt
         return [
             self::LOCAL_BLD_UPDATER_PUSH => 'Self-extractor + Updater push',
             self::LOCAL_BLD_UPDATER_PULL => 'Self-extractor + Updater pull',
+            self::LOCAL_BLD_UPDATER_CRON => 'Self-extractor + Updater scheduler',
             self::LOCAL_BLD_SSH_SELF_EXTRACTOR => 'Self-extractor + SSH upload',
             self::LOCAL_BLD_USB_SELF_EXTRACTOR => 'Self-extractor + manual transfer',
             self::LOCAL_BLD_AZURE_APP_SERVICE_MANUAL_INSTALL => 'Self-extractor + manual upload to Microsoft Azure',

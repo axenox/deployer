@@ -21,9 +21,10 @@ task('Updater:publish', function() {
     
     echo (<<<cli
 
-Deployment file "$filePath" is now read to be download via OTA self-update from the host.
+Deployment file "$filePath" published. Now awaiting download through scheduled task on target host.
 
-Please perform self-update on target host - e.g. via CLI command "vendor/bin/action axenox.PackageManager:SelfUpdate".
+If the deployment is not finished within the next 10-30 minutes, you can call self-update on target host
+manually - e.g. via CLI command "vendor/bin/action axenox.PackageManager:SelfUpdate". 
 
 Alternatively, the deployment file can be uploaded manually:
 
