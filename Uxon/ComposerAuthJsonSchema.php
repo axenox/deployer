@@ -63,7 +63,7 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
         ];
     }
 
-    public function getPropertyValueRecursive(UxonObject $uxon, array $path, string $propertyName, string $rootValue = '')
+    public function getPropertyValueRecursive(UxonObject $uxon, array $path, string $propertyName, string $rootValue = '', string $prototypeClass = null)
     {
         return null;
     }
