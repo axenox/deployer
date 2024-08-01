@@ -1,11 +1,10 @@
 <?php
-
 namespace Deployer;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\StreamOutput;
 use Deployer\Exception\ConfigurationException;
-use kabachello\ComposerAPI\ComposerAPI;
+// use kabachello\ComposerAPI\ComposerAPI;
 
 /**
  * get the given name of the release, if none is give, take newest file in builds directory

@@ -6,8 +6,7 @@
 	],
 	"require" : {
 		"exface/core" : "^1.0",
-		"deployer/deployer" : "^6.5",
-		"kabachello/composerapi" : "~0.3.2"
+		"deployer/deployer" : "^6.5"
 	},
 	"support" : {
 		"issues" : "https://github.com/axenox/deployer/issues",
