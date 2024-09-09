@@ -59,6 +59,10 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     use BuildProjectTrait;
     
     private $projectData = null;
+
+    private $buildData = null;
+
+    private $hostData = null;
     
     /**
      *
@@ -134,7 +138,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             
             //build the command used for the actual deployment
             $deployTask = $this->createDeployerTask($task); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
-            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
+            $cmd = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
             $environmentVars = $this->getCmdEnvirontmentVars();
             
             $log = '';
@@ -248,9 +252,9 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      * @param TaskInterface $task
      * @param string $option
      * @throws ActionInputMissingError
-     * @return string
+     * @return string|null
      */
-    protected function getHostData(TaskInterface $task, string $option) : string
+    protected function getHostData(TaskInterface $task, string $option) : ?string
     {
         if ($this->hostData === null) {
             if ($task->hasParameter('host')) {
@@ -293,9 +297,9 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      *
      * @param TaskInterface $task
      * @param string $projectAttributeAlias
-     * @return string
+     * @return string|null
      */
-    protected function getBuildData(TaskInterface $task, string $projectAttributeAlias) : string
+    protected function getBuildData(TaskInterface $task, string $projectAttributeAlias) : ?string
     {
         if ($this->buildData === null) {
             if ($task->hasParameter('build')) {
@@ -668,7 +672,7 @@ PHP;
      * @param string $privateKeyFilePath
      * @param string $knownHostsFilePath
      * @param string $hostAliasFolderPath
-     * @param DeployerSshConnector|NULL $connection
+     * @param DeployerSshConnector|null $connection
      * @return string
      */
     protected function createSshConfig(string $basePath, string $host, string $privateKeyFilePath, string $knownHostsFilePath, string $hostAliasFolderPath, DeployerSshConnector $connection = null) : string
