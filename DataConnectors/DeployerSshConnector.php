@@ -1,7 +1,8 @@
 <?php
 namespace axenox\Deployer\DataConnectors;
 
-use exface\Core\CommonLogic\AbstractDataConnectorWithoutTransactions;
+use exface\Core\CommonLogic\AbstractDataConnector;
+use exface\Core\DataConnectors\Traits\IDoNotSupportTransactionsTrait;
 use exface\Core\Interfaces\DataSources\DataQueryInterface;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Exceptions\DataSources\DataConnectionConfigurationError;
@@ -73,8 +74,10 @@ use exface\Core\Exceptions\DataSources\DataConnectionConfigurationError;
  * @author Andrej Kabachnik
  *
  */
-class DeployerSshConnector extends AbstractDataConnectorWithoutTransactions
+class DeployerSshConnector extends AbstractDataConnector
 {
+    use IDoNotSupportTransactionsTrait;
+
     private $host = null;
     
     private $port = '22';
