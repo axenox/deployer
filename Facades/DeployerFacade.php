@@ -4,6 +4,7 @@ namespace axenox\Deployer\Facades;
 use exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade;
 use exface\Core\Facades\AbstractHttpFacade\Middleware\AuthenticationMiddleware;
 use exface\Core\DataTypes\StringDataType;
+use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Psr7\Response;
@@ -12,7 +13,6 @@ use exface\Core\DataTypes\ComparatorDataType;
 use axenox\Deployer\Actions\Deploy;
 use exface\Core\DataTypes\FilePathDataType;
 use exface\Core\Exceptions\FileNotFoundError;
-use function GuzzleHttp\Psr7\stream_for;
 use exface\Core\DataTypes\SortingDirectionsDataType;
 use exface\Core\Exceptions\Facades\HttpBadRequestError;
 use exface\Core\Exceptions\DataSheets\DataNotFoundError;
@@ -150,7 +150,7 @@ class DeployerFacade extends AbstractHttpFacade
         ]);
         
         $resource = fopen($path . $filename, 'r');
-        $stream = stream_for($resource);
+        $stream = Utils::streamFor($resource);
         
         return new Response(200, $headers, $stream);
     }
