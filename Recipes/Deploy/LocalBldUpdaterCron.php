@@ -40,5 +40,6 @@ task('LocalBldUpdaterPull', [
     'config:setup_deploy_config',
     'build:find',
     'self_deployment:create',
-    'Updater:publish'
+    'Updater:publish',
+    'self_deployment:show_rollback_instructions_for_cli'
 ]);

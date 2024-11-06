@@ -75,5 +75,6 @@ task('LocalBldSshSelfExtractor', [
     'self_deployment:delete_local_file',
     'self_deployment:delete_remote_file',
     'deploy:show_release_names',
-    'deploy:success'
+    'deploy:success',
+    'self_deployment:show_rollback_instructions_for_cli'
 ]);
