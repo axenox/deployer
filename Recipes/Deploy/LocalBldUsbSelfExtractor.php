@@ -60,5 +60,6 @@ task('LocalBldUsbSelfExtractor', [
     'config:setup_deploy_config',
     'build:find',
     'self_deployment:create',
-    'self_deployment:show_link'
+    'self_deployment:show_link',
+    'self_deployment:show_rollback_instructions_for_cli'
 ]);

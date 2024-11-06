@@ -85,13 +85,26 @@ task('self_deployment:show_link', function() {
 3) Open the host's command line as administrator (IMPORTANT - otherwise you will get symlink-errors!) 
 4) Run the command "$phpPath -d memory_limit=2G path/to/$filename"
 
-NOTE: if anything goes wrong and you need to roll back:
+
+cli;
+    echo ($text);
+});
+
+/**
+ * show link to created local self deployment php file
+ */
+task('self_deployment:show_rollback_instructions_for_cli', function() {
+    $text = <<<cli
+
+ⓘ NOTE: if anything goes wrong and you need to roll back:
 
 1) Delete the "current" symlink in the installation folder
 2) Create a new one pointing to the last working release in the "releases" folder: 
-   e.g. "mklink /D current .\\releases\\..." on Windows.
-3) Run all installers via "current\\vendor\\bin\\action axenox.PackageManager:InstallApp all"
-
+    - in Windows PowerShell: "mklink /D current .\\releases\\..."
+    - in Windows CLI: "mklink /D current "releases\\..."
+    - in Linux/Unix CLI: "ln -s current "releases\\..."
+3) Run the core installer "current\\vendor\\bin\\action axenox.PackageManager:InstallApp exface.Core"
+4) OPTIONAL: If there are still issues, run all installers via "current\\vendor\\bin\\action axenox.PackageManager:InstallApp all".
 
 
 cli;

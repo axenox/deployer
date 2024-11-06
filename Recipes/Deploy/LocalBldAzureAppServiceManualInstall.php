@@ -46,5 +46,6 @@ task('LocalBldAzureAppServiceManualInstall', [
     'config:setup_deploy_config',
     'build:find',
     'self_deployment:create',
-    'azure:upload'
+    'azure:upload',
+    'self_deployment:show_rollback_instructions_for_cli'
 ]);
