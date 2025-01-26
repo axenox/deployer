@@ -2,6 +2,7 @@
 namespace axenox\Deployer\Actions;
 
 use exface\Core\CommonLogic\AbstractActionDeferred;
+use exface\Core\Exceptions\Actions\ActionInputError;
 use exface\Core\Interfaces\DataSources\DataTransactionInterface;
 use exface\Core\Interfaces\Tasks\ResultInterface;
 use exface\Core\Interfaces\Tasks\TaskInterface;
@@ -257,19 +258,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function getHostData(TaskInterface $task, string $option) : ?string
     {
         if ($this->hostData === null) {
-            if ($task->hasParameter('host')) {
-                $hostName = $task->getParameter('host');
-            } else {
-                $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('host')) {
-                    $hostUid = $col->getCellValue(0);
-                }
-            }
-            
-            if (! $hostUid && $hostName === null) {
-                throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
-            }
-            
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
             $ds->getColumns()->addMultiple([
                 'data_connection',
@@ -283,9 +271,26 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'stage',
                 'deploy_config'
             ]);
-            $ds->getFilters()->addConditionFromString('uid', $hostUid, ComparatorDataType::EQUALS);
-            $ds->getFilters()->addConditionFromString('name', $hostName, ComparatorDataType::EQUALS);
+            
+            if ($task->hasParameter('host')) {
+                $hostName = $task->getParameter('host');
+                $ds->getFilters()->addConditionFromString('name', $hostName, ComparatorDataType::EQUALS);
+            } else {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('host')) {
+                    $hostUid = $col->getValue(0);
+                    $ds->getFilters()->addConditionFromString('uid', $hostUid, ComparatorDataType::EQUALS);
+                }
+            }
+            
+            if (! $hostUid && $hostName === null) {
+                throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
+            }
+            
             $ds->dataRead();
+            if ($ds->isEmpty()) {
+                throw new ActionInputError($this, "Host with name/UID '" . ($hostName ?? $hostUid) . "' not found!", '78810KV');
+            }
             $this->hostData = $ds;
         }
         return $this->hostData->getCellValue($option, 0);
@@ -302,19 +307,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function getBuildData(TaskInterface $task, string $projectAttributeAlias) : ?string
     {
         if ($this->buildData === null) {
-            if ($task->hasParameter('build')) {
-                $buildName = $task->getParameter('build');
-            } else {
-                $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('build')) {
-                    $buildUid = $col->getCellValue(0);
-                }
-            }
-            
-            if (! $buildUid && $buildName === null) {
-                throw new ActionInputMissingError($this, 'Cannot deploy build: missing build reference!', '7880ZT2');
-            }
-            
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
             $ds->getColumns()->addMultiple([
                 'build_datatime',
@@ -329,9 +321,26 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'status',
                 'version'
             ]);
-            $ds->getFilters()->addConditionFromString('uid', $buildUid, ComparatorDataType::EQUALS);
-            $ds->getFilters()->addConditionFromString('name', $buildName, ComparatorDataType::EQUALS);
+
+            if ($task->hasParameter('build')) {
+                $buildName = $task->getParameter('build');
+                $ds->getFilters()->addConditionFromString('name', $buildName, ComparatorDataType::EQUALS);
+            } else {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('build')) {
+                    $buildUid = $col->getValue(0);
+                    $ds->getFilters()->addConditionFromString('uid', $buildUid, ComparatorDataType::EQUALS);
+                }
+            }
+            
+            if (! $buildUid && $buildName === null) {
+                throw new ActionInputMissingError($this, 'Cannot deploy build: missing build reference!', '7880ZT2');
+            }
+            
             $ds->dataRead();
+            if ($ds->isEmpty()) {
+                throw new ActionInputError($this, "Build with name/UID '" . ($buildName ?? $buildUid) . "' not found!", '7880ZT2');
+            }
             $this->buildData = $ds;
         }
         return $this->buildData->getCellValue($projectAttributeAlias, 0);

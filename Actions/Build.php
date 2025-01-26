@@ -238,28 +238,31 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     protected function getProjectData(TaskInterface $task, string $projectAttributeAlias): string
     {
         if ($this->projectData === null) {
-            if ($task->hasParameter('project')) {
-                $projectAlias = $task->getParameter('project');
-            } else {
-                $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('project')) {
-                    $projectUid = $col->getCellValue(0);
-                }
-            }
-            
-            if (! $projectUid && $projectAlias === null) {
-                throw new ActionInputMissingError($this, 'Cannot create build: missing project reference!', '784EI40');
-            }
-            
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.project');
             $ds->getColumns()->addMultiple([
                 'alias',
                 'build_recipe',
                 'build_recipe_custom_path'
             ]);
-            $ds->getFilters()->addConditionFromString('uid', $projectUid, ComparatorDataType::EQUALS);
-            $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
+
+            if ($task->hasParameter('project')) {
+                $projectAlias = $task->getParameter('project');
+                $ds->getFilters()->addConditionFromString('alias', $projectAlias, ComparatorDataType::EQUALS);
+            } else {
+                $inputData = $this->getInputDataSheet($task);
+                if ($col = $inputData->getColumns()->get('project')) {
+                    $projectUid = $col->getValue(0);
+                    $ds->getFilters()->addConditionFromString('uid', $projectUid, ComparatorDataType::EQUALS);
+                }
+            }
+            
+            if (! $projectUid && $projectAlias === null) {
+                throw new ActionInputMissingError($this, 'Cannot create build: missing project reference!', '784EI40');
+            }
             $ds->dataRead();
+            if ($ds->isEmpty()) {
+                throw new ActionInputError($this, "Project with alias/UID '" . ($projectAlias ?? $projectUid) . "' not found!", '784EI40');
+            }
             $this->projectData = $ds;
         }
         return $this->projectData->getCellValue($projectAttributeAlias, 0);
