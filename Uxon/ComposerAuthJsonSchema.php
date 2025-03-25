@@ -53,7 +53,7 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
         return '\\' . __CLASS__;
     }
 
-    public function getPropertiesTemplates(string $prototypeClass): array
+    public function getPropertiesTemplates(string $prototypeClass, UxonObject $uxon, array $path): array
     {
         return [
             'http-basic' => '{"example1.org": {"username": "", "password": ""}}',
@@ -68,7 +68,7 @@ class ComposerAuthJsonSchema implements UxonSchemaInterface
         return null;
     }
 
-    public function getProperties(string $prototypeClass): array
+    public function getProperties(string $prototypeClass, UxonObject $uxon, array $path): array
     {
         return [
             'http-basic',

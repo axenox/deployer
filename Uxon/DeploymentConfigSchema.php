@@ -75,7 +75,7 @@ class DeploymentConfigSchema implements UxonSchemaInterface
      * {@inheritDoc}
      * @see \exface\Core\Interfaces\UxonSchemaInterface::getPropertiesTemplates()
      */
-    public function getPropertiesTemplates(string $prototypeClass): array
+    public function getPropertiesTemplates(string $prototypeClass, UxonObject $uxon, array $path): array
     {
         return [
             'local_vendors' => '[""]',
@@ -98,7 +98,7 @@ class DeploymentConfigSchema implements UxonSchemaInterface
      * {@inheritDoc}
      * @see \exface\Core\Interfaces\UxonSchemaInterface::getProperties()
      */
-    public function getProperties(string $prototypeClass): array
+    public function getProperties(string $prototypeClass, UxonObject $uxon, array $path): array
     {
         return [
             'local_vendors',
