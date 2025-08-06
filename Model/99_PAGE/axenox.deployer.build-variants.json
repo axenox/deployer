@@ -10,8 +10,8 @@
     "replaces_page_selector": null,
     "created_by_user_selector": "0x11e8fe1c902c8ebea23ee4b318306b9a",
     "created_on": "2021-03-31 15:18:10",
-    "modified_by_user_selector": "0x11ea11bb12970e55882500505689aada",
-    "modified_on": "2023-03-24 08:49:28",
+    "modified_by_user_selector": "0x11ea4f31405af6f7bfc400505689aada",
+    "modified_on": "2025-07-29 11:11:28",
     "contents": {
         "object_alias": "axenox.Deployer.build_variant",
         "widget_type": "SplitHorizontal",
@@ -64,12 +64,16 @@
                                 "attribute_alias": "build__uid:COUNT"
                             },
                             {
+                                "/*": "Auskommentiert weil inperformant - Ralf",
                                 "caption": "Deployments",
-                                "attribute_alias": "build__currently_deployed__uid:COUNT"
+                                "attribute_alias": "build__currently_deployed__uid:COUNT",
+                                "*/": ""
                             },
                             {
+                                "/*": "Auskommentiert weil inperformant - Ralf",
                                 "caption": "In use on",
-                                "attribute_alias": "build__currently_deployed__host__LABEL:LIST"
+                                "attribute_alias": "build__currently_deployed__host__LABEL:LIST",
+                                "*/": ""
                             },
                             {
                                 "caption": "Last Build on",
