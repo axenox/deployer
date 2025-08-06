@@ -1,8 +1,12 @@
 <?php
 namespace axenox\Deployer\DataTypes;
 
+use exface\Core\CommonLogic\UxonObject;
 use exface\Core\DataTypes\StringEnumDataType;
-use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
+use exface\Core\Exceptions\Actions\ActionInputError;
+use exface\Core\Exceptions\RuntimeException;
+use exface\Core\Interfaces\Selectors\DataTypeSelectorInterface;
+use exface\Core\Interfaces\WorkbenchInterface;
 
 /**
  * Enumeration PHP versions available for builds.
@@ -13,16 +17,17 @@ use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
 class BuildablePhpVersionDataType extends StringEnumDataType
 {
     /**
-     *
-     * {@inheritDoc}
-     * @see exface\Core\CommonLogic\DataTypes\EnumDynamicDataTypeTrait::getValues()
+     * @see exface\Core\CommonLogic\DataTypes\AbstractDataType::__construct())
      */
-    public function getValues()
+    public function __construct(DataTypeSelectorInterface $selector, $value = null, UxonObject $configuration = null)
     {
-        $versions = [phpversion()];
-        $paths = $this->getWorkbench()->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS')->toArray();
-        $versions = array_merge($versions, array_keys($paths));
-        return array_combine($versions, $versions);
+        parent::__construct($selector, $value, $configuration);
+        
+        $versions = $this::getAvailableVersions($this->getWorkbench());
+        $values = array_combine($versions, $versions);
+        $this->setValues($values);
+        $this->setValues($values);
+        $this->setShowValues(false);
     }
     
     /**
@@ -36,12 +41,41 @@ class BuildablePhpVersionDataType extends StringEnumDataType
     }
 
     /**
-     *
-     * {@inheritDoc}
-     * @see exface\Core\CommonLogic\DataTypes\EnumDynamicDataTypeTrait::setShowValues()
+     * @param WorkbenchInterface $workbench
+     * @return string[]
      */
-    public function setShowValues(bool $trueOrFalse) : EnumDataTypeInterface
+    public static function getAvailableVersions(WorkbenchInterface $workbench) : array
     {
-        return false;
+        $versions = [static::getRuntimeVersion()];
+        $paths = $workbench->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS')->toArray();
+        $versions = array_merge($versions, array_keys($paths));
+        $versions = array_unique($versions);
+        return $versions;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getRuntimeVersion() : string
+    {
+        return phpversion();
+    }
+
+    /**
+     * @param string $version
+     * @param WorkbenchInterface $workbench
+     * @return string
+     */
+    public static function getExecutable(string $version, WorkbenchInterface $workbench) : string
+    {
+        if ($version === static::getRuntimeVersion()) {
+            return 'php';
+        }
+        $phpPathsUxon = $workbench->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS');
+        $phpPath = $phpPathsUxon->getProperty($version);
+        if ($phpPath === null) {
+            throw new RuntimeException('Cannot find PHP version "' . $version . '" in axenox.Deployer.config.json');
+        }
+        return $phpPath;
     }
 }
