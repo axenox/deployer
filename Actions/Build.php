@@ -117,6 +117,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'project' => $this->getProjectData($task, 'uid'),
                 'comment' => $this->getComment($task),
                 'notes' => $this->getNotes($task),
+                'php_version' => $this->getBuildData($task, 'php_version', 'php', phpversion()),
                 'build_variant' => $this->getBuildVariantData($task, 'uid'),
                 'composer_json' => $this->getBuildVariantData($task, 'composer_json') ?? '{}',
                 'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json') ?? '{}'
@@ -173,7 +174,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             if (getcwd() !== $this->getBasePath()) {
                 chdir($this->getBasePath());
             }
-            $cmd .= 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
+            $cmd = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$buildTask}";
             
             $seconds = time();
             
@@ -360,7 +361,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         $deployerTaskName = basename($recipePath, '.php');
         
         // Get the PHP path from the PHP version
-        if ($phpVersion = $this->getBuildData($task, 'php_version')) {
+        if ($phpVersion = $this->getBuildData($task, 'php_version', 'php')) {
             $phpPaths = $this->getWorkbench()->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS');
             $phpPath = $phpPaths[$phpVersion] ?? null;
             if ($phpPath === null) {
@@ -456,7 +457,7 @@ PHP;
      */
     protected function getVersion(TaskInterface $task) : string 
     {
-        $version = $this->getBuildData($task, 'version');
+        $version = $this->getBuildData($task, 'version', 'version');
         
         if ($version === null) {
             throw new ActionInputMissingError($this, 'Cannot create build: No version number provided!', '784EENG');
@@ -475,7 +476,7 @@ PHP;
      */
     protected function getComment(TaskInterface $task) : string
     {
-        return $this->getBuildData($task, 'comment', '');
+        return $this->getBuildData($task, 'comment', 'comment', '');
     }
 
     /**
@@ -484,11 +485,11 @@ PHP;
      * @param $default
      * @return mixed|null
      */
-    protected function getBuildData(TaskInterface $task, string $buildAttribute, $default = null)
+    protected function getBuildData(TaskInterface $task, string $buildAttribute, string $taskParam, $default = null)
     {
         $val = null;
-        if ($task->hasParameter($buildAttribute)) {
-            $val = $task->getParameter($buildAttribute);
+        if ($task->hasParameter($taskParam)) {
+            $val = $task->getParameter($taskParam);
         } else {
             try {
                 $inputData = $this->getInputDataSheet($task);
@@ -510,7 +511,7 @@ PHP;
      */
     protected function getNotes(TaskInterface $task) : string
     {
-        return $this->getBuildData($task, 'notes', '');
+        return $this->getBuildData($task, 'notes', 'notes', '');
     }
     
     /**
@@ -658,7 +659,10 @@ PHP;
                 ->setDescription('Comment to give a short description about the build.'),
             (new ServiceParameter($this))
                 ->setName('notes')
-                ->setDescription('You can save a note to the build to give further information.')
+                ->setDescription('You can save a note to the build to give further information.'),
+            (new ServiceParameter($this))
+                ->setName('php')
+                ->setDescription('Custom PHP version to be used (must be registered in axenox.Deployer.config.json!)')
         ];
     }
     

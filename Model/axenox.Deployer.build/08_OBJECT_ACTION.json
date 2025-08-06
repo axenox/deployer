@@ -67,7 +67,7 @@
         {
             "_EXPORT_SUMMARY": "Build: Create Build [ShowBuildDialog]",
             "CREATED_ON": "2019-11-04 12:07:07",
-            "MODIFIED_ON": "2025-08-06 17:12:59",
+            "MODIFIED_ON": "2025-08-06 18:40:56",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9fef33e544e21822b847beb3e34e8",
@@ -213,7 +213,7 @@
                                             "widget_type": "Console",
                                             "disabled": true,
                                             "start_commands": [
-                                                "action axenox.Deployer:Build [#project__alias#] [#version#] \"[#build_variant__name#]\" --comment \"[#comment#]\" --notes \"[#notes#]\""
+                                                "action axenox.Deployer:Build [#project__alias#] [#version#] \"[#build_variant__name#]\" --php [#php_version#] --comment \"[#comment#]\" --notes \"[#notes#]\""
                                             ],
                                             "working_directory_path": "vendor/bin"
                                         }
