@@ -170,6 +170,25 @@
             },
             "ALIAS": "UxonComposerAuthJson",
             "SHORT_DESCRIPTION": "UXON schema for auth.json"
+        },
+        {
+            "_EXPORT_SUMMARY": "Buildable PHP version",
+            "CREATED_ON": "2025-08-06 19:13:45",
+            "MODIFIED_ON": "2025-08-06 19:13:45",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11f0a582b5772ce0a582025041000001",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "Buildable PHP version",
+            "PROTOTYPE": "axenox/deployer/DataTypes/BuildablePhpVersionDataType.php",
+            "CONFIG_UXON": null,
+            "VALIDATION_ERROR": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "DEFAULT_EDITOR_UXON": {
+                "widget_type": "InputSelect"
+            },
+            "ALIAS": "BuildablePhpVersion",
+            "SHORT_DESCRIPTION": ""
         }
     ],
     "totals_rows": [],

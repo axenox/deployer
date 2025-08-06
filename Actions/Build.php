@@ -362,8 +362,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         
         // Get the PHP path from the PHP version
         if ($phpVersion = $this->getBuildData($task, 'php_version', 'php')) {
-            $phpPaths = $this->getWorkbench()->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS');
-            $phpPath = $phpPaths[$phpVersion] ?? null;
+            $phpPathsUxon = $this->getWorkbench()->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS');
+            $phpPath = $phpPathsUxon->getProperty($phpVersion);
             if ($phpPath === null) {
                 throw new ActionInputError($this, 'Cannot find PHP version "' . $phpVersion . '" in axenox.Deployer.config.json');
             }
