@@ -65,9 +65,9 @@
     ],
     "rows": [
         {
-            "_EXPORT_SUMMARY": "Build: Create Build",
+            "_EXPORT_SUMMARY": "Build: Create Build [ShowBuildDialog]",
             "CREATED_ON": "2019-11-04 12:07:07",
-            "MODIFIED_ON": "2021-04-12 16:37:31",
+            "MODIFIED_ON": "2025-08-06 17:12:59",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9fef33e544e21822b847beb3e34e8",
@@ -129,7 +129,6 @@
                                         },
                                         {
                                             "attribute_alias": "build_variant",
-                                            "width": "max",
                                             "filters": [
                                                 {
                                                     "attribute_alias": "project",
@@ -155,6 +154,9 @@
                                                     }
                                                 ]
                                             }
+                                        },
+                                        {
+                                            "attribute_alias": "php_version"
                                         },
                                         {
                                             "attribute_alias": "project__alias",
@@ -227,7 +229,7 @@
             "DOCS": ""
         },
         {
-            "_EXPORT_SUMMARY": "Build: Mark broken",
+            "_EXPORT_SUMMARY": "Build: Mark broken [MarkBuildBroken]",
             "CREATED_ON": "2020-04-22 20:39:10",
             "MODIFIED_ON": "2021-10-05 18:24:36",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",

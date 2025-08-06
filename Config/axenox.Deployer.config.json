@@ -1,3 +1,4 @@
 {
-	"PROJECTS_FOLDER_RELATIVE_TO_BASE": "data/deployer"
+	"PROJECTS_FOLDER_RELATIVE_TO_BASE": "data/deployer",
+	"PHP_VERSION_PATHS": {}
 }
