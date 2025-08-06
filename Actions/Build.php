@@ -1,6 +1,7 @@
 <?php
 namespace axenox\Deployer\Actions;
 
+use axenox\Deployer\DataTypes\BuildablePhpVersionDataType;
 use exface\Core\CommonLogic\AbstractActionDeferred;
 use exface\Core\Interfaces\DataSources\DataTransactionInterface;
 use exface\Core\Interfaces\Tasks\ResultInterface;
@@ -117,7 +118,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'project' => $this->getProjectData($task, 'uid'),
                 'comment' => $this->getComment($task),
                 'notes' => $this->getNotes($task),
-                'php_version' => $this->getBuildData($task, 'php_version', 'php', phpversion()),
+                'php_version' => $this->getBuildData($task, 'php_version', 'php', BuildablePhpVersionDataType::getRuntimeVersion()),
                 'build_variant' => $this->getBuildVariantData($task, 'uid'),
                 'composer_json' => $this->getBuildVariantData($task, 'composer_json') ?? '{}',
                 'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json') ?? '{}'
@@ -362,11 +363,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         
         // Get the PHP path from the PHP version
         if ($phpVersion = $this->getBuildData($task, 'php_version', 'php')) {
-            $phpPathsUxon = $this->getWorkbench()->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS');
-            $phpPath = $phpPathsUxon->getProperty($phpVersion);
-            if ($phpPath === null) {
-                throw new ActionInputError($this, 'Cannot find PHP version "' . $phpVersion . '" in axenox.Deployer.config.json');
-            }
+            $phpPath = BuildablePhpVersionDataType::getExecutable($phpVersion, $this->getWorkbench());
         } else {
             $phpPath = 'php';  
         }
