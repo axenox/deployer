@@ -87,9 +87,9 @@
         {
             "_EXPORT_SUMMARY": "Currently deployed [axenox.Deployer.currently_deployed]",
             "CREATED_ON": "2020-05-17 08:34:15",
-            "MODIFIED_ON": "2025-07-29 11:18:51",
+            "MODIFIED_ON": "2025-08-06 23:39:55",
             "CREATED_BY_USER": "0x11ea95ea3987fa17a9d10205857feb80",
-            "MODIFIED_BY_USER": "0x11ea4f31405af6f7bfc400505689aada",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11ea98192612456aa9d10205857feb80",
             "READABLE_FLAG": 1,
             "WRITABLE_FLAG": 0,
@@ -106,12 +106,18 @@
             "ALIAS": "currently_deployed",
             "DATA_ADDRESS": [
                 "// Multiline text delimited by `\n`",
-                "(SELECT ",
-                "\td1.*",
+                "(",
+                "SELECT ",
+                "  d1.*",
                 "FROM ",
-                "\t(SELECT * FROM axxdep_deployment WHERE `status` = 99) d1 ",
-                "\tLEFT JOIN (SELECT * FROM axxdep_deployment WHERE `status` = 99) d2 ON (d1.host_oid = d2.host_oid AND d1.started_on < d2.started_on)",
-                "WHERE d2.oid IS NULL)"
+                "  axxdep_deployment d1 ",
+                "  LEFT JOIN axxdep_deployment d2 ",
+                "    ON d1.host_oid = d2.host_oid ",
+                "    AND d2.`status` = 99 ",
+                "    AND d1.started_on < d2.started_on",
+                "WHERE d1.`status` = 99 ",
+                "  AND d2.oid IS NULL",
+                ")"
             ]
         }
     ],
