@@ -2,6 +2,11 @@
     "object_alias": "exface.Core.ATTRIBUTE",
     "columns": [
         {
+            "name": "_EXPORT_SUMMARY",
+            "hidden": true,
+            "attribute_alias": "LABEL"
+        },
+        {
             "name": "CREATED_ON",
             "attribute_alias": "CREATED_ON"
         },
@@ -172,6 +177,7 @@
     ],
     "rows": [
         {
+            "_EXPORT_SUMMARY": "Project [project]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -208,7 +214,7 @@
             "RELATED_OBJ": "0x11e9e0f75c1bf571bacde4b318306b9a",
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": {
                 "SQL_DATA_TYPE": "binary"
@@ -218,6 +224,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Version [version]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -251,10 +258,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 1,
             "REQUIREDFLAG": 1,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": null,
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -262,6 +269,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Build Name [name]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -295,10 +303,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 0,
             "REQUIREDFLAG": 1,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -306,6 +314,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Build recipe used [build_recipe_path]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -339,10 +348,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 0,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -350,6 +359,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Comment [comment]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -383,10 +393,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 1,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": null,
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -394,6 +404,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Composer.json [composer_json]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -427,10 +438,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 1,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -438,6 +449,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Composer auth.json [composer_auth_json]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -471,10 +483,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 1,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -482,6 +494,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Notes [notes]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -515,10 +528,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 1,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": null,
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -526,6 +539,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Log [log]",
             "CREATED_ON": "2019-10-22 13:31:20",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -559,10 +573,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 0,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -570,6 +584,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Build time [build_datetime]",
             "CREATED_ON": "2019-10-24 07:11:12",
             "MODIFIED_ON": "2019-12-09 14:20:19",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -603,10 +618,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 0,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": 1,
             "SORTERDIR": "DESC",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "Time when building started",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -614,6 +629,7 @@
             "CUSTOM_DATA_TYPE": null
         },
         {
+            "_EXPORT_SUMMARY": "Status [status]",
             "CREATED_ON": "2019-10-24 07:58:19",
             "MODIFIED_ON": "2020-04-22 20:49:31",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -649,10 +665,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 0,
             "REQUIREDFLAG": 1,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": 10,
@@ -669,6 +685,7 @@
             }
         },
         {
+            "_EXPORT_SUMMARY": "Composer.lock [composer_lock]",
             "CREATED_ON": "2020-05-13 09:05:36",
             "MODIFIED_ON": "2020-05-13 09:06:05",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -702,10 +719,10 @@
             "HIDDENFLAG": 0,
             "EDITABLEFLAG": 0,
             "REQUIREDFLAG": 0,
-            "RELATED_OBJ": "",
+            "RELATED_OBJ": null,
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
@@ -715,6 +732,7 @@
             }
         },
         {
+            "_EXPORT_SUMMARY": "Variant [build_variant]",
             "CREATED_ON": "2021-03-29 13:31:16",
             "MODIFIED_ON": "2021-04-12 16:38:10",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
@@ -751,7 +769,7 @@
             "RELATED_OBJ": "0x11ebb908a5c82562b9088c04ba002958",
             "SORTERPOS": null,
             "SORTERDIR": "",
-            "RELATED_OBJ_ATTR": "",
+            "RELATED_OBJ_ATTR": null,
             "SHORT_DESCRIPTION": "Build variant (contents of the build)",
             "DATA_ADDRESS_PROPS": {
                 "SQL_DATA_TYPE": "binary"

@@ -16,13 +16,13 @@
         "widget_type": "Console",
         "object_alias": "exface.Core.ACTION",
         "allowed_commands": [
-            "\/action axenox.Deployer:.*\/i",
-            "\/dep.*\/"
+            "/action axenox.Deployer:.*/i",
+            "/dep.*/"
         ],
         "start_commands": [
             "action list axenox.Deployer",
             "dep"
         ],
-        "working_directory_path": "vendor\/bin"
+        "working_directory_path": "vendor/bin"
     }
 }

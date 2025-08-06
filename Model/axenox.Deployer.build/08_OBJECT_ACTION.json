@@ -2,6 +2,11 @@
     "object_alias": "exface.Core.OBJECT_ACTION",
     "columns": [
         {
+            "name": "_EXPORT_SUMMARY",
+            "hidden": true,
+            "attribute_alias": "LABEL"
+        },
+        {
             "name": "CREATED_ON",
             "attribute_alias": "CREATED_ON"
         },
@@ -60,13 +65,14 @@
     ],
     "rows": [
         {
+            "_EXPORT_SUMMARY": "Build: Create Build",
             "CREATED_ON": "2019-11-04 12:07:07",
             "MODIFIED_ON": "2021-04-12 16:37:31",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e9fef33e544e21822b847beb3e34e8",
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
-            "ACTION_PROTOTYPE": "exface\/Core\/Actions\/ShowDialog.php",
+            "ACTION_PROTOTYPE": "exface/Core/Actions/ShowDialog.php",
             "ALIAS": "ShowBuildDialog",
             "NAME": "Create Build",
             "SHORT_DESCRIPTION": "",
@@ -207,7 +213,7 @@
                                             "start_commands": [
                                                 "action axenox.Deployer:Build [#project__alias#] [#version#] \"[#build_variant__name#]\" --comment \"[#comment#]\" --notes \"[#notes#]\""
                                             ],
-                                            "working_directory_path": "vendor\/bin"
+                                            "working_directory_path": "vendor/bin"
                                         }
                                     ]
                                 }
@@ -221,13 +227,14 @@
             "DOCS": ""
         },
         {
+            "_EXPORT_SUMMARY": "Build: Mark broken",
             "CREATED_ON": "2020-04-22 20:39:10",
             "MODIFIED_ON": "2021-10-05 18:24:36",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11ea84d94edb6e9c97940205857feb80",
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
-            "ACTION_PROTOTYPE": "exface\/Core\/Actions\/UpdateData.php",
+            "ACTION_PROTOTYPE": "exface/Core/Actions/UpdateData.php",
             "ALIAS": "MarkBuildBroken",
             "NAME": "Mark broken",
             "SHORT_DESCRIPTION": "Sets the build status to \"broken\"",

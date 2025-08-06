@@ -2,6 +2,11 @@
     "object_alias": "exface.Core.DATATYPE",
     "columns": [
         {
+            "name": "_EXPORT_SUMMARY",
+            "hidden": true,
+            "attribute_alias": "NAME"
+        },
+        {
             "name": "CREATED_ON",
             "attribute_alias": "CREATED_ON"
         },
@@ -60,6 +65,7 @@
     ],
     "rows": [
         {
+            "_EXPORT_SUMMARY": "Deployment Recipe",
             "CREATED_ON": "2019-10-24 09:57:23",
             "MODIFIED_ON": "2019-10-24 10:01:51",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -67,9 +73,9 @@
             "UID": "0x11e9f644a3971508b2ce0205857feb80",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "Deployment Recipe",
-            "PROTOTYPE": "axenox\/deployer\/DataTypes\/DeploymentRecipeDataType.php",
+            "PROTOTYPE": "axenox/deployer/DataTypes/DeploymentRecipeDataType.php",
             "CONFIG_UXON": null,
-            "VALIDATION_ERROR": "",
+            "VALIDATION_ERROR": null,
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputSelect"
@@ -78,6 +84,7 @@
             "SHORT_DESCRIPTION": "Built-in type of deployment recipies"
         },
         {
+            "_EXPORT_SUMMARY": "Build Recipe",
             "CREATED_ON": "2019-10-24 10:01:40",
             "MODIFIED_ON": "2019-10-24 10:01:40",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
@@ -85,9 +92,9 @@
             "UID": "0x11e9f6453ce34b8cb2ce0205857feb80",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "Build Recipe",
-            "PROTOTYPE": "axenox\/deployer\/DataTypes\/BuildRecipeDataType.php",
+            "PROTOTYPE": "axenox/deployer/DataTypes/BuildRecipeDataType.php",
             "CONFIG_UXON": null,
-            "VALIDATION_ERROR": "",
+            "VALIDATION_ERROR": null,
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputSelect"
@@ -96,6 +103,7 @@
             "SHORT_DESCRIPTION": "Built-in type of build recipies"
         },
         {
+            "_EXPORT_SUMMARY": "UXON Deployment Configuration",
             "CREATED_ON": "2019-11-12 13:40:09",
             "MODIFIED_ON": "2021-06-28 07:43:54",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
@@ -103,11 +111,11 @@
             "UID": "0x11ea05498fd86d0f85d7847beb3e34e8",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "UXON Deployment Configuration",
-            "PROTOTYPE": "exface\/Core\/DataTypes\/JsonDataType.php",
+            "PROTOTYPE": "exface/Core/DataTypes/JsonDataType.php",
             "CONFIG_UXON": {
                 "schema": "\\axenox\\Deployer\\Uxon\\DeploymentConfigSchema"
             },
-            "VALIDATION_ERROR": "",
+            "VALIDATION_ERROR": null,
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputUxon",
@@ -118,6 +126,7 @@
             "SHORT_DESCRIPTION": "UXON Schema for deployment configuration"
         },
         {
+            "_EXPORT_SUMMARY": "UXON Composer JSON ",
             "CREATED_ON": "2019-11-21 15:04:00",
             "MODIFIED_ON": "2021-06-28 07:41:37",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
@@ -125,11 +134,11 @@
             "UID": "0x11ea0c67c75b6641a1b9847beb3e34e8",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "UXON Composer JSON ",
-            "PROTOTYPE": "exface\/Core\/DataTypes\/JsonDataType.php",
+            "PROTOTYPE": "exface/Core/DataTypes/JsonDataType.php",
             "CONFIG_UXON": {
                 "schema": "\\axenox\\Deployer\\Uxon\\ComposerJsonSchema"
             },
-            "VALIDATION_ERROR": "",
+            "VALIDATION_ERROR": null,
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputUxon",
@@ -140,6 +149,7 @@
             "SHORT_DESCRIPTION": "UXON schema for composer.json"
         },
         {
+            "_EXPORT_SUMMARY": "UXON Composer Auth JSON",
             "CREATED_ON": "2019-11-21 16:08:52",
             "MODIFIED_ON": "2021-06-28 07:43:42",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
@@ -147,11 +157,11 @@
             "UID": "0x11ea0c70d73fb233a1b9847beb3e34e8",
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "NAME": "UXON Composer Auth JSON",
-            "PROTOTYPE": "exface\/Core\/DataTypes\/JsonDataType.php",
+            "PROTOTYPE": "exface/Core/DataTypes/JsonDataType.php",
             "CONFIG_UXON": {
                 "schema": "\\axenox\\Deployer\\Uxon\\ComposerAuthJsonSchema"
             },
-            "VALIDATION_ERROR": "",
+            "VALIDATION_ERROR": null,
             "DEFAULT_DISPLAY_UXON": null,
             "DEFAULT_EDITOR_UXON": {
                 "widget_type": "InputUxon",
