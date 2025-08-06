@@ -359,6 +359,17 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
         $recipePath = $this->getBuildRecipeFile($task);
         $deployerTaskName = basename($recipePath, '.php');
         
+        // Get the PHP path from the PHP version
+        if ($phpVersion = $this->getBuildData($task, 'php_version')) {
+            $phpPaths = $this->getWorkbench()->getApp('axenox.Deployer')->getConfig()->getOption('PHP_VERSION_PATHS');
+            $phpPath = $phpPaths[$phpVersion] ?? null;
+            if ($phpPath === null) {
+                throw new ActionInputError($this, 'Cannot find PHP version "' . $phpVersion . '" in axenox.Deployer.config.json');
+            }
+        } else {
+            $phpPath = 'php';  
+        }
+        
         $content = <<<PHP
 <?php
 namespace Deployer;
@@ -370,6 +381,7 @@ set('release_name', '{$buildName}');
 
 // === Path definitions ===
 set('builds_archives_path', __DIR__ . '{$builds_archives_path}');
+set('php_executable', '{$phpPath}');
 
 require '{$recipePath}';
 
@@ -444,14 +456,7 @@ PHP;
      */
     protected function getVersion(TaskInterface $task) : string 
     {
-        if ($task->hasParameter('version')) {
-            $version = $task->getParameter('version');
-        } else {
-            $inputData = $this->getInputDataSheet($task);
-            if ($col = $inputData->getColumns()->get('version')) {
-                $version = $col->getCellValue(0);
-            }
-        }
+        $version = $this->getBuildData($task, 'version');
         
         if ($version === null) {
             throw new ActionInputMissingError($this, 'Cannot create build: No version number provided!', '784EENG');
@@ -470,20 +475,31 @@ PHP;
      */
     protected function getComment(TaskInterface $task) : string
     {
-        $comment = '';
-        if ($task->hasParameter('comment')) {
-            $comment = $task->getParameter('comment');
+        return $this->getBuildData($task, 'comment', '');
+    }
+
+    /**
+     * @param TaskInterface $task
+     * @param string $buildAttribute
+     * @param $default
+     * @return mixed|null
+     */
+    protected function getBuildData(TaskInterface $task, string $buildAttribute, $default = null)
+    {
+        $val = null;
+        if ($task->hasParameter($buildAttribute)) {
+            $val = $task->getParameter($buildAttribute);
         } else {
             try {
                 $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('comment')) {
-                    $comment = $col->getCellValue(0);
+                if ($col = $inputData->getColumns()->get($buildAttribute)) {
+                    $val = $col->getCellValue(0);
                 }
             } catch (ActionInputMissingError $e) {
-                $comment = '';
+                $val = $default;
             }
-        }     
-        return $comment;
+        }
+        return $val ?? $default;
     }
     
     /**
@@ -494,20 +510,7 @@ PHP;
      */
     protected function getNotes(TaskInterface $task) : string
     {
-        $notes = '';
-        if ($task->hasParameter('notes')) {
-            $notes = $task->getParameter('notes');
-        } else {
-            try {
-                $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('notes')) {
-                    $notes = $col->getCellValue(0);
-                }
-            } catch (ActionInputMissingError $e) {
-                $notes = '';
-            }
-        }
-        return $notes;
+        return $this->getBuildData($task, 'notes', '');
     }
     
     /**
