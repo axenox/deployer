@@ -87,7 +87,7 @@
         {
             "_EXPORT_SUMMARY": "Deployment Project [axenox.Deployer.project]",
             "CREATED_ON": "2019-09-27 07:21:01",
-            "MODIFIED_ON": "2024-01-26 20:41:32",
+            "MODIFIED_ON": "2025-08-07 11:18:32",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9e0f75c1bf571bacde4b318306b9a",
@@ -223,6 +223,9 @@
                                             },
                                             {
                                                 "attribute_alias": "operating_system"
+                                            },
+                                            {
+                                                "attribute_alias": "currently_deployed__build__php_version"
                                             }
                                         ],
                                         "row_grouper": {
@@ -355,6 +358,10 @@
                                             },
                                             {
                                                 "attribute_alias": "build_variant__LABEL"
+                                            },
+                                            {
+                                                "attribute_alias": "php_version",
+                                                "caption": "PHP"
                                             },
                                             {
                                                 "attribute_alias": "comment"
