@@ -156,24 +156,30 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 $deployData->dataUpdate(false);
             }
             
-            if (strpos($log, '✘ ERROR') !== false || $process->isSuccessful() === false) {
-                $deployData->setCellValue('status', 0, 90); // failed
-                $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
-            } else {
-                if (strpos($deployTask, 'LocalBldUpdaterPull') !== false) {
+            switch (true) {
+                // Failed
+                case mb_strpos($log, '✘ ERROR') !== false || $process->isSuccessful() === false:
+                    $deployData->setCellValue('status', 0, 90); // failed
+                    $deployData->setCellValue('completed_on', 0, DateTimeDataType::now());
+                    $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
+                    break;
+                // Published for OTA self-update
+                case mb_strpos($deployTask, 'LocalBldUpdaterPull') !== false:
                     $deployData->setCellValue('status', 0, 60); // published
                     $seconds = time() - $seconds;
                     $msg = '✔ SUCCEEDED publishing build ' . $buildName . ' for download by ' . $hostName . ' in ' . $seconds . ' seconds.';
-                } else {
+                    break;
+                // Deployed
+                default:
                     $deployData->setCellValue('status', 0, 99); // completed
+                    $deployData->setCellValue('completed_on', 0, DateTimeDataType::now());
                     $seconds = time() - $seconds;
                     $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
-                }
+                    break;
             }
             yield $msg;
             $log .= $msg;
             
-            $deployData->setCellValue('completed_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
             $deployData->setCellValue('log', 0, $log);
             
             // Update deployment entry's state and save log to data source
@@ -184,6 +190,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
             $deployData->setCellValue('log', 0, $log);
             $deployData->setCellValue('status', 0, 90); // failed
+            $deployData->setCellValue('completed_on', 0, DateTimeDataType::now());
             $this->getWorkbench()->getLogger()->logException($e);
             $deployData->dataUpdate(false);
         }

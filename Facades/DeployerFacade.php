@@ -1,6 +1,7 @@
 <?php
 namespace axenox\Deployer\Facades;
 
+use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade;
 use exface\Core\Facades\AbstractHttpFacade\Middleware\AuthenticationMiddleware;
 use exface\Core\DataTypes\StringDataType;
@@ -99,6 +100,8 @@ class DeployerFacade extends AbstractHttpFacade
         $logSheet = $ds->extractSystemColumns();
         $logSheet->setCellValue('log', 0, $ds->getCellValue('log', 0) . PHP_EOL . PHP_EOL . $log);
         $logSheet->setCellValue('status', 0, $status);
+        $logSheet->setCellValue('completed_on', 0, DateTimeDataType::now());
+
         $logSheet->dataUpdate();
         
         return new Response(200, $this->buildHeadersCommon());
@@ -172,8 +175,9 @@ class DeployerFacade extends AbstractHttpFacade
         $ds->getColumns()->addFromSystemAttributes();
         
         $ds->getFilters()->addConditionFromString('host__project__alias', $projectAlias, ComparatorDataType::EQUALS);
-        $ds->getFilters()->addConditionFromString('host', $hostName);
-        $ds->getFilters()->addConditionFromString('status', 60);
+        $ds->getFilters()->addConditionFromString('host', $hostName, comparatorDataType::EQUALS);
+        $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::GREATER_THAN_OR_EQUALS);
+        $ds->getFilters()->addConditionFromString('status', 70, ComparatorDataType::LESS_THAN);
         
         $ds->getSorters()->addFromString('started_on', SortingDirectionsDataType::DESC);
         $ds->setRowsLimit(1);;
