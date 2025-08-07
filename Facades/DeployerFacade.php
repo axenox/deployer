@@ -96,9 +96,10 @@ class DeployerFacade extends AbstractHttpFacade
             $status = 99;
         }
         
-        $ds->setCellValue('log', 0, $ds->getCellValue('log', 0) . PHP_EOL . PHP_EOL . $log);
-        $ds->setCellValue('status', 0, $status);
-        $ds->dataUpdate();
+        $logSheet = $ds->extractSystemColumns();
+        $logSheet->setCellValue('log', 0, $ds->getCellValue('log', 0) . PHP_EOL . PHP_EOL . $log);
+        $logSheet->setCellValue('status', 0, $status);
+        $logSheet->dataUpdate();
         
         return new Response(200, $this->buildHeadersCommon());
     }
@@ -151,6 +152,10 @@ class DeployerFacade extends AbstractHttpFacade
         
         $resource = fopen($path . $filename, 'r');
         $stream = Utils::streamFor($resource);
+        
+        $statusSheet = $ds->extractSystemColumns();
+        $statusSheet->setCellValue('status', 0, 62);
+        $statusSheet->dataUpdate();
         
         return new Response(200, $headers, $stream);
     }
