@@ -102,6 +102,80 @@
             "DESCRIPTION": "",
             "DISABLED_FLAG": 0,
             "PRIORITY": null
+        },
+        {
+            "_EXPORT_SUMMARY": "Teams post on deployment started",
+            "CREATED_ON": "2025-08-28 11:46:05",
+            "MODIFIED_ON": "2025-08-28 11:46:05",
+            "CREATED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "UID": "0x11f08bc3d0e9c44e8bc3005056be9857",
+            "BEHAVIOR": "exface/core/Behaviors/NotifyingBehavior.php",
+            "CONFIG_UXON": {
+                "notify_on_event": "exface.Core.DataSheet.OnCreateData",
+                "notify_if_data_matches_conditions": {
+                    "operator": "OR",
+                    "conditions": [
+                        {
+                            "expression": "host__notification_address",
+                            "comparator": "!==",
+                            "value": ""
+                        }
+                    ]
+                },
+                "notifications": [
+                    {
+                        "template": "axenox.Deployer.teams_post_on_deployment_started"
+                    }
+                ]
+            },
+            "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "Teams post on deployment started",
+            "DESCRIPTION": "",
+            "DISABLED_FLAG": 0,
+            "PRIORITY": null
+        },
+        {
+            "_EXPORT_SUMMARY": "Teams post on deployment finished",
+            "CREATED_ON": "2025-08-28 11:47:18",
+            "MODIFIED_ON": "2025-08-28 11:49:20",
+            "CREATED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "UID": "0x11f099c5fc5561ec99c5005056be9857",
+            "BEHAVIOR": "exface/core/Behaviors/NotifyingBehavior.php",
+            "CONFIG_UXON": {
+                "notify_on_event": "exface.core.DataSheet.OnUpdateData",
+                "notify_if_attributes_change": [
+                    "status"
+                ],
+                "notify_if_data_matches_conditions": {
+                    "operator": "AND",
+                    "conditions": [
+                        {
+                            "expression": "status",
+                            "comparator": "[",
+                            "value": "90,99"
+                        },
+                        {
+                            "expression": "host__notification_address",
+                            "comparator": "!==",
+                            "value": ""
+                        }
+                    ]
+                },
+                "notifications": [
+                    {
+                        "template": "axenox.Deployer.teams_post_on_deployment_finished"
+                    }
+                ]
+            },
+            "OBJECT": "0x11e9f4d0fabcbcffbacde4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "NAME": "Teams post on deployment finished",
+            "DESCRIPTION": "",
+            "DISABLED_FLAG": 0,
+            "PRIORITY": null
         }
     ],
     "totals_rows": [],
