@@ -63,9 +63,9 @@
         {
             "_EXPORT_SUMMARY": "State Model",
             "CREATED_ON": "2019-10-24 08:15:25",
-            "MODIFIED_ON": "2025-08-07 00:19:56",
+            "MODIFIED_ON": "2025-11-18 12:55:32",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9f63665e2c17db2ce0205857feb80",
             "BEHAVIOR": "exface/Core/Behaviors/StateMachineBehavior.php",
             "CONFIG_UXON": {
@@ -83,9 +83,16 @@
                     "62": {
                         "name": "Processing self-update"
                     },
+                    "70": {
+                        "name": "Installing"
+                    },
+                    "80": {
+                        "name": "Lost connection",
+                        "color": "~ERROR"
+                    },
                     "90": {
                         "name": "Failed",
-                        "color": "orangered"
+                        "color": "~ERROR"
                     },
                     "98": {
                         "name": "Rolled Back",
