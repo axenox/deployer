@@ -24,10 +24,12 @@ use exface\Core\Interfaces\DataSheets\DataSheetInterface;
  * 
  * Routes: 
  * 
- * - GET api/deployer/ota/<project_alias>/<host_uid>
- * - POST api/deployer/ota/<project_alias>/<host_uid>
+ * - `GET api/deployer/ota/<project_alias>/<host_uid>` - download an update
+ * - `POST api/deployer/ota/<project_alias>/<host_uid>` - upload log lines (incremental)
+ * - `POST api/deployer/ota/<project_alias>/<host_uid>?final=true` - mark the log line as final
+ * - `POST api/deployer/ota/<project_alias>/<host_uid>?error=true` - mark the log line explicitly as error
  * 
- * @author andrej.kabachnik
+ * @author Andrej Kabachnik
  *
  */
 class DeployerFacade extends AbstractHttpFacade
@@ -80,27 +82,39 @@ class DeployerFacade extends AbstractHttpFacade
      */
     protected function createResponseForLog(string $projectAlias, string $hostName, ServerRequestInterface $request) : ResponseInterface
     {
-        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
-        $ds->getColumns()->addMultiple([
-            'log'
+        $deploySheet = $this->createDeploymentSheet($projectAlias, $hostName);
+        $deploySheet->getColumns()->addMultiple([
+            'log',
+            'status'
         ]);
-        $ds->dataRead();
+        $deploySheet->dataRead();
                 
-        if ($ds->isEmpty()) {
-            throw new DataNotFoundError($ds, 'Host "' . $hostName . '" not found in project "' . $projectAlias . '"');
+        if ($deploySheet->isEmpty()) {
+            throw new DataNotFoundError($deploySheet, 'Host "' . $hostName . '" not found in project "' . $projectAlias . '"');
         }
+
         
-        $log = $request->getBody()->__toString() ?? '';
-        if (mb_strpos($log, 'ERROR') !== false || mb_strpos($log, 'FAILED') !== false) {
-            $status = 90;
-        } else {
-            $status = 99;
-        }
+        $params = $request->getQueryParams();
+        $log = $deploySheet->getCellValue('log', 0);
+        $logReceived = $request->getBody()->__toString() ?? '';
+
+        $logSheet = $deploySheet->extractSystemColumns();
+        $log .= $logReceived === '.' ? $logReceived : PHP_EOL . $logReceived;
+        $logSheet->setCellValue('log', 0, $log);
         
-        $logSheet = $ds->extractSystemColumns();
-        $logSheet->setCellValue('log', 0, $ds->getCellValue('log', 0) . PHP_EOL . PHP_EOL . $log);
-        $logSheet->setCellValue('status', 0, $status);
-        $logSheet->setCellValue('completed_on', 0, DateTimeDataType::now());
+        $isError = array_key_exists('error', $params) || mb_strpos($logReceived, 'ERROR') !== false || mb_strpos($logReceived, 'FAILED') !== false;
+        // The log message is final if it is marked as such or there is no URL param at ALL (to be backwards compatible
+        // with older installations, that will not use the URL parameter) 
+        $isFinal = array_key_exists('final', $params) ? $params['final'] : true;
+        if ($isFinal) {
+            if ($isError) {
+                $status = 90;
+            } else {
+                $status = 99;
+            }
+            $logSheet->setCellValue('completed_on', 0, DateTimeDataType::now());
+            $logSheet->setCellValue('status', 0, $status);
+        } 
 
         $logSheet->dataUpdate();
         
