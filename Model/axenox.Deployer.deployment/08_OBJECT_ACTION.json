@@ -263,7 +263,7 @@
         {
             "_EXPORT_SUMMARY": "Deployment: Mark as failed [MarkFailed]",
             "CREATED_ON": "2021-10-05 18:24:23",
-            "MODIFIED_ON": "2021-10-05 18:24:23",
+            "MODIFIED_ON": "2025-11-21 15:26:19",
             "CREATED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11ec8895b391ac708895005056be5d52",
@@ -281,6 +281,10 @@
                         {
                             "attribute_alias": "status",
                             "formula": "=90"
+                        },
+                        {
+                            "attribute_alias": "completed_on",
+                            "formula": "=Now()"
                         }
                     ]
                 },
@@ -297,7 +301,7 @@
         {
             "_EXPORT_SUMMARY": "Deployment: Mark as completed [MarkCompleted]",
             "CREATED_ON": "2024-01-26 20:40:02",
-            "MODIFIED_ON": "2024-01-26 20:42:13",
+            "MODIFIED_ON": "2025-11-21 15:26:03",
             "CREATED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11ee8a06b2fc63868a06005056be9857",
@@ -315,6 +319,10 @@
                         {
                             "attribute_alias": "status",
                             "formula": "=99"
+                        },
+                        {
+                            "attribute_alias": "completed_on",
+                            "formula": "=Now()"
                         }
                     ]
                 },
