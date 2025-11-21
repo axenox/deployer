@@ -101,20 +101,38 @@ class DeployerFacade extends AbstractHttpFacade
         $logSheet = $deploySheet->extractSystemColumns();
         $log .= $logReceived === '.' ? $logReceived : PHP_EOL . $logReceived;
         $logSheet->setCellValue('log', 0, $log);
-        
+
+        $status = $params['status'];
         $isError = array_key_exists('error', $params) || mb_strpos($logReceived, 'ERROR') !== false || mb_strpos($logReceived, 'FAILED') !== false;
         // The log message is final if it is marked as such or there is no URL param at ALL (to be backwards compatible
         // with older installations, that will not use the URL parameter) 
-        $isFinal = array_key_exists('final', $params) ? $params['final'] : true;
+        switch (true) {
+            case array_key_exists('final', $params);
+                $isFinal = $params['final'];
+                break;
+            case preg_match('/^Finished self-update successfully!/', $logReceived):
+            case preg_match('/^FAILED self-update!/', $logReceived):
+                $isFinal = true;
+                break;
+            default: 
+                $isFinal = false;
+                break;
+        }
+        
         if ($isFinal) {
-            if ($isError) {
-                $status = 90;
-            } else {
-                $status = 99;
+            if ($status === null) {
+                if ($isError) {
+                    $status = 90;
+                } else {
+                    $status = 99;
+                }
             }
             $logSheet->setCellValue('completed_on', 0, DateTimeDataType::now());
+        }
+
+        if ($status !== null) {
             $logSheet->setCellValue('status', 0, $status);
-        } 
+        }
 
         $logSheet->dataUpdate();
         
