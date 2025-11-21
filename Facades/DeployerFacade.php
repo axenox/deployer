@@ -209,7 +209,7 @@ class DeployerFacade extends AbstractHttpFacade
         $ds->getFilters()->addConditionFromString('host__project__alias', $projectAlias, ComparatorDataType::EQUALS);
         $ds->getFilters()->addConditionFromString('host', $hostName, comparatorDataType::EQUALS);
         $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::GREATER_THAN_OR_EQUALS);
-        $ds->getFilters()->addConditionFromString('status', 70, ComparatorDataType::LESS_THAN);
+        $ds->getFilters()->addConditionFromString('status', 80, ComparatorDataType::LESS_THAN_OR_EQUALS);
         
         $ds->getSorters()->addFromString('started_on', SortingDirectionsDataType::DESC);
         $ds->setRowsLimit(1);;
