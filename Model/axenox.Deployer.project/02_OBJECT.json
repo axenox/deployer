@@ -87,7 +87,7 @@
         {
             "_EXPORT_SUMMARY": "Deployment Project [axenox.Deployer.project]",
             "CREATED_ON": "2019-09-27 07:21:01",
-            "MODIFIED_ON": "2025-11-18 12:30:03",
+            "MODIFIED_ON": "2025-12-04 12:10:58",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9e0f75c1bf571bacde4b318306b9a",
@@ -477,6 +477,24 @@
                                             {
                                                 "action_alias": "exface.Core.ShowObjectInfoDialog",
                                                 "bind_to_double_click": true
+                                            },
+                                            {
+                                                "action_alias": "axenox.Deployer.DeploymentResetOTA",
+                                                "disabled_if": {
+                                                    "operator": "OR",
+                                                    "conditions": [
+                                                        {
+                                                            "value_left": "~input!status",
+                                                            "comparator": "<",
+                                                            "value_right": 60
+                                                        },
+                                                        {
+                                                            "value_left": "~input!status",
+                                                            "comparator": ">=",
+                                                            "value_right": 90
+                                                        }
+                                                    ]
+                                                }
                                             },
                                             {
                                                 "action_alias": "axenox.Deployer.MarkFailed",

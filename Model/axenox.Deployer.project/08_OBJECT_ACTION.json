@@ -67,7 +67,7 @@
         {
             "_EXPORT_SUMMARY": "Deployment Project: Build & Deploy [ShowBuildDeployDialog]",
             "CREATED_ON": "2020-05-28 09:21:08",
-            "MODIFIED_ON": "2025-11-18 12:28:32",
+            "MODIFIED_ON": "2025-12-04 12:14:29",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11eaa0c47fa38871bba0e4b318306b9a",
@@ -247,6 +247,24 @@
                                 {
                                     "action_alias": "exface.Core.ShowObjectInfoDialog",
                                     "bind_to_double_click": true
+                                },
+                                {
+                                    "action_alias": "axenox.Deployer.DeploymentResetOTA",
+                                    "disabled_if": {
+                                        "operator": "OR",
+                                        "conditions": [
+                                            {
+                                                "value_left": "~input!status",
+                                                "comparator": "<",
+                                                "value_right": 60
+                                            },
+                                            {
+                                                "value_left": "~input!status",
+                                                "comparator": ">=",
+                                                "value_right": 90
+                                            }
+                                        ]
+                                    }
                                 },
                                 {
                                     "action_alias": "axenox.Deployer.MarkFailed",
