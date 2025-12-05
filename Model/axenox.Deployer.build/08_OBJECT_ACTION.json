@@ -67,9 +67,9 @@
         {
             "_EXPORT_SUMMARY": "Build: Create Build [ShowBuildDialog]",
             "CREATED_ON": "2019-11-04 12:07:07",
-            "MODIFIED_ON": "2025-08-06 18:40:56",
+            "MODIFIED_ON": "2025-11-25 07:11:48",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9fef33e544e21822b847beb3e34e8",
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface/Core/Actions/ShowDialog.php",
@@ -89,6 +89,28 @@
                             {
                                 "from": "alias",
                                 "to": "project__alias"
+                            }
+                        ]
+                    },
+                    {
+                        "from_object_alias": "axenox.Deployer.build",
+                        "inherit_columns": "own_system_attributes",
+                        "column_to_column_mappings": [
+                            {
+                                "from": "build_variant",
+                                "to": "build_variant"
+                            },
+                            {
+                                "from": "project",
+                                "to": "project"
+                            },
+                            {
+                                "from": "php_version",
+                                "to": "php_version"
+                            },
+                            {
+                                "from": "name",
+                                "to": "name"
                             }
                         ]
                     }
