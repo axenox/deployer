@@ -72,7 +72,7 @@
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11eaa0c47fa38871bba0e4b318306b9a",
             "OBJECT": "0x11e9e0f75c1bf571bacde4b318306b9a",
-            "ACTION_PROTOTYPE": "exface/Core/Actions/ShowDialog.php",
+            "ACTION_PROTOTYPE": "exface/core/Actions/ShowDialog.php",
             "ALIAS": "ShowBuildDeployDialog",
             "NAME": "Build & Deploy",
             "SHORT_DESCRIPTION": "",
