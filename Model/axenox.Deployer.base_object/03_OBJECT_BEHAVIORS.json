@@ -67,7 +67,7 @@
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11ed95dcd209e2a295dc025041000001",
-            "BEHAVIOR": "exface/Core/Behaviors/TimeStampingBehavior.php",
+            "BEHAVIOR": "exface/core/Behaviors/TimeStampingBehavior.php",
             "CONFIG_UXON": {
                 "created_on_attribute_alias": "created_on",
                 "created_by_attribute_alias": "created_by_user",
@@ -88,7 +88,7 @@
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11edba39e0f73b48ba39025041000001",
-            "BEHAVIOR": "exface/Core/Behaviors/GlobalActionsBehavior.php",
+            "BEHAVIOR": "exface/core/Behaviors/GlobalActionsBehavior.php",
             "CONFIG_UXON": {
                 "buttons": [
                     {
