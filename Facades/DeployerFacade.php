@@ -1,6 +1,8 @@
 <?php
 namespace axenox\Deployer\Facades;
 
+use axenox\PackageManager\Actions\SelfUpdate;
+use axenox\PackageManager\Common\Updater\SelfUpdateInstaller;
 use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade;
 use exface\Core\Facades\AbstractHttpFacade\Middleware\AuthenticationMiddleware;
@@ -103,7 +105,13 @@ class DeployerFacade extends AbstractHttpFacade
         $logSheet->setCellValue('log', 0, $log);
 
         $status = $params['status'];
-        $isError = array_key_exists('error', $params) || mb_strpos($logReceived, 'ERROR') !== false || mb_strpos($logReceived, 'FAILED') !== false;
+        $isError = 
+            array_key_exists('error', $params)  // Received data was explicitly marked as error by the remote
+            || mb_strpos($logReceived, 'ERROR') !== false 
+            || mb_strpos($logReceived, 'FAILED') !== false
+            || mb_stripos($logReceived, SelfUpdateInstaller::MESSAGE_INSTALLATION_FAILED)
+            || mb_stripos($logReceived, 'PHP Fatal error') // CLI errors - e.g. `PHP Fatal error:  Composer detected issues in your platform: ...`
+        ;
         // The log message is final if it is marked as such or there is no URL param at ALL (to be backwards compatible
         // with older installations, that will not use the URL parameter) 
         switch (true) {
