@@ -91,7 +91,7 @@ task('build:create_from_composer', function() {
         as $line
     ) {
         // Skip lines like "  - Locking twig/twig (v3.22.2)" - the installing-lines, that follow, are easier to understand
-        if (mb_strpos($line, 'Locking ') !== false) {
+        if (mb_strpos($line, 'Locking ') !== false || mb_strpos($line, 'Downloading ') !== false) {
             continue;
         }
         // Skip progress bars
