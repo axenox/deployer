@@ -1,8 +1,8 @@
 <?php
 namespace Deployer;
 
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Output\StreamOutput;
+use exface\Core\DataTypes\StringDataType;
+use exface\Core\Facades\ConsoleFacade\CommandRunner;
 use Deployer\Exception\ConfigurationException;
 // use kabachello\ComposerAPI\ComposerAPI;
 
@@ -75,17 +75,39 @@ task('build:create_from_local', function() {
  */
 task('build:create_from_composer', function() {
     $buildsPath = get('builds_archives_path');
+    $phpExecutable = get('php_executable');
     if (!is_dir($buildsPath)) {
         mkdir($buildsPath);
     }
     
     // Use a high timeout for composer install!!!
     $composer_timeout = get('composer_timeout');
+    foreach(
+        CommandRunner::runCliCommand(
+            'cd ' . $buildsPath . DIRECTORY_SEPARATOR . '.. && ' . $phpExecutable . ' composer.phar install --prefer-dist --no-interaction',
+            [],
+            $composer_timeout
+        )
+        as $line
+    ) {
+        // Skip lines like "  - Locking twig/twig (v3.22.2)" - the installing-lines, that follow, are easier to understand
+        if (mb_strpos($line, 'Locking ') !== false) {
+            continue;
+        }
+        // Skip progress bars
+        if (StringDataType::startsWith(trim($line), '0 [') || mb_strpos($line, '%') !== false) {
+            continue;
+        }
+        echo($line);
+    }
+    
+    /* this did not return the composer output for some reason
     $composerOutput = runLocally('cd {{builds_archives_path}}\.. && {{php_executable}} composer.phar install --prefer-dist', ['timeout' => $composer_timeout]);
     write($composerOutput);
     writeln('');
+    */
     
-    /*
+    /* This did not always work. Using CLI is more reliable
     $composerApi = new ComposerAPI(get('builds_archives_path') . DIRECTORY_SEPARATOR . '..');
     $composerApi->set_path_to_composer_home(get('builds_archives_path') . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '.composer');
     $output = $composerApi->install();
