@@ -33,6 +33,10 @@
         {
             "name": "PAGE_GROUP",
             "attribute_alias": "PAGE_GROUP"
+        },
+        {
+            "name": "APP",
+            "attribute_alias": "APP"
         }
     ],
     "rows": [
@@ -44,7 +48,8 @@
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaa0cc74eece62bba0e4b318306b9a",
             "PAGE": "0xb9bb4be0e10011e99b6800a0c6000009",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
+            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a"
         },
         {
             "_EXPORT_SUMMARY": "Deployer (all) / Hosts",
@@ -54,7 +59,8 @@
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaa0cc74efb63ebba0e4b318306b9a",
             "PAGE": "0x2dbcde00e10111e99dc300a0c6000009",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
+            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a"
         },
         {
             "_EXPORT_SUMMARY": "Deployer (all) / Stages",
@@ -64,7 +70,8 @@
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaa0cc74eff57abba0e4b318306b9a",
             "PAGE": "0xdae6d000e10011e98d8400a0c6000009",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
+            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a"
         },
         {
             "_EXPORT_SUMMARY": "Deployer (all) / Project Groups",
@@ -74,7 +81,8 @@
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaa0cc74f0373abba0e4b318306b9a",
             "PAGE": "0x19d09df0e10111e9903100a0c6000009",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
+            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a"
         },
         {
             "_EXPORT_SUMMARY": "Deployer (all) / Config Presets",
@@ -84,7 +92,8 @@
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaa0cc74f06483bba0e4b318306b9a",
             "PAGE": "0x802585a0115011ea9ac2e4b318306b9a",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
+            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a"
         },
         {
             "_EXPORT_SUMMARY": "Deployer (all) / Deployer Console",
@@ -94,7 +103,8 @@
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11eaa0cc74f0941bbba0e4b318306b9a",
             "PAGE": "0xbbf8653003df11ea98ae0205857feb80",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
+            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a"
         },
         {
             "_EXPORT_SUMMARY": "Deployer (all) / Build Variants",
@@ -104,7 +114,8 @@
             "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
             "UID": "0x11eb82a88a51900082a8025041000001",
             "PAGE": "0x11eb95198a4201c69519025041000001",
-            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a"
+            "PAGE_GROUP": "0x11eaa0cbdf26b495bba0e4b318306b9a",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a"
         }
     ],
     "totals_rows": [],
@@ -113,7 +124,7 @@
         "base_object_alias": "exface.Core.PAGE_GROUP_PAGES",
         "conditions": [
             {
-                "expression": "PAGE__APP",
+                "expression": "APP",
                 "comparator": "=",
                 "value": "0x11e9e072016ba0dd8afae4b318306b9a",
                 "object_alias": "exface.Core.PAGE_GROUP_PAGES"
