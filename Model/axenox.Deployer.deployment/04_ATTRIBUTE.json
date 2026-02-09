@@ -363,7 +363,7 @@
         {
             "_EXPORT_SUMMARY": "Status [status]",
             "CREATED_ON": "2019-10-24 08:14:02",
-            "MODIFIED_ON": "2025-11-18 13:03:22",
+            "MODIFIED_ON": "2026-02-09 08:45:55",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9f636342889c3b2ce0205857feb80",
@@ -406,7 +406,7 @@
                 "SQL_SELECT": [
                     "// Multiline text delimited by `\n`",
                     "(CASE",
-                    "    WHEN [#~alias#].status >= 62 AND [#~alias#].status <= 80 THEN IF([#~alias#].modified_on > DATE_SUB(NOW(), INTERVAL 1 MINUTE), 70, 80)",
+                    "    WHEN [#~alias#].status >= 62 AND [#~alias#].status <= 80 THEN IF([#~alias#].modified_on > DATE_SUB(NOW(), INTERVAL 5 MINUTE), [#~alias#].status, 80)",
                     "    ELSE [#~alias#].status",
                     "END)"
                 ]
@@ -418,8 +418,15 @@
                     "10": "10 Pending",
                     "50": "50 Deploying",
                     "60": "60 Awaiting self-update",
-                    "62": "62 Processing self-update",
-                    "70": "70 Installing",
+                    "62": "62 Downloading",
+                    "65": "65 Downloaded",
+                    "67": "67 Awaiting manual install",
+                    "70": "70 Running .phx",
+                    "72": "72 Extracting",
+                    "73": "73 Linking",
+                    "75": "75 Current-link switched",
+                    "76": "76 Installing",
+                    "78": "78 Cleaning up",
                     "80": "80 Lost connection",
                     "90": "90 Failed",
                     "98": "98 Rolled Back",
