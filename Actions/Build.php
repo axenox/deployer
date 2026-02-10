@@ -117,7 +117,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'notes' => $this->getNotes($task),
                 'php_version' => $this->getBuildData($task, 'php_version', 'php', BuildablePhpVersionDataType::getRuntimeVersion()),
                 'build_variant' => $this->getBuildVariantData($task, 'uid'),
-                'composer_json' => $this->getBuildVariantData($task, 'composer_json') ?? '{}',
+                'composer_json' => $this->getComposerJson($task),
                 'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json') ?? '{}'
             ]);
         }
@@ -522,29 +522,30 @@ PHP;
      */
     protected function getComposerJson(TaskInterface $task) : string
     {
-        $defaultComposerJson = $this->getProjectData($task, 'default_composer_json');
+        $defaultComposerJson = $this->getBuildVariantData($task, 'composer_json');
+        $customComposerJson = null;
         
         if ($task->hasParameter('composer_json')) {
             $customComposerJson = $task->getParameter('composer_json');
-        } else {
-            try {
-                $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('composer_json')) {
-                    $customComposerJson = $col->getCellValue(0);
-                }
-            } catch (ActionInputMissingError $e) {
-                $customComposerJson = null;
-            }
         }
 
-        $composerJson = $this->getRelevantObject($defaultComposerJson, $customComposerJson);   
+        $composerJson = $customComposerJson ? $customComposerJson : ($defaultComposerJson ?? '{}');   
         if ($this->getProjectData($task, 'build_recipe') === BuildRecipeDataType::COMPOSER_INSTALL_WITH_ASSET_FIX) {
-            $composerJson = $this->getComposerJsonWithAssetFix($customComposerJson, $task);
+            $composerJson = $this->getComposerJsonWithAssetFix($composerJson, $task);
         }
         return $composerJson;
     }
 
     /**
+     * Get JS assets from asset-packagist latest versin cache to avoid CDN issues
+     * 
+     * JavaScript packages are fetched from https://asset-packagist.org - a bridge between Composer, NPM and Bower.
+     * This service has had some glitches in 2026 and did not always provide the correct version information, resulting
+     * in unresolveable version constraints. A workaround was suggested in https://github.com/hiqdev/asset-packagist/issues/181
+     * which solved the issues multiple times. This method here automates that workaround.
+     * 
+     * Technically, the latest cached version of the package is retrieved instead of querying asset-packagist
+     * regularly. This helps if the package was there, but suddenly "disappeared".
      * 
      * @link https://github.com/hiqdev/asset-packagist/issues/181
      * 
@@ -581,8 +582,8 @@ PHP;
                 ];
             }
         }
-        
-        $composerArray['repositories'] = array_merge($composerArray['repositories'], $repos);
+        // Put the workaround-repos in the front to give them higher priority
+        $composerArray['repositories'] = array_merge($repos, $composerArray['repositories']);
         return json_encode($composerArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     
@@ -595,16 +596,13 @@ PHP;
      */
     protected function createComposerJson(TaskInterface $task, string $projectFolder) : string
     {
-        $content = $this->getBuildVariantData($task, 'composer_json');
-        if ($this->getProjectData($task, 'build_recipe') === BuildRecipeDataType::COMPOSER_INSTALL_WITH_ASSET_FIX) {
-            $content = $this->getComposerJsonWithAssetFix($content, $task);
-        }
-        $contentParsed = json_decode($content, true);
-        if (! $contentParsed) {
+        $content = $this->getComposerJson($task);
+        $contentArray = json_decode($content, true);
+        if (! $contentArray) {
             throw new ActionRuntimeError($this, 'Invalid composer.json detected!');
         }
-        $content = json_encode($contentParsed, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
+        $contentPretty = json_encode($contentArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $contentPretty);
         return $content;
     }
     
@@ -634,7 +632,7 @@ PHP;
             }
         }
         
-        return $this->getRelevantObject($defaultComposerAuthJson, $customComposerAuthJson);
+        return $customComposerAuthJson ? $customComposerAuthJson : $defaultComposerAuthJson;
     }
     
     /**
@@ -648,30 +646,6 @@ PHP;
         $content = $this->getBuildVariantData($task, 'composer_auth_json');
         file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'auth.json', $content);
         return $content;
-    }
-    
-    /**
-     * This function returns takes two strings as parameters, one as default and one as option. If the option is null, it uses the default one.
-     * If both strings are null, it returns an empty string. Else it returns the optional string. 
-     * 
-     * @param string $default
-     * @param string $optional
-     * @return string
-     */
-    protected function getRelevantObject(string $default, string $optional) : string
-    {
-        switch (true){
-            case ($optional === null):
-                $result = $default;
-                break;
-            case ($optional === null && $default === null):
-                return '';
-            default:
-                $result = $optional;
-                break;
-        }
-        $result = json_decode($result, true);
-        return json_encode($result);
     }
     
     /**
