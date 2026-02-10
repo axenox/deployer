@@ -2,6 +2,7 @@
 namespace axenox\Deployer\Uxon;
 
 use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Interfaces\UxonSchemaInterface;
 use exface\Core\Interfaces\Model\MetaObjectInterface;
 use exface\Core\Uxon\UxonSchema;
@@ -182,5 +183,13 @@ class DeploymentConfigSchema implements UxonSchemaInterface
     public function getPropertiesByAnnotation(string $annotation, $value, string $prototypeClass = null): array
     {
         return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createValidationObject(UxonObject $uxon, string $prototype = null, UiPageInterface $page = null, mixed $parent = null): mixed
+    {
+        return null;
     }
 }
