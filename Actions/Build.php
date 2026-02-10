@@ -3,11 +3,11 @@ namespace axenox\Deployer\Actions;
 
 use axenox\Deployer\DataTypes\BuildablePhpVersionDataType;
 use exface\Core\CommonLogic\AbstractActionDeferred;
+use exface\Core\DataTypes\SortingDirectionsDataType;
+use exface\Core\DataTypes\StringDataType;
 use exface\Core\Interfaces\DataSources\DataTransactionInterface;
-use exface\Core\Interfaces\Tasks\ResultInterface;
 use exface\Core\Interfaces\Tasks\TaskInterface;
 use exface\Core\Interfaces\Actions\iCanBeCalledFromCLI;
-use exface\Core\CommonLogic\Tasks\ResultMessageStream;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use axenox\Deployer\DataTypes\BuildRecipeDataType;
 use exface\Core\CommonLogic\Actions\ServiceParameter;
@@ -17,13 +17,8 @@ use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\CommonLogic\Filemanager;
 use axenox\Deployer\DeployerSshConnector\DeployerSshConnector;
-use exface\Core\Factories\DataConnectionFactory;
 use Symfony\Component\Process\Process;
-use exface\Core\Interfaces\Exceptions\ActionExceptionInterface;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
-use exface\Core\Interfaces\Events\TaskEventInterface;
-use exface\Core\Exceptions\Actions\ActionInputInvalidObjectError;
-use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\Tasks\ResultMessageStreamInterface;
 use exface\Core\Exceptions\InvalidArgumentException;
 use exface\Core\Factories\ConditionGroupFactory;
@@ -339,6 +334,9 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             case BuildRecipeDataType::CUSTOM_BUILD:
                 return $this->getProjectData($task, 'build_recipe_custom_path');
             default:
+                if ($recipe === BuildRecipeDataType::COMPOSER_INSTALL_WITH_ASSET_FIX) {
+                    $recipe = BuildRecipeDataType::COMPOSER_INSTALL;
+                }
                 $recipiesBasePath = Filemanager::FOLDER_NAME_VENDOR . DIRECTORY_SEPARATOR . $this->getApp()->getDirectory() . DIRECTORY_SEPARATOR . 'Recipes' . DIRECTORY_SEPARATOR . 'Build' . DIRECTORY_SEPARATOR;
                 return $recipiesBasePath . $recipe . '.php';
         }
@@ -537,7 +535,53 @@ PHP;
             }
         }
 
-        return $this->getRelevantObject($defaultComposerJson, $customComposerJson);       
+        $composerJson = $this->getRelevantObject($defaultComposerJson, $customComposerJson);   
+        if ($this->getProjectData($task, 'build_recipe') === BuildRecipeDataType::COMPOSER_INSTALL_WITH_ASSET_FIX) {
+            $composerJson = $this->getComposerJsonWithAssetFix($customComposerJson, $task);
+        }
+        return $composerJson;
+    }
+
+    /**
+     * 
+     * @link https://github.com/hiqdev/asset-packagist/issues/181
+     * 
+     * @param string $composerJson
+     * @param TaskInterface $task
+     * @return string
+     */
+    protected function getComposerJsonWithAssetFix(string $composerJson, TaskInterface $task) : string
+    {
+        $composerArray = json_decode($composerJson, true);
+        
+        $lockData = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
+        $lockData->getFilters()->addConditionFromString('build_variant', $this->getBuildVariantData('UID'), ComparatorDataType::EQUALS);
+        $lockData->getFilters()->addConditionFromString('status', 99, ComparatorDataType::EQUALS);
+        $lockData->getSorters()->addFromString('created_on', SortingDirectionsDataType::DESC);
+        $lockCol = $lockData->getColumns()->add('composer_lock');
+        $lockData->dataRead(1);
+        $lockJson = $lockCol->getCellValue(0);
+        $lockArray = json_decode($lockJson, true);
+        
+        $repos = [];
+        foreach ($lockArray['packages'] as $lockPackage) {
+            $packageName = $lockPackage['name'];
+            if (
+                StringDataType::startsWith($packageName, 'npm-asset/') 
+                || StringDataType::startsWith($packageName, 'bower-asset/')
+            ) {
+                $repos[] = [
+                    "type" => "composer",
+                    "url" => "https://cdn.asset-packagist.org/p/{$packageName}/latest.json",
+                    "only" => [
+                        $packageName
+                    ]
+                ];
+            }
+        }
+        
+        $composerArray['repositories'] = array_merge($composerArray['repositories'], $repos);
+        return json_encode($composerArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     
     /**
