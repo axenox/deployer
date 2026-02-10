@@ -3,8 +3,10 @@ namespace axenox\Deployer\Actions;
 
 use axenox\Deployer\DataTypes\BuildablePhpVersionDataType;
 use exface\Core\CommonLogic\AbstractActionDeferred;
+use exface\Core\DataTypes\JsonDataType;
 use exface\Core\DataTypes\SortingDirectionsDataType;
 use exface\Core\DataTypes\StringDataType;
+use exface\Core\Exceptions\Actions\ActionRuntimeError;
 use exface\Core\Interfaces\DataSources\DataTransactionInterface;
 use exface\Core\Interfaces\Tasks\TaskInterface;
 use exface\Core\Interfaces\Actions\iCanBeCalledFromCLI;
@@ -555,12 +557,12 @@ PHP;
         $composerArray = json_decode($composerJson, true);
         
         $lockData = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
-        $lockData->getFilters()->addConditionFromString('build_variant', $this->getBuildVariantData('UID'), ComparatorDataType::EQUALS);
+        $lockData->getFilters()->addConditionFromString('build_variant', $this->getBuildVariantData($task, 'uid'), ComparatorDataType::EQUALS);
         $lockData->getFilters()->addConditionFromString('status', 99, ComparatorDataType::EQUALS);
         $lockData->getSorters()->addFromString('created_on', SortingDirectionsDataType::DESC);
-        $lockCol = $lockData->getColumns()->add('composer_lock');
+        $lockCol = $lockData->getColumns()->addFromExpression('composer_lock');
         $lockData->dataRead(1);
-        $lockJson = $lockCol->getCellValue(0);
+        $lockJson = $lockCol->getValue(0);
         $lockArray = json_decode($lockJson, true);
         
         $repos = [];
@@ -594,6 +596,14 @@ PHP;
     protected function createComposerJson(TaskInterface $task, string $projectFolder) : string
     {
         $content = $this->getBuildVariantData($task, 'composer_json');
+        if ($this->getProjectData($task, 'build_recipe') === BuildRecipeDataType::COMPOSER_INSTALL_WITH_ASSET_FIX) {
+            $content = $this->getComposerJsonWithAssetFix($content, $task);
+        }
+        $contentParsed = json_decode($content, true);
+        if (! $contentParsed) {
+            throw new ActionRuntimeError($this, 'Invalid composer.json detected!');
+        }
+        $content = json_encode($contentParsed, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'composer.json', $content);
         return $content;
     }
