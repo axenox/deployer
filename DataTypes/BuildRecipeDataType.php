@@ -20,6 +20,7 @@ class BuildRecipeDataType extends StringDataType implements EnumDataTypeInterfac
     use EnumStaticDataTypeTrait;
     
     const COMPOSER_INSTALL = "ComposerInstall";
+    const COMPOSER_INSTALL_WITH_ASSET_FIX = "ComposerInstallAssetFix";
     const CLONE_LOCAL = "CloneLocal";
     const CUSTOM_BUILD = "CustomBuild";
     
@@ -32,6 +33,7 @@ class BuildRecipeDataType extends StringDataType implements EnumDataTypeInterfac
     {
         return [
             self::COMPOSER_INSTALL => 'Build via Composer',
+            self::COMPOSER_INSTALL_WITH_ASSET_FIX => 'Build via Composer + asset FIX',
             self::CLONE_LOCAL => 'Clone current installation',
             self::CUSTOM_BUILD => 'Custom build recipe'
         ];
