@@ -287,6 +287,8 @@ try {
                 if ( !is_dir($appPathNew)) {
                     echo ("Copying local app: '" . $local . $appPathRelative . "' ...\n");
                     recurseCopy($appPath, $appPathNew);
+                    // Make local apps editable!
+                    chmod($appPathNew, 0777);
                     echo ("Local app: '" . $local . $appPathRelative . "' copied\n");
                 } else {
                     echo ("Skipping local app: '" . $local . $appPathRelative . "' as folder already exists\n");
