@@ -2,7 +2,7 @@
 namespace Deployer;
 
 use exface\Core\DataTypes\StringDataType;
-use exface\Core\Facades\ConsoleFacade\CommandRunner;
+use exface\Core\Facades\ConsoleFacade\CliCommandRunner;
 use Deployer\Exception\ConfigurationException;
 // use kabachello\ComposerAPI\ComposerAPI;
 
@@ -83,7 +83,7 @@ task('build:create_from_composer', function() {
     // Use a high timeout for composer install!!!
     $composer_timeout = get('composer_timeout');
     foreach(
-        CommandRunner::runCliCommand(
+        CliCommandRunner::runCliCommand(
             'cd ' . $buildsPath . DIRECTORY_SEPARATOR . '.. && ' . $phpExecutable . ' composer.phar install --prefer-dist --no-interaction',
             [],
             $composer_timeout
