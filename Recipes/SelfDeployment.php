@@ -43,7 +43,7 @@ task('self_deployment:create', function () {
  * upload self deployment php file to remote host
  */
 task('self_deployment:upload', function () {
-    runLocally('cat {{builds_archives_path}}\{{self_extractor_filename}} | ssh -F "{{host_ssh_config}}" "{{host_short}}" "(cd {{basic_deploy_path_cygwin}}; cat > {{self_extractor_filename}})"', ['timeout' => 900]);
+    runLocally('cat "{{builds_archives_path}}\{{self_extractor_filename}}" | ssh -F "{{host_ssh_config}}" "{{host_short}}" "(cd {{basic_deploy_path_cygwin}}; cat > {{self_extractor_filename}})"', ['timeout' => 900]);
 });
     
 /**
@@ -59,7 +59,7 @@ task('self_deployment:run', function () {
  * delete self deplyoment php file on local machine
  */
 task('self_deployment:delete_local_file', function() {
-    runLocally('del /f {{builds_archives_path}}\{{self_extractor_filename}}');
+    runLocally('del /f "{{builds_archives_path}}\{{self_extractor_filename}}"');
 });
 
 /**

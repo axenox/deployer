@@ -67,7 +67,7 @@ task('build:create_from_local', function() {
     if (!is_dir($buildsPath)) {
         mkdir($buildsPath);
     }
-    runLocally('tar -czf {{builds_archives_path}}\{{archiv_name}} {{source_files}}');        
+    runLocally('tar -czf "{{builds_archives_path}}\{{archiv_name}}" {{source_files}}');        
 });
 
 /**
@@ -84,7 +84,7 @@ task('build:create_from_composer', function() {
     $composer_timeout = get('composer_timeout');
     foreach(
         CliCommandRunner::runCliCommand(
-            'cd ' . $buildsPath . DIRECTORY_SEPARATOR . '.. && ' . $phpExecutable . ' composer.phar install --prefer-dist --no-interaction',
+            'cd "' . $buildsPath . DIRECTORY_SEPARATOR . '.." && ' . $phpExecutable . ' composer.phar install --prefer-dist --no-interaction',
             [],
             $composer_timeout
         )
@@ -136,11 +136,11 @@ task('build:create_from_composer', function() {
     $jsonData = json_encode($tempArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     file_put_contents($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR. 'composer.json', $jsonData);
     
-    runLocally('cd {{builds_archives_path}} && tar -czf {{archiv_name}} -C {{builds_archives_path}}/.. {{source_files}}', ['timeout' => $composer_timeout]);
+    runLocally('cd "{{builds_archives_path}}" && tar -czf {{archiv_name}} -C "{{builds_archives_path}}/.." {{source_files}}', ['timeout' => $composer_timeout]);
 
     if (substr(php_uname(), 0, 7) == "Windows"){
         runLocally('rmdir /s /q "{{builds_archives_path}}' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'vendor"', ['timeout' => $composer_timeout]);
     } else {
-        runLocally('rm -rf {{builds_archives_path}}' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'vendor', ['timeout' => $composer_timeout]);
+        runLocally('rm -rf "{{builds_archives_path}}' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'vendor"', ['timeout' => $composer_timeout]);
     }
 });
