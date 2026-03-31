@@ -205,8 +205,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     protected function replaceFilePathsWithHyperlinks(string $msg) : string
     {
         $urlMatches = [];
-        if (preg_match_all('/' . preg_quote($this->getBasePath(), '/') . '[^ "]*/', $msg, $urlMatches) !== false) {
-            foreach ($urlMatches[0] as $urlPath) {
+        if (preg_match_all('/"(' . preg_quote($this->getBasePath(), '/') . '[^"]*)"/', $msg, $urlMatches) !== false) {
+            foreach ($urlMatches[0][1] as $urlPath) {
                 $url = HttpFileServerFacade::buildUrlToDownloadFile($this->getWorkbench(), $urlPath, false);
                 $msg = str_replace($urlPath, $url, $msg);
             }
@@ -620,10 +620,10 @@ PHP;
                 $user = $this->getCurrentWinCliUsername();
                 
                 $commandList = [
-                    'icacls ' . $privateKeyFileDirectory . ' /c /t /inheritance:d',
-                    'icacls ' . $privateKeyFileDirectory . ' /c /t /remove Administrator "Authenticated Users" BUILTIN Everyone System Users',
-                    'icacls ' . $privateKeyFileDirectory . ' /c /t /grant "'. $user .'":F',
-                    'icacls ' . $privateKeyFileDirectory
+                    'icacls "' . $privateKeyFileDirectory . '" /c /t /inheritance:d',
+                    'icacls "' . $privateKeyFileDirectory . '" /c /t /remove Administrator "Authenticated Users" BUILTIN Everyone System Users',
+                    'icacls "' . $privateKeyFileDirectory . '" /c /t /grant "'. $user .'":F',
+                    'icacls "' . $privateKeyFileDirectory . '"'
                 ];
                 
                 //execute all commands set in $commandList
@@ -775,7 +775,7 @@ PHP;
      */
     protected function createDeployerTask(TaskInterface $task) : string
     {
-        $cmd = " -f=" . $this->getProjectFolderRelativePath($task) . DIRECTORY_SEPARATOR . 'deploy.php';
+        $cmd = ' -f="' . $this->getProjectFolderRelativePath($task) . DIRECTORY_SEPARATOR . 'deploy.php"';
         
         // Get deployer recipe file path
         $recipePath = $this->getDeployRecipeFile($task);

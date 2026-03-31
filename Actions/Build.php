@@ -390,7 +390,7 @@ PHP;
         fclose($content_php);
         
         // Return the deployer CLI parameters to run the task
-        return "-f={$buildFolder}{$slash}build.php {$deployerTaskName}";
+        return "-f=\"{$buildFolder}{$slash}build.php\" {$deployerTaskName}";
     }
     
     /**
