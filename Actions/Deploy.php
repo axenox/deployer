@@ -709,8 +709,8 @@ PHP;
              'port' => $port, //22 // Kommt aus DataConnection
              'PreferredAuthentications' => 'publickey',
              'StrictHostKeyChecking' => 'no',
-             'IdentityFile' => $basePath . $privateKeyFilePath, //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
-             'UserKnownHostsFile' => $basePath . $knownHostsFilePath //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
+             'IdentityFile' => '"' . $basePath . $privateKeyFilePath . '"', //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\id_rsa
+             'UserKnownHostsFile' => '"' . $basePath . $knownHostsFilePath . '"' //C:\wamp\www\sfckoenig\exface\deployer\sfc\hosts\powerui\known_hosts
         ];
         
         //if there are no specific ssh options given, use the default ones from the project data.
