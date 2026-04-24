@@ -87,9 +87,9 @@
         {
             "_EXPORT_SUMMARY": "Build File [axenox.Deployer.build_file]",
             "CREATED_ON": "2019-10-01 07:57:20",
-            "MODIFIED_ON": "2022-03-14 15:27:57",
+            "MODIFIED_ON": "2026-04-24 09:16:44",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9e42115b0c631bacde4b318306b9a",
             "READABLE_FLAG": 1,
             "WRITABLE_FLAG": 1,
@@ -104,7 +104,7 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_EDITOR_UXON": null,
             "ALIAS": "build_file",
-            "DATA_ADDRESS": "data/deployer/[#PARENT_FOLDER__FOLDER_NAME#]/builds/*"
+            "DATA_ADDRESS": "[#=GetConfig('PROJECTS_FOLDER_RELATIVE_TO_BASE', 'axenox.Deployer')#]/[#PARENT_FOLDER__FOLDER_NAME#]/builds/*"
         }
     ],
     "totals_rows": [],
