@@ -90,10 +90,13 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             $deployData = $this->getInputDataSheet($task);
         } catch (ActionInputMissingError $e) {
             $deployData = DataSheetFactory::createFromObject($this->getInputObjectExpected());
-            $deployData->addRow([
-                'build' => $this->getBuildData($task, 'name'),
-                'host' => $this->getHostData($task, 'name')
-            ]);
+            $hostCount = $this->getHostCount($task);
+            for ($hostIndex = 0; $hostIndex < $hostCount; $hostIndex++) {
+                $deployData->addRow([
+                    'build' => $this->getBuildData($task, 'name'),
+                    'host' => $this->getHostData($task, 'name', $hostIndex)
+                ]);
+            }
         }
         return [$task, $deployData];
     }
@@ -113,86 +116,94 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             throw new InvalidArgumentException('Missing argument $deployData in deferred action call!');
         }
         
-        $seconds = time();
+        $hostCount = $this->getHostCount($task);
+
+        for($hostIndex = 0; $hostIndex < $hostCount; $hostIndex++) {
+            $deployData->setCellValue('status', $hostIndex, 50);
+            $deployData->setCellValue('host', $hostIndex, $this->getHostData($task, 'uid', $hostIndex));
+            $deployData->setCellValue('build', $hostIndex, $this->getBuildData($task, 'uid'));
+            $deployData->setCellValue('started_on', $hostIndex, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
+            $deployData->setCellValue('deploy_recipe_file', $hostIndex, $this->getDeployRecipeFile($task));
+        }
         
-        // Create deploy entry and mark it as "in progress"
-        $deployData->setCellValue('status', 0, 50);
-        $deployData->setCellValue('host', 0, $this->getHostData($task, 'uid'));
-        $deployData->setCellValue('build', 0, $this->getBuildData($task, 'uid'));
-        $deployData->setCellValue('started_on', 0, date(DateTimeDataType::DATETIME_FORMAT_INTERNAL));
-        $deployData->setCellValue('deploy_recipe_file', 0, $this->getDeployRecipeFile($task));
         // Do not use the transaction to force force creating a separate one for this operation.
         $deployData->dataCreate(false);
         
-        try {
-            $buildName = $this->getBuildData($task, 'name');
-            $hostName = $this->getHostData($task, 'name');
+        for($hostIndex = 0; $hostIndex < $hostCount; $hostIndex++) {
+            $seconds = time();
             
-            // run the deployer task via CLI
-            if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
-                chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
-            }
-            
-            //create directories
-            $projectFolder = $this->getProjectFolderRelativePath($task);
-            $this->createDeployerProjectFolder($task);
-            
-            //build the command used for the actual deployment
-            $deployTask = $this->createDeployerTask($task); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
-            $cmd = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
-            $environmentVars = $this->getCmdEnvirontmentVars();
-            
-            $log = '';
-            
-            //execute deploy command
-            $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
-            $process->start();
-            foreach ($process as $msg) {
-                // Live output
-                yield $this->escapeCliMessage($this->replaceFilePathsWithHyperlinks($msg));
-                // Save to log
+            try {
+                $buildName = $this->getBuildData($task, 'name');
+                $hostName = $this->getHostData($task, 'name', $hostIndex);
+
+                // run the deployer task via CLI
+                if (getcwd() !== $this->getWorkbench()->filemanager()->getPathToBaseFolder()) {
+                    chdir($this->getWorkbench()->filemanager()->getPathToBaseFolder());
+                }
+
+                //create directories
+                $projectFolder = $this->getProjectFolderRelativePath($task);
+                $this->createDeployerProjectFolder($task, $hostIndex);
+
+                //build the command used for the actual deployment
+                $deployTask = $this->createDeployerTask($task); // testbuild\deploy.php LocalBldSshSelfExtractor --build=1.0.1...tar.gz
+                $cmd = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . "dep {$deployTask}";
+                $environmentVars = $this->getCmdEnvirontmentVars();
+
+                $log = '';
+
+                //execute deploy command
+                $process = Process::fromShellCommandline($cmd, null, $environmentVars, null, $this->getTimeout());
+                $process->start();
+                
+                yield $this->escapeCliMessage(PHP_EOL . '========== Starting deployment (' . ($hostIndex + 1) . '/' . $hostCount  . ') for host: "'.  $hostName . '" ==========');
+                foreach ($process as $msg) {
+                    // Live output
+                    yield $this->escapeCliMessage($this->replaceFilePathsWithHyperlinks($msg));
+                    // Save to log
+                    $log .= $msg;
+                    $deployData->setCellValue('log', $hostIndex, $log);
+                    $deployData->dataUpdate(false);
+                }
+
+                switch (true) {
+                    // Failed
+                    case mb_strpos($log, '✘ ERROR') !== false || $process->isSuccessful() === false:
+                        $deployData->setCellValue('status', $hostIndex, 90); // failed
+                        $deployData->setCellValue('completed_on', $hostIndex, DateTimeDataType::now());
+                        $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
+                        break;
+                    // Published for OTA self-update
+                    case mb_strpos($deployTask, 'LocalBldUpdaterPull') !== false:
+                        $deployData->setCellValue('status', $hostIndex, 60); // published
+                        $seconds = time() - $seconds;
+                        $msg = '✔ SUCCEEDED publishing build ' . $buildName . ' for download by ' . $hostName . ' in ' . $seconds . ' seconds.';
+                        break;
+                    // Deployed
+                    default:
+                        $deployData->setCellValue('status', $hostIndex, 99); // completed
+                        $deployData->setCellValue('completed_on', $hostIndex, DateTimeDataType::now());
+                        $seconds = time() - $seconds;
+                        $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
+                        break;
+                }
+                yield $msg;
                 $log .= $msg;
-                $deployData->setCellValue('log', 0, $log);
+
+                $deployData->setCellValue('log', $hostIndex, $log);
+
+                // Update deployment entry's state and save log to data source
+                $deployData->dataUpdate(false);
+
+                $this->cleanupFiles($projectFolder);
+            } catch (\Throwable $e) {
+                $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+                $deployData->setCellValue('log', $hostIndex, $log);
+                $deployData->setCellValue('status', $hostIndex, 90); // failed
+                $deployData->setCellValue('completed_on', $hostIndex, DateTimeDataType::now());
+                $this->getWorkbench()->getLogger()->logException($e);
                 $deployData->dataUpdate(false);
             }
-            
-            switch (true) {
-                // Failed
-                case mb_strpos($log, '✘ ERROR') !== false || $process->isSuccessful() === false:
-                    $deployData->setCellValue('status', 0, 90); // failed
-                    $deployData->setCellValue('completed_on', 0, DateTimeDataType::now());
-                    $msg = '✘ FAILED deploying build ' . $buildName . ' on ' . $hostName . '.';
-                    break;
-                // Published for OTA self-update
-                case mb_strpos($deployTask, 'LocalBldUpdaterPull') !== false:
-                    $deployData->setCellValue('status', 0, 60); // published
-                    $seconds = time() - $seconds;
-                    $msg = '✔ SUCCEEDED publishing build ' . $buildName . ' for download by ' . $hostName . ' in ' . $seconds . ' seconds.';
-                    break;
-                // Deployed
-                default:
-                    $deployData->setCellValue('status', 0, 99); // completed
-                    $deployData->setCellValue('completed_on', 0, DateTimeDataType::now());
-                    $seconds = time() - $seconds;
-                    $msg = '✔ SUCCEEDED deploying build ' . $buildName . ' on ' . $hostName . ' in ' . $seconds . ' seconds.';
-                    break;
-            }
-            yield $msg;
-            $log .= $msg;
-            
-            $deployData->setCellValue('log', 0, $log);
-            
-            // Update deployment entry's state and save log to data source
-            $deployData->dataUpdate(false);
-            
-            $this->cleanupFiles($projectFolder);
-        } catch (\Throwable $e) {
-            $log .= PHP_EOL . '✘ ERRROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
-            $deployData->setCellValue('log', 0, $log);
-            $deployData->setCellValue('status', 0, 90); // failed
-            $deployData->setCellValue('completed_on', 0, DateTimeDataType::now());
-            $this->getWorkbench()->getLogger()->logException($e);
-            $deployData->dataUpdate(false);
         }
     }
     
@@ -259,10 +270,10 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      *
      * @param TaskInterface $task
      * @param string $option
-     * @throws ActionInputMissingError
+     * @param int $index
      * @return string|null
      */
-    protected function getHostData(TaskInterface $task, string $option) : ?string
+    protected function getHostData(TaskInterface $task, string $option, int $index = 0) : ?string
     {
         if ($this->hostData === null) {
             $ds = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.host');
@@ -278,19 +289,24 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 'stage',
                 'deploy_config'
             ]);
+            $hostName = null;
+            $hostUid = null;
             
             if ($task->hasParameter('host')) {
                 $hostName = $task->getParameter('host');
-                $ds->getFilters()->addConditionFromString('name', $hostName, ComparatorDataType::EQUALS);
+                $hostNameDelimiter = $this->getWorkbench()->model()->getObject('axenox.Deployer.host')->getAttribute('name')->getValueListDelimiter();
+                $hostNames = array_unique(explode($hostNameDelimiter, $hostName));
+                
+                $ds->getFilters()->addConditionFromValueArray('name', $hostNames);
             } else {
                 $inputData = $this->getInputDataSheet($task);
                 if ($col = $inputData->getColumns()->get('host')) {
-                    $hostUid = $col->getValue(0);
-                    $ds->getFilters()->addConditionFromString('uid', $hostUid, ComparatorDataType::EQUALS);
+                    $hostUids = $col->getValues();
+                    $ds->getFilters()->addConditionFromValueArray('uid', $hostUids);
                 }
             }
             
-            if (! $hostUid && $hostName === null) {
+            if (! $hostUid && trim((string) $hostName) === '') {
                 throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
             }
             
@@ -300,7 +316,23 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             }
             $this->hostData = $ds;
         }
-        return $this->hostData->getCellValue($option, 0);
+        return $this->hostData->getCellValue($option, $index);
+    }
+
+    /**
+     * Gets the host count.
+     * 
+     * @param TaskInterface $task
+     * @return int
+     */
+    protected function getHostCount(TaskInterface $task) : int
+    {
+        if ($this->hostData === null) {
+            // Filling the hostData if its empty first:
+            $this->getHostData($task, 'name');
+        }
+
+        return count($this->hostData->getColumnValues('name'));
     }
     
     /**
@@ -331,6 +363,9 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
 
             if ($task->hasParameter('build')) {
                 $buildName = $task->getParameter('build');
+                $buildNameDelimiter = $this->getWorkbench()->model()->getObject('axenox.Deployer.build')->getAttribute('name')->getValueListDelimiter();
+                $buildName = array_unique(explode($buildNameDelimiter, $buildName))[0];
+                
                 $ds->getFilters()->addConditionFromString('name', $buildName, ComparatorDataType::EQUALS);
             } else {
                 $inputData = $this->getInputDataSheet($task);
@@ -356,39 +391,41 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
     /**
      *
      * @param TaskInterface $task
-     * @return DeployerSshConnector
+     * @param int $hostIndex
+     * @return DeployerSshConnector|null
      */
-    protected function getSshConnection(TaskInterface $task) : ?DeployerSshConnector
+    protected function getSshConnection(TaskInterface $task, int $hostIndex) : ?DeployerSshConnector
     {
-        $connectionUid = $this->getHostData($task, 'data_connection');
+        $connectionUid = $this->getHostData($task, 'data_connection', $hostIndex);
         if (! $connectionUid) {
             return null;
         } else {
             return DataConnectionFactory::createFromModel($this->getWorkbench(), $connectionUid);
         }
     }
- 
-   /**
-    * This function generates the contents of the `deploy.php` file, which is required for the depolyment process.
-    * It returns the path to the `deploy.php`, relative to the working directory (`.../exface/exface`).
-    *
-    * @param TaskInterface $task
-    * @param string $basepath
-    * @param string $buildFolder
-    * @param string $hostName
-    * @param string $sshConfigFilePath
-    * @return string
-    */
-    protected function createDeployPhp(TaskInterface $task, string $basepath, string $buildFolder, string $hostName, string $sshConfigFilePath = null) : string
+
+    /**
+     * This function generates the contents of the `deploy.php` file, which is required for the depolyment process.
+     * It returns the path to the `deploy.php`, relative to the working directory (`.../exface/exface`).
+     *
+     * @param TaskInterface $task
+     * @param string $basepath
+     * @param string $buildFolder
+     * @param string $hostName
+     * @param string|null $sshConfigFilePath
+     * @param int $hostIndex
+     * @return string
+     */
+    protected function createDeployPhp(TaskInterface $task, string $basepath, string $buildFolder, string $hostName, string $sshConfigFilePath = null, int $hostIndex) : string
     {
-        $stage = $this->getHostData($task, 'stage');
+        $stage = $this->getHostData($task, 'stage', $hostIndex);
         $absoluteSshConfigFilePath = $sshConfigFilePath !== null ? $basepath . $sshConfigFilePath : '';
-        $basicDeployPath = $this->getHostData($task, 'path_abs_to_api');
+        $basicDeployPath = $this->getHostData($task, 'path_abs_to_api', $hostIndex);
         $buildsArchivesPath = $basepath . $buildFolder . DIRECTORY_SEPARATOR . $this->getFolderNameForBuilds();
-        $phpPath = $this->getHostData($task, 'php_cli');
+        $phpPath = $this->getHostData($task, 'php_cli', $hostIndex);
         $recipePath = $this->getDeployRecipeFile($task);
-        $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases');
-        $deployConfigJson = $this->getHostData($task, 'deploy_config') ?? '{}';
+        $relativeDeployPath = $this->getHostData($task, 'path_rel_to_releases', $hostIndex);
+        $deployConfigJson = $this->getHostData($task, 'deploy_config', $hostIndex) ?? '{}';
         try {
             $deployConfig = JsonDataType::decodeJson($deployConfigJson);
         } catch (\Throwable $e) {
@@ -402,7 +439,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
         }
         $deployConfigPHP = var_export($deployConfig, true);
         
-        $connection = $this->getSshConnection($task);
+        $connection = $this->getSshConnection($task, $hostIndex);
         if ($connection && ! $connection instanceof DeployerSshConnector) {
             $connectionConfigPHP = var_export($connection->exportUxonObject(), true);
         } else {
@@ -476,11 +513,12 @@ PHP;
      * Prepares the folder structure needed to run the deployer command.
      *
      * @param TaskInterface $task
+     * @param int $hostIndex
      * @return string
      */
-    protected function createDeployerProjectFolder(TaskInterface $task) : string
+    protected function createDeployerProjectFolder(TaskInterface $task, int $hostIndex) : string
     {
-        $connection = $this->getSshConnection($task);
+        $connection = $this->getSshConnection($task, $hostIndex);
         
         $basePath = $this->getBasePath();
         
@@ -504,12 +542,12 @@ PHP;
         } else {
             // If no connection exists, generate the host alias from the host name.
             $sshConfigFilePath = null;
-            $hostName = $this->getHostData($task, 'name');
+            $hostName = $this->getHostData($task, 'name', $hostIndex);
             $hostAlias = self::getHostAlias($hostName);
         }
         
         $projectFolderPath = $this->getProjectFolderRelativePath($task);
-        $this->createDeployPhp($task, $basePath, $projectFolderPath, $hostAlias, $sshConfigFilePath);
+        $this->createDeployPhp($task, $basePath, $projectFolderPath, $hostAlias, $sshConfigFilePath, $hostIndex);
         
         return $basePath . $projectFolderPath;
     }
