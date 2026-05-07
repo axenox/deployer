@@ -291,6 +291,213 @@
             "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
             "USE_IN_OBJECT_BASKET_FLAG": 0,
             "DOCS": ""
+        },
+        {
+            "_EXPORT_SUMMARY": "Build: Build > Deploy [ShowBuildThenDeployDialog]",
+            "CREATED_ON": "2026-05-07 10:43:12",
+            "MODIFIED_ON": "2026-05-07 11:27:42",
+            "CREATED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
+            "UID": "0x11f188f1c84580da88f1005056be9857",
+            "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
+            "ACTION_PROTOTYPE": "exface/core/Actions/ShowDialog.php",
+            "ALIAS": "ShowBuildThenDeployDialog",
+            "NAME": "Build > Deploy",
+            "SHORT_DESCRIPTION": "",
+            "CONFIG_UXON": {
+                "icon": "fast-forward",
+                "input_mappers": [
+                    {
+                        "from_object_alias": "axenox.Deployer.project",
+                        "column_to_column_mappings": [
+                            {
+                                "from": "uid",
+                                "to": "project"
+                            },
+                            {
+                                "from": "alias",
+                                "to": "project__alias"
+                            }
+                        ]
+                    },
+                    {
+                        "from_object_alias": "axenox.Deployer.build",
+                        "inherit_columns": "own_system_attributes",
+                        "column_to_column_mappings": [
+                            {
+                                "from": "build_variant",
+                                "to": "build_variant"
+                            },
+                            {
+                                "from": "project",
+                                "to": "project"
+                            },
+                            {
+                                "from": "php_version",
+                                "to": "php_version"
+                            },
+                            {
+                                "from": "name",
+                                "to": "name"
+                            }
+                        ]
+                    }
+                ],
+                "widget": {
+                    "widget_type": "Dialog",
+                    "object_alias": "axenox.Deployer.build",
+                    "widgets": [
+                        {
+                            "widget_type": "Tabs",
+                            "tabs": [
+                                {
+                                    "caption": "General",
+                                    "widgets": [
+                                        {
+                                            "attribute_alias": "version"
+                                        },
+                                        {
+                                            "attribute_alias": "project",
+                                            "widget_type": "InputComboTable",
+                                            "id": "project_selector",
+                                            "table": {
+                                                "object_alias": "axenox.Deployer.project",
+                                                "columns": [
+                                                    {
+                                                        "attribute_group_alias": "~DEFAULT_DISPLAY"
+                                                    },
+                                                    {
+                                                        "attribute_alias": "alias",
+                                                        "hidden": true
+                                                    },
+                                                    {
+                                                        "attribute_alias": "uid",
+                                                        "hidden": true
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "attribute_alias": "build_variant",
+                                            "filters": [
+                                                {
+                                                    "attribute_alias": "project",
+                                                    "value": "=project_selector!uid",
+                                                    "comparator": "=="
+                                                }
+                                            ],
+                                            "widget_type": "InputComboTable",
+                                            "id": "variant_selector",
+                                            "table": {
+                                                "object_alias": "axenox.Deployer.build_variant",
+                                                "columns": [
+                                                    {
+                                                        "attribute_group_alias": "~DEFAULT_DISPLAY"
+                                                    },
+                                                    {
+                                                        "attribute_alias": "name",
+                                                        "hidden": true
+                                                    },
+                                                    {
+                                                        "attribute_alias": "composer_json",
+                                                        "hidden": true
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "attribute_alias": "php_version"
+                                        },
+                                        {
+                                            "attribute_alias": "project__alias",
+                                            "widget_type": "InputHidden",
+                                            "value": "=project_selector!alias"
+                                        },
+                                        {
+                                            "attribute_alias": "build_variant__name",
+                                            "widget_type": "InputHidden",
+                                            "value": "=variant_selector!name"
+                                        },
+                                        {
+                                            "data_column_name": "_hosts",
+                                            "caption": "Deploy to hosts",
+                                            "widget_type": "InputComboTable",
+                                            "id": "host_selector",
+                                            "multi_select": true,
+                                            "width": 2,
+                                            "value_attribute_alias": "name",
+                                            "table": {
+                                                "object_alias": "axenox.Deployer.host",
+                                                "filters": [
+                                                    {
+                                                        "attribute_alias": "project",
+                                                        "value": "=project_selector!uid",
+                                                        "comparator": "=="
+                                                    }
+                                                ],
+                                                "columns": [
+                                                    {
+                                                        "attribute_group_alias": "~DEFAULT_DISPLAY"
+                                                    },
+                                                    {
+                                                        "attribute_alias": "name"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "attribute_alias": "comment",
+                                            "width": "max"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "caption": "Composer.json (preview)",
+                                    "widgets": [
+                                        {
+                                            "attribute_alias": "build_variant__composer_json",
+                                            "height": "100%",
+                                            "width": "max",
+                                            "hide_caption": true,
+                                            "disabled": true,
+                                            "value": "=variant_selector!composer_json"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "buttons": [
+                        {
+                            "caption": "Build",
+                            "align": "opposite",
+                            "visibility": "promoted",
+                            "action": {
+                                "alias": "exface.Core.ShowDialog",
+                                "effected_objects": [
+                                    "axenox.Deployer.build",
+                                    "axenox.Deployer.build_file"
+                                ],
+                                "widget": {
+                                    "widgets": [
+                                        {
+                                            "widget_type": "Console",
+                                            "disabled": true,
+                                            "start_commands": [
+                                                "action axenox.Deployer:BuildAndDeploy [#project__alias#] [#version#] \"[#build_variant__name#]\" \"[#_hosts#]\" --php [#php_version#] --comment \"[#comment#]\""
+                                            ],
+                                            "working_directory_path": "vendor/bin"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "USE_IN_OBJECT_BASKET_FLAG": 0,
+            "DOCS": ""
         }
     ],
     "totals_rows": [],
