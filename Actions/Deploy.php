@@ -295,8 +295,11 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             if ($task->hasParameter('host')) {
                 $hostName = $task->getParameter('host');
                 $hostNameDelimiter = $this->getWorkbench()->model()->getObject('axenox.Deployer.host')->getAttribute('name')->getValueListDelimiter();
-                $hostNames = array_unique(explode($hostNameDelimiter, $hostName));
-                
+                $hostNames = array_filter(
+                    array_unique(
+                        explode($hostNameDelimiter, $hostName)
+                    )
+                );
                 $ds->getFilters()->addConditionFromValueArray('name', $hostNames);
             } else {
                 $inputData = $this->getInputDataSheet($task);
@@ -306,6 +309,11 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 }
             }
             
+            // Make sure, filters are set - otherwise we will deploy to ALL hosts
+            if ($ds->getFilters()->isEmpty(true)) {
+                throw new ActionInputMissingError($this, 'No hosts to deploy to!');
+            }
+            // TODO wouldn't  this fail in the else-case above???
             if (! $hostUid && trim((string) $hostName) === '') {
                 throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
             }
