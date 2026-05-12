@@ -85,6 +85,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      */
     protected function performImmediately(TaskInterface $task, DataTransactionInterface $transaction, ResultMessageStreamInterface $result) : array
     {
+        $this->validateHostsBelongToBuildProject($task);
         // $buildData based on object axenox.Deployer.deployment
         try {
             $deployData = $this->getInputDataSheet($task);
@@ -311,10 +312,6 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             
             // Make sure, filters are set - otherwise we will deploy to ALL hosts
             if ($ds->getFilters()->isEmpty(true)) {
-                throw new ActionInputMissingError($this, 'No hosts to deploy to!');
-            }
-            // TODO wouldn't  this fail in the else-case above???
-            if (! $hostUid && trim((string) $hostName) === '') {
                 throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
             }
             
@@ -891,5 +888,30 @@ PHP;
         // replace CRLF
         $user = trim(preg_replace('/\s\s+/', ' ', $user));
         return $user;
+    }
+
+    /**
+     * Validates that all selected deployment hosts belong to the same project as the selected build.
+     *
+     * @param TaskInterface $task
+     * @throws ActionInputError If one of the selected hosts belongs to another project than the build.
+     * @return void
+     */
+    protected function validateHostsBelongToBuildProject(TaskInterface $task) : void
+    {
+        $buildProject = $this->getBuildData($task, 'project');
+        $hostCount = $this->getHostCount($task);
+
+        for ($hostIndex = 0; $hostIndex < $hostCount; $hostIndex++) {
+            $hostProject = $this->getHostData($task, 'project', $hostIndex);
+
+            if ($buildProject !== $hostProject) {
+                $hostName = $this->getHostData($task, 'name', $hostIndex);
+                throw new ActionInputError(
+                    $this,
+                    'Cannot deploy build to host "' . $hostName . '": host belongs to a different project.'
+                );
+            }
+        }
     }
 }
