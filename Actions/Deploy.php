@@ -892,6 +892,12 @@ PHP;
 
     /**
      * Validates that all selected deployment hosts belong to the same project as the selected build.
+     * 
+     * Note: In case of a faulty filtering of the hosts, the deployment will start for ALL hosts,
+     * including the hosts from different projects. So this validation is crucial to prevent unwanted deployments to wrong hosts.
+     * If the host skip logic is implemented, with faulty filtering,
+     * the deployment can still happen to unwanted hosts that belongs to the same project, for example the "PROD" host.
+     * So make sure that these cases are caught, bevor reworking this solution.
      *
      * @param TaskInterface $task
      * @throws ActionInputError If one of the selected hosts belongs to another project than the build.
