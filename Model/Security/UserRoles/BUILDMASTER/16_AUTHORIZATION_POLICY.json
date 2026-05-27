@@ -226,6 +226,27 @@
             "TARGET_ACTION_PROTOTYPE": "",
             "TARGET_FACADE": "",
             "TARGET_APP": null
+        },
+        {
+            "_EXPORT_SUMMARY": "Allow build > deploy for buildmaster",
+            "CREATED_ON": "2026-05-21 14:48:52",
+            "MODIFIED_ON": "2026-05-21 14:53:04",
+            "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "UID": "0x11f1922f6be2c6bc922f025041000001",
+            "NAME": "Allow build > deploy for buildmaster",
+            "DESCRIPTION": "",
+            "EFFECT": "P",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "AUTHORIZATION_POINT": "0x11ea8eddc766689f8ba98c04ba002958",
+            "TARGET_PAGE_GROUP": null,
+            "TARGET_USER_ROLE": "0x11eaa0ca9342555cbba0e4b318306b9a",
+            "TARGET_OBJECT": null,
+            "CONDITION_UXON": null,
+            "TARGET_ACTION_MODEL": "0x11f19cf4d0790d0e9cf4025041000001",
+            "TARGET_ACTION_PROTOTYPE": "",
+            "TARGET_FACADE": "",
+            "TARGET_APP": null
         }
     ],
     "totals_rows": [],
