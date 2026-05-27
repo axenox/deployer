@@ -205,6 +205,27 @@
             "TARGET_ACTION_PROTOTYPE": "",
             "TARGET_FACADE": "",
             "TARGET_APP": null
+        },
+        {
+            "_EXPORT_SUMMARY": "Deny build > deploy if not permitted explicitly",
+            "CREATED_ON": "2026-05-21 14:50:25",
+            "MODIFIED_ON": "2026-05-21 15:17:02",
+            "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "MODIFIED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
+            "UID": "0x11f190f6a30074d290f6025041000001",
+            "NAME": "Deny build > deploy if not permitted explicitly",
+            "DESCRIPTION": "",
+            "EFFECT": "D",
+            "APP": "0x11e9e072016ba0dd8afae4b318306b9a",
+            "AUTHORIZATION_POINT": "0x11ea8eddc766689f8ba98c04ba002958",
+            "TARGET_PAGE_GROUP": null,
+            "TARGET_USER_ROLE": null,
+            "TARGET_OBJECT": null,
+            "CONDITION_UXON": null,
+            "TARGET_ACTION_MODEL": "0x11f19cf4d0790d0e9cf4025041000001",
+            "TARGET_ACTION_PROTOTYPE": "",
+            "TARGET_FACADE": "",
+            "TARGET_APP": null
         }
     ],
     "totals_rows": [],
