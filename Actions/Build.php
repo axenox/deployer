@@ -223,6 +223,8 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $this->getWorkbench()->getLogger()->logException($e);
             $buildData->dataUpdate(false);
         }
+
+        return $buildName;
     }
     
     /**
