@@ -85,6 +85,7 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
      */
     protected function performImmediately(TaskInterface $task, DataTransactionInterface $transaction, ResultMessageStreamInterface $result) : array
     {
+        $this->validateHostsBelongToBuildProject($task);
         // $buildData based on object axenox.Deployer.deployment
         try {
             $deployData = $this->getInputDataSheet($task);
@@ -295,8 +296,11 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
             if ($task->hasParameter('host')) {
                 $hostName = $task->getParameter('host');
                 $hostNameDelimiter = $this->getWorkbench()->model()->getObject('axenox.Deployer.host')->getAttribute('name')->getValueListDelimiter();
-                $hostNames = array_unique(explode($hostNameDelimiter, $hostName));
-                
+                $hostNames = array_filter(
+                    array_unique(
+                        explode($hostNameDelimiter, $hostName)
+                    )
+                );
                 $ds->getFilters()->addConditionFromValueArray('name', $hostNames);
             } else {
                 $inputData = $this->getInputDataSheet($task);
@@ -306,7 +310,8 @@ class Deploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCre
                 }
             }
             
-            if (! $hostUid && trim((string) $hostName) === '') {
+            // Make sure, filters are set - otherwise we will deploy to ALL hosts
+            if ($ds->getFilters()->isEmpty(true)) {
                 throw new ActionInputMissingError($this, 'Cannot deploy build: missing host reference!', '78810KV');
             }
             
@@ -883,5 +888,36 @@ PHP;
         // replace CRLF
         $user = trim(preg_replace('/\s\s+/', ' ', $user));
         return $user;
+    }
+
+    /**
+     * Validates that all selected deployment hosts belong to the same project as the selected build.
+     * 
+     * Note: In case of a faulty filtering of the hosts, the deployment will start for ALL hosts,
+     * including the hosts from different projects. So this validation is crucial to prevent unwanted deployments to wrong hosts.
+     * If the host skip logic is implemented, with faulty filtering,
+     * the deployment can still happen to unwanted hosts that belongs to the same project, for example the "PROD" host.
+     * So make sure that these cases are caught, bevor reworking this solution.
+     *
+     * @param TaskInterface $task
+     * @throws ActionInputError If one of the selected hosts belongs to another project than the build.
+     * @return void
+     */
+    protected function validateHostsBelongToBuildProject(TaskInterface $task) : void
+    {
+        $buildProject = $this->getBuildData($task, 'project');
+        $hostCount = $this->getHostCount($task);
+
+        for ($hostIndex = 0; $hostIndex < $hostCount; $hostIndex++) {
+            $hostProject = $this->getHostData($task, 'project', $hostIndex);
+
+            if ($buildProject !== $hostProject) {
+                $hostName = $this->getHostData($task, 'name', $hostIndex);
+                throw new ActionInputError(
+                    $this,
+                    'Cannot deploy build to host "' . $hostName . '": host belongs to a different project.'
+                );
+            }
+        }
     }
 }
