@@ -5,6 +5,7 @@ namespace axenox\Deployer\Actions;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use exface\Core\CommonLogic\AbstractActionDeferred;
 use exface\Core\CommonLogic\Actions\ServiceParameter;
+use exface\Core\CommonLogic\DataSheets\DataCollector;
 use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\Exceptions\Actions\ActionInputError;
 use exface\Core\Exceptions\Actions\ActionInputMissingError;
@@ -12,6 +13,7 @@ use exface\Core\Exceptions\Actions\ActionRuntimeError;
 use exface\Core\Exceptions\InvalidArgumentException;
 use exface\Core\Factories\ActionFactory;
 use exface\Core\Factories\DataSheetFactory;
+use exface\Core\Factories\MetaObjectFactory;
 use exface\Core\Factories\TaskFactory;
 use exface\Core\Interfaces\Actions\iCanBeCalledFromCLI;
 use exface\Core\Interfaces\Actions\iCreateData;
@@ -70,7 +72,7 @@ class BuildAndDeploy extends AbstractActionDeferred implements iCanBeCalledFromC
         }
         
         yield PHP_EOL . '========== Starting build ==========' . PHP_EOL;
-        $buildTask = $this->createSubTask(Build::class, $task->getParameters());
+        $buildTask = $this->createSubTask(Build::class, $this->getParametersForBuild($task));
         $buildResult = $this->handleSubAction(Build::class, $buildTask); 
         foreach ($this->streamResult($buildResult) as $msg) {
             yield $msg;
@@ -85,14 +87,46 @@ class BuildAndDeploy extends AbstractActionDeferred implements iCanBeCalledFromC
         $this->validateBuildWasSuccessful($buildName);
         
         yield PHP_EOL . '========== Starting deployment for build "' . $buildName . '" ==========' . PHP_EOL;
-        $deployTask = $this->createSubTask(Deploy::class, [
-            'build' => $buildName,
-            'host' => $this->getHostParameter($task)
-        ]);
+        $deployTask = $this->createSubTask(Deploy::class, $this->getParametersForDeploy($task, $buildName));
         $deployResult = $this->handleSubAction(Deploy::class, $deployTask);
         foreach ($this->streamResult($deployResult) as $msg) {
             yield $msg;
         }
+    }
+    
+    protected function getParametersForBuild(TaskInterface $task) : array
+    {
+        if ($task->hasInputData()) {
+            
+            $collector = new DataCollector(MetaObjectFactory::createFromString($this->getWorkbench(), 'axenox.Deployer.build'));
+            $collector->addAttributeAlias('project__alias');
+            $collector->addAttributeAlias('build_variant__name');
+            $collector->addAttributeAlias('version');
+            $collector = $collector->collectFrom($task->getInputData());
+            $buildData = $collector->getRequiredData();
+            
+            $params = [
+                'project' => $buildData->getCellValue('project__alias'),
+                'version' => $buildData->getCellValue('version'),
+                'variant' => $buildData->getCellValue('build_variant__name'),
+                // TODO add comment
+            ];
+        } else {
+            // TODO filter away host???
+            $params = $task->getParameters();
+        }
+        
+        return $params;
+    }
+    
+    protected function getParametersForDeploy(TaskInterface $task, string $buildName) : array
+    {
+        // TODO get host from input data too
+        $params = [
+            'build' => $buildName,
+            'host' => $this->getHostParameter($task)
+        ];
+        return $params;
     }
 
     /**
