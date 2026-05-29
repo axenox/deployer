@@ -87,7 +87,7 @@
         {
             "_EXPORT_SUMMARY": "Deployment [axenox.Deployer.deployment]",
             "CREATED_ON": "2019-10-22 13:37:23",
-            "MODIFIED_ON": "2025-11-18 12:50:42",
+            "MODIFIED_ON": "2026-05-29 14:04:34",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9f4d0fabcbcffbacde4b318306b9a",
@@ -124,6 +124,10 @@
                         "attribute_alias": "completed_on"
                     },
                     {
+                        "attribute_alias": "host__url_to_installation",
+                        "widget_type": "InputHidden"
+                    },
+                    {
                         "widget_type": "WidgetGroup",
                         "caption": "Log",
                         "width": "max",
@@ -137,6 +141,27 @@
                                 "height": "100%"
                             }
                         ]
+                    }
+                ],
+                "buttons": [
+                    {
+                        "caption": "Visit",
+                        "action": {
+                            "alias": "exface.core.GoToUrl",
+                            "url": "[#host__url_to_installation#]",
+                            "open_in_new_window": true,
+                            "urlencode_placeholders": false
+                        },
+                        "disabled_if": {
+                            "operator": "AND",
+                            "conditions": [
+                                {
+                                    "value_left": "=~input!host__url_to_installation",
+                                    "comparator": "==",
+                                    "value_right": ""
+                                }
+                            ]
+                        }
                     }
                 ]
             },
