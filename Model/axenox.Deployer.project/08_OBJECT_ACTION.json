@@ -67,7 +67,7 @@
         {
             "_EXPORT_SUMMARY": "Deployment Project: Build & Deploy [ShowBuildDeployDialog]",
             "CREATED_ON": "2020-05-28 09:21:08",
-            "MODIFIED_ON": "2025-12-04 12:14:29",
+            "MODIFIED_ON": "2026-05-29 13:58:08",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11eaa0c47fa38871bba0e4b318306b9a",
@@ -161,6 +161,15 @@
                                     "icon": "repeat",
                                     "action": {
                                         "alias": "axenox.Deployer.ShowBuildDialog",
+                                        "prefill_with_input_data": true,
+                                        "input_rows_min": 1,
+                                        "input_rows_max": 1
+                                    }
+                                },
+                                {
+                                    "caption": "Repeat & Deploy",
+                                    "action": {
+                                        "alias": "axenox.Deployer.ShowBuildThenDeployDialog",
                                         "prefill_with_input_data": true,
                                         "input_rows_min": 1,
                                         "input_rows_max": 1
