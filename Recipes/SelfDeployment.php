@@ -21,7 +21,7 @@ task('self_deployment:create', function () {
     $deployConfig = get('deploy_config') ?? [];
     $deployConfigPHP = var_export($deployConfig, true);
     $replacePhpPath = get('php_path');
-    $replaceKeepReleases = get('keep_releases');
+    $replaceKeepReleases = $deployConfig['keep_releases'] ?? get('keep_releases');
     $str=str_replace('[#basic#]', $replaceBasicDeployPath, $str);
     $str=str_replace('[#relative#]', $replaceRelativeDeployPath, $str);
     $str=str_replace('[#shared#]', $replaceSharedDirs, $str);
