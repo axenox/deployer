@@ -1,12 +1,15 @@
 <?php
 namespace axenox\Deployer\Facades;
 
-use axenox\PackageManager\Actions\SelfUpdate;
 use axenox\PackageManager\Common\Updater\SelfUpdateInstaller;
+use exface\Core\CommonLogic\Tasks\CliTask;
+use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\DataTypes\DateTimeDataType;
+use exface\Core\Exceptions\RuntimeException;
 use exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade;
 use exface\Core\Facades\AbstractHttpFacade\Middleware\AuthenticationMiddleware;
 use exface\Core\DataTypes\StringDataType;
+use exface\Core\Factories\ActionFactory;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -26,7 +29,8 @@ use exface\Core\Interfaces\DataSheets\DataSheetInterface;
  * 
  * Routes: 
  * 
- * - `GET api/deployer/ota/<project_alias>/<host_uid>` - download an update
+ * - `GET api/deployer/ota/<project_alias>/<host_uid>` - download an update if there is one awaiting self-update
+ * - `GET api/deployer/ota/<project_alias>/<host_uid>?redeploy=true` - download an update and redeploy if none awaiting
  * - `POST api/deployer/ota/<project_alias>/<host_uid>` - upload log lines (incremental)
  * - `POST api/deployer/ota/<project_alias>/<host_uid>?final=true` - mark the log line as final
  * - `POST api/deployer/ota/<project_alias>/<host_uid>?error=true` - mark the log line explicitly as error
@@ -62,7 +66,7 @@ class DeployerFacade extends AbstractHttpFacade
                 list($projectAlias, $hostName) = explode('/', urldecode($innerPath), 2);
                 switch ($request->getMethod()) {
                     case 'GET': 
-                        return $this->createResponseForOTA($projectAlias, $hostName);
+                        return $this->createResponseForOTA($projectAlias, $hostName, BooleanDataType::cast($request->getQueryParams()['redeploy'] ?? false));
                     case 'POST':
                         return $this->createResponseForLog($projectAlias, $hostName, $request);
                 }
@@ -84,7 +88,7 @@ class DeployerFacade extends AbstractHttpFacade
      */
     protected function createResponseForLog(string $projectAlias, string $hostName, ServerRequestInterface $request) : ResponseInterface
     {
-        $deploySheet = $this->createDeploymentSheet($projectAlias, $hostName);
+        $deploySheet = $this->createDeploymentPublishedSheet($projectAlias, $hostName);
         $deploySheet->getColumns()->addMultiple([
             'log',
             'status'
@@ -107,10 +111,7 @@ class DeployerFacade extends AbstractHttpFacade
         $status = $params['status'];
         $isError = 
             array_key_exists('error', $params)  // Received data was explicitly marked as error by the remote
-            || mb_strpos($logReceived, 'ERROR') !== false 
-            || mb_strpos($logReceived, 'FAILED') !== false
-            || mb_stripos($logReceived, SelfUpdateInstaller::MESSAGE_INSTALLATION_FAILED)
-            || mb_stripos($logReceived, 'PHP Fatal error') // CLI errors - e.g. `PHP Fatal error:  Composer detected issues in your platform: ...`
+            || $this->isCliError($logReceived)
         ;
         // The log message is final if it is marked as such or there is no URL param at ALL (to be backwards compatible
         // with older installations, that will not use the URL parameter) 
@@ -147,6 +148,14 @@ class DeployerFacade extends AbstractHttpFacade
         return new Response(200, $this->buildHeadersCommon());
     }
     
+    protected function isCliError(string $cliOutput): bool {
+        return mb_strpos($cliOutput, 'ERROR') !== false
+            || mb_strpos($cliOutput, 'FAILED') !== false
+            || mb_stripos($cliOutput, SelfUpdateInstaller::MESSAGE_INSTALLATION_FAILED)
+            || mb_stripos($cliOutput, 'PHP Fatal error') // CLI errors - e.g. `PHP Fatal error:  Composer detected issues in your platform: ...`
+        ;
+    }
+    
     /**
      * Looks for a pending deployment (in status 60) and returns the corresponding file for download
      * 
@@ -159,9 +168,9 @@ class DeployerFacade extends AbstractHttpFacade
      * @throws FileNotFoundError
      * @return ResponseInterface
      */
-    protected function createResponseForOTA(string $projectAlias, string $hostName) : ResponseInterface
+    protected function createResponseForOTA(string $projectAlias, string $hostName, bool $redeploy = false) : ResponseInterface
     {
-        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
+        $ds = $this->createDeploymentPublishedSheet($projectAlias, $hostName);
         $ds->getColumns()->addMultiple([
             'build__name',
             'host__name'
@@ -171,7 +180,21 @@ class DeployerFacade extends AbstractHttpFacade
         $headers = $this->buildHeadersCommon();
         
         if ($ds->isEmpty()) {
-            return new Response(304, $headers, 'No updates found for project "' . $projectAlias . '"');
+            if ($redeploy === true) {
+                try {
+                    $this->redeploy($projectAlias, $hostName);
+                    $ds = $this->createDeploymentPublishedSheet($projectAlias, $hostName);
+                    $ds->getColumns()->addMultiple([
+                        'build__name',
+                        'host__name'
+                    ]);
+                    $ds->dataRead();
+                } catch (\Throwable $e) {
+                    return new Response(500, $headers, 'OTA redeployment failed: ' . $e->getMessage());
+                }
+            } else {
+                return new Response(304, $headers, 'No updates found for project "' . $projectAlias . '"');
+            }
         }
         
         $filename = $ds->getCellValue('build__name', 0) . '_' . Deploy::getHostAlias($ds->getCellValue('host__name', 0)) . '.phx';
@@ -202,6 +225,37 @@ class DeployerFacade extends AbstractHttpFacade
         
         return new Response(200, $headers, $stream);
     }
+
+    /**
+     * @param string $projectAlias
+     * @param string $hostName
+     * @return void
+     */
+    protected function redeploy(string $projectAlias, string $hostName)
+    {
+        $lastCompletedSheet = $this->createDeploymentCompletedSheet($projectAlias, $hostName);
+        $lastCompletedSheet->getColumns()->addMultiple([
+            'build__name'
+        ]);
+        if ($lastCompletedSheet->isEmpty()) {
+            throw new RuntimeException('Cannot redeploy to host "' . $hostName . '": no previous successfully deployments found');
+        }
+        $buildName =  $lastCompletedSheet->getCellValue('build__name', 0);
+        $task = new CliTask(
+            $this->getWorkbench(), 
+            'deploy', 
+            [
+                'build' => $buildName,
+                'host' => $hostName
+            ]
+        );
+        $deployAction = ActionFactory::createFromString($this->getWorkbench(), Deploy::class);
+        $result = $deployAction->handle($task);
+        $output = $result->getMessage();
+        if ($this->isCliError($output)) {
+            throw new RuntimeException('Redeployment failed: ' . $output);
+        }
+    }
     
     /**
      * 
@@ -216,11 +270,34 @@ class DeployerFacade extends AbstractHttpFacade
         
         $ds->getFilters()->addConditionFromString('host__project__alias', $projectAlias, ComparatorDataType::EQUALS);
         $ds->getFilters()->addConditionFromString('host', $hostName, comparatorDataType::EQUALS);
-        $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::GREATER_THAN_OR_EQUALS);
-        $ds->getFilters()->addConditionFromString('status', 90, ComparatorDataType::LESS_THAN);
         
         $ds->getSorters()->addFromString('started_on', SortingDirectionsDataType::DESC);
         $ds->setRowsLimit(1);;
+        return $ds;
+    }
+
+    /**
+     * @param string $projectAlias
+     * @param string $hostName
+     * @return DataSheetInterface
+     */
+    protected function createDeploymentPublishedSheet(string $projectAlias, string $hostName) : DataSheetInterface
+    {
+        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
+        $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::GREATER_THAN_OR_EQUALS);
+        $ds->getFilters()->addConditionFromString('status', 90, ComparatorDataType::LESS_THAN);
+        return $ds;
+    }
+
+    /**
+     * @param string $projectAlias
+     * @param string $hostName
+     * @return DataSheetInterface
+     */
+    protected function createDeploymentCompletedSheet(string $projectAlias, string $hostName) : DataSheetInterface
+    {
+        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
+        $ds->getFilters()->addConditionFromString('status', 99, ComparatorDataType::EQUALS);
         return $ds;
     }
     
