@@ -295,7 +295,7 @@
         {
             "_EXPORT_SUMMARY": "Build: Build > Deploy [ShowBuildThenDeployDialog]",
             "CREATED_ON": "2026-05-21 14:37:22",
-            "MODIFIED_ON": "2026-05-29 13:55:29",
+            "MODIFIED_ON": "2026-06-08 08:27:15",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11f19cf4d0790d0e9cf4025041000001",
@@ -421,6 +421,7 @@
                                         {
                                             "data_column_name": "_hosts",
                                             "caption": "Deploy to hosts",
+                                            "required": true,
                                             "widget_type": "InputComboTable",
                                             "id": "host_selector",
                                             "multi_select": true,
