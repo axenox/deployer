@@ -13,6 +13,7 @@ $keepReleases = [#releases#]; //placeholder for integer
 // The deployment config of the host
 $deployConfig = [#deploy_config#]; // array with local vendors, base config, etc.
 $phpPath = '[#php#]'; //placeholder for string
+// Composer package names, that must be kept from the old release (copied as-is, not reinstalled)
 $relativeReleasesPath = 'releases';
 $relativeSharedPath = 'shared';
 $relativeCurrentPath = 'current';
@@ -294,6 +295,47 @@ try {
                     echo ("Skipping local app: '" . $local . $appPathRelative . "' as folder already exists\n");
                 }
             }
+        }
+    }
+    
+    //copy local packages (full composer package names) from old to new release
+    //in contrast to apps, these packages are NOT reinstalled - they are copied as-is to keep them unchanged
+    $localPackages = $deployConfig['local_packages'] ?? [];
+    if ($oldReleasePath !== null && empty($localPackages) === false) {
+        echo ("Copying local packages: " . implode(', ', $localPackages) . " ...\n");
+        foreach ($localPackages as $package) {
+            if ($package === null || $package === '') {
+                continue;
+            }
+            $packageRelative = str_replace('/', DIRECTORY_SEPARATOR, $package);
+            $oldPackagePath = $oldReleasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $packageRelative;
+            $newPackagePath = $releasePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $packageRelative;
+            if (! is_dir($oldPackagePath)) {
+                echo ("Local package '{$package}' does not exist in old release - skipping.\n");
+                continue;
+            }
+            // Delete the package in the new release first to make sure the local package does not change during deployment
+            if (is_dir($newPackagePath)) {
+                if (deleteDirectory($newPackagePath) === true) {
+                    echo ("Existing package '{$package}' removed from new release!\n");
+                } else {
+                    throw new Exception("Package directory '{$newPackagePath}' could not be removed!\n");
+                }
+            }
+            // Make sure the parent vendor directory exists before copying
+            $newPackageParent = dirname($newPackagePath);
+            if (! is_dir($newPackageParent)) {
+                if (mkdir($newPackageParent, 0777, true) === true) {
+                    echo ("Directory '{$newPackageParent}' created!\n");
+                } else {
+                    throw new Exception("Directory '{$newPackageParent}' could not be created!\n");
+                }
+            }
+            echo ("Copying local package '{$package}' ...\n");
+            recurseCopy($oldPackagePath, $newPackagePath);
+            // Make local packages editable!
+            chmod($newPackagePath, 0777);
+            echo ("Local package '{$package}' copied\n");
         }
     }
     

@@ -80,6 +80,7 @@ class DeploymentConfigSchema implements UxonSchemaInterface
     {
         return [
             'local_vendors' => '[""]',
+            'local_packages' => '["my/app"]',
             'default_app_config' => '{"app.Alias.config.json": {"": ""}}',
             'keep_releases' => 6
         ];
