@@ -1,6 +1,7 @@
 <?php
 namespace Deployer;
 
+use Deployer\Exception\Exception;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Facades\ConsoleFacade\CliCommandRunner;
 use Deployer\Exception\ConfigurationException;
@@ -86,7 +87,9 @@ task('build:create_from_composer', function() {
         CliCommandRunner::runCliCommand(
             'cd "' . $buildsPath . DIRECTORY_SEPARATOR . '.." && ' . $phpExecutable . ' composer.phar install --prefer-dist --no-interaction',
             [],
-            $composer_timeout
+            $composer_timeout,
+            null,
+            false
         )
         as $line
     ) {
@@ -99,6 +102,14 @@ task('build:create_from_composer', function() {
             continue;
         }
         echo($line);
+    }
+    
+    if (! is_dir($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'vendor')) {
+        throw new Exception('ERROR: "vendor" folder not found.');
+    }
+    
+    if (! is_file($buildsPath . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php')) {
+        throw new Exception('ERROR: "autoload.php" not found.');
     }
     
     /* this did not return the composer output for some reason
