@@ -3,7 +3,7 @@ namespace axenox\Deployer\Actions;
 
 use axenox\Deployer\DataTypes\BuildablePhpVersionDataType;
 use exface\Core\CommonLogic\AbstractActionDeferred;
-use exface\Core\DataTypes\JsonDataType;
+use exface\Core\DataTypes\HexadecimalNumberDataType;
 use exface\Core\DataTypes\SortingDirectionsDataType;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Exceptions\Actions\ActionRuntimeError;
@@ -306,13 +306,13 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'name',
                 'composer_json',
                 'composer_auth_json'
-            ]);            
-            $filterNameOrUID = ConditionGroupFactory::createForDataSheet($ds, EXF_LOGICAL_OR);
-            $filterNameOrUID->addConditionFromString('uid', $buildVariant, ComparatorDataType::EQUALS);
-            $filterNameOrUID->addConditionFromString('name', $buildVariant, ComparatorDataType::EQUALS);
-            $ds->getFilters()
-                ->addConditionFromString('project', $projectUid, ComparatorDataType::EQUALS)
-                ->addNestedGroup($filterNameOrUID);
+            ]);
+            $ds->getFilters()->addConditionFromString('project', $projectUid, ComparatorDataType::EQUALS);
+            if (HexadecimalNumberDataType::isHexNumber($buildVariant)) {
+                $ds->getFilters()->addConditionFromString('uid', $buildVariant, ComparatorDataType::EQUALS);
+            } else {
+                $ds->getFilters()->addConditionFromString('name', $buildVariant, ComparatorDataType::EQUALS);
+            }
             $ds->dataRead();
             if ($ds->isEmpty()) {
                 throw new ActionInputError($this, "There is no build variant with alias or UID '{$buildVariant}' associated with the project '{$projectAlias}'", '7FGBUMO');
