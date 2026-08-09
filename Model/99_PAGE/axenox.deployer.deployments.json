@@ -11,7 +11,7 @@
     "created_by_user_selector": "0x11ea11bb12970e55882500505689aada",
     "created_on": "2026-04-15 13:27:10",
     "modified_by_user_selector": "0x11ea11bb12970e55882500505689aada",
-    "modified_on": "2026-04-15 13:34:53",
+    "modified_on": "2026-07-03 13:10:28",
     "contents": {
         "widget_type": "DataTable",
         "object_alias": "axenox.Deployer.deployment",
@@ -34,6 +34,9 @@
                 "attribute_alias": "status"
             },
             {
+                "attribute_alias": "host__LABEL"
+            },
+            {
                 "attribute_alias": "duration"
             },
             {
@@ -41,6 +44,13 @@
             },
             {
                 "attribute_alias": "build__LABEL"
+            },
+            {
+                "attribute_alias": "build__started_on_date",
+                "caption": "Build date"
+            },
+            {
+                "attribute_alias": "build__build_variant__LABEL"
             },
             {
                 "attribute_alias": "created_by_user__LABEL"
