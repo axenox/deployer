@@ -29,11 +29,15 @@ use exface\Core\Interfaces\Tasks\TaskInterface;
  * build stream has finished, checks that the created build completed successfully and then calls
  * `axenox.Deployer.Deploy` with the created build name and the requested host parameter.
  * 
+ * The build version can be set to `auto` to automatically increment the highest semantic build version of the project by one patch version.
+ * 
  * @author Sergej Riel
  */
 class BuildAndDeploy extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCreateData
 {
     use BuildProjectTrait;
+
+    private const VERSION_AUTO = 'auto';
 
     private $projectData = null;
 
@@ -115,8 +119,54 @@ class BuildAndDeploy extends AbstractActionDeferred implements iCanBeCalledFromC
             // TODO filter away host???
             $params = $task->getParameters();
         }
+
+        if (($params['version'] ?? null) === self::VERSION_AUTO) {
+            $params['version'] = $this->getNextProjectVersion($params['project'] ?? '');
+        }
         
         return $params;
+    }
+
+    /**
+     * Returns the next patch version after the highest semantic build version of the project.
+     *
+     * @param string $projectAlias
+     * @throws ActionInputMissingError
+     * @throws ActionInputError
+     * @return string
+     */
+    protected function getNextProjectVersion(string $projectAlias) : string
+    {
+        if ($projectAlias === '') {
+            throw new ActionInputMissingError($this, 'Cannot determine the next build version: missing project reference!', '784EI40');
+        }
+
+        $buildData = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), 'axenox.Deployer.build');
+        $buildData->getColumns()->addMultiple(['version']);
+        $buildData->getFilters()->addConditionFromString('project__alias', $projectAlias, ComparatorDataType::EQUALS);
+        $buildData->dataRead();
+
+        $highestVersion = null;
+        foreach ($buildData->getRows() as $row) {
+            $version = (string) ($row['version'] ?? '');
+            if (! preg_match('/^(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/', $version)) {
+                continue;
+            }
+
+            if ($highestVersion === null || version_compare($version, $highestVersion, '>')) {
+                $highestVersion = $version;
+            }
+        }
+
+        if ($highestVersion === null) {
+            throw new ActionInputError(
+                $this,
+                'Cannot determine the next build version: project "' . $projectAlias . '" has no semantic build version!'
+            );
+        }
+
+        preg_match('/^(\d+)\.(\d+)\.(\d+)/', $highestVersion, $versionParts);
+        return $versionParts[1] . '.' . $versionParts[2] . '.' . ((int) $versionParts[3] + 1);
     }
     
     protected function getParametersForDeploy(TaskInterface $task, string $buildName) : array
@@ -289,7 +339,7 @@ class BuildAndDeploy extends AbstractActionDeferred implements iCanBeCalledFromC
                 ->setRequired(true),
             (new ServiceParameter($this))
                 ->setName('version')
-                ->setDescription('Version number - e.g. 1.0.12 or 2.0-beta. Use sematic versioning!')
+                ->setDescription('Version number - e.g. 1.0.12 or 2.0-beta. Use "auto" to increment the highest semantic project version by one patch version.')
                 ->setRequired(true),
             (new ServiceParameter($this))
                 ->setName('variant')
