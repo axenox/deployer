@@ -5,5 +5,6 @@
 - Configure a host (target) server
 	- Manual upload or push/pull deployment (TODO)
    	- [SSH-upload to Windows Server](Client_setup/Windows_Server_host_setup.md)
+- Operations
+	- [Deployment artifact cleanup](Operations/Deployment_artifact_cleanup.md)
 - [Troubleshooting builds](Troubleshooting_build.md)
-

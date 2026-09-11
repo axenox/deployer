@@ -539,6 +539,7 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
 
     // Untracked directories may belong to a concurrent deployment, so only treat old ones as stale.
     $untrackedReleases = [];
+    // Not listed releases that are older than 24 hours are considered stale and will be deleted.
     $staleReleaseTimestamp = time() - (24 * 60 * 60);
     foreach ($dirList as $release) {
         $releaseModifiedTimestamp = filemtime($releasesPath . DIRECTORY_SEPARATOR . $release);
