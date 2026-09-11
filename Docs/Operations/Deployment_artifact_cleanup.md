@@ -112,8 +112,8 @@ HTTP body has not necessarily reached the target host.
 The implemented protocol binds the download and its confirmation to one
 deployment:
 
-1. `DeployerFacade` selects a deployment in status 60 through 62 and streams
-   its `.phx`.
+1. `DeployerFacade` selects a deployment in status 60 and reserves it as
+   status 62 before streaming its `.phx`.
 2. The response includes `X-Exface-Deployment-Uid`.
 3. `UpdateDownloader` stores this UID from both regular Guzzle responses and
    responses reconstructed from CLI cURL headers.
@@ -135,6 +135,28 @@ generate a new `.phx`.
 Older PackageManager clients do not send `deployment_uid`. Their status
 updates continue to work, but the server deliberately keeps the `.phx`
 because it cannot safely identify the file confirmed by that client.
+
+### Concurrent update requests
+
+Manual and scheduled self-updates can request the same update at nearly the
+same time. The facade prevents duplicate downloads as follows:
+
+1. Requests for the same project and host are guarded by a short-lived,
+   non-blocking lock on the build server. A concurrent request immediately
+   receives `304 No update available`.
+2. While holding the lock, the facade searches for an active deployment with
+   status 62 or greater and less than 80.
+3. If one exists, the request receives `304 No update available`, including
+   requests made with `redeploy=true`.
+4. Otherwise, only a deployment in status 60 can be selected and changed to
+   status 62.
+5. The lock is released after the response and reservation have been created;
+   it is not held for the duration of the file transfer.
+
+The existing status calculation remains responsible for abandoned
+deployments: a state from 62 through 80 with no update for five minutes is
+read as status 80 (`Lost connection`). Status 80 is not considered active, so
+a later request may proceed or explicitly redeploy.
 
 ### Relevant implementation files
 

@@ -197,14 +197,50 @@ class DeployerFacade extends AbstractHttpFacade
      */
     protected function createResponseForOTA(string $projectAlias, string $hostName, bool $redeploy = false) : ResponseInterface
     {
+        $lockPath = FilePathDataType::join([
+            $this->getWorkbench()->filemanager()->getPathToCacheFolder(),
+            'deployer-ota-' . hash('sha256', $projectAlias . "\0" . $hostName) . '.lock'
+        ]);
+        $lock = @fopen($lockPath, 'c');
+        if ($lock === false) {
+            throw new RuntimeException('Cannot create OTA download lock "' . $lockPath . '"');
+        }
+        if (flock($lock, LOCK_EX | LOCK_NB) === false) {
+            fclose($lock);
+            return new Response(304, $this->buildHeadersCommon(), 'No updates found for project "' . $projectAlias . '": another update request is active');
+        }
+
+        try {
+            return $this->createResponseForOTALocked($projectAlias, $hostName, $redeploy);
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    /**
+     * Selects and reserves an OTA deployment while holding the host-specific download lock.
+     *
+     * @param string $projectAlias
+     * @param string $hostName
+     * @param bool $redeploy
+     * @return ResponseInterface
+     */
+    protected function createResponseForOTALocked(string $projectAlias, string $hostName, bool $redeploy) : ResponseInterface
+    {
+        $headers = $this->buildHeadersCommon();
+        $activeDeployment = $this->createDeploymentActiveSheet($projectAlias, $hostName);
+        $activeDeployment->dataRead();
+        if (! $activeDeployment->isEmpty()) {
+            return new Response(304, $headers, 'No updates found for project "' . $projectAlias . '": another deployment is active');
+        }
+
         $ds = $this->createDeploymentDownloadableSheet($projectAlias, $hostName);
         $ds->getColumns()->addMultiple([
             'build__name',
             'host__name'
         ]);
         $ds->dataRead();
-        
-        $headers = $this->buildHeadersCommon();
         
         if ($ds->isEmpty()) {
             if ($redeploy === true) {
@@ -381,8 +417,20 @@ class DeployerFacade extends AbstractHttpFacade
     protected function createDeploymentDownloadableSheet(string $projectAlias, string $hostName) : DataSheetInterface
     {
         $ds = $this->createDeploymentSheet($projectAlias, $hostName);
-        $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::GREATER_THAN_OR_EQUALS);
-        $ds->getFilters()->addConditionFromString('status', 62, ComparatorDataType::LESS_THAN_OR_EQUALS);
+        $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::EQUALS);
+        return $ds;
+    }
+
+    /**
+     * @param string $projectAlias
+     * @param string $hostName
+     * @return DataSheetInterface
+     */
+    protected function createDeploymentActiveSheet(string $projectAlias, string $hostName) : DataSheetInterface
+    {
+        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
+        $ds->getFilters()->addConditionFromString('status', 62, ComparatorDataType::GREATER_THAN_OR_EQUALS);
+        $ds->getFilters()->addConditionFromString('status', 80, ComparatorDataType::LESS_THAN);
         return $ds;
     }
 
