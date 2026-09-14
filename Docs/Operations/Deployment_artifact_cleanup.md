@@ -158,6 +158,30 @@ deployments: a state from 62 through 80 with no update for five minutes is
 read as status 80 (`Lost connection`). Status 80 is not considered active, so
 a later request may proceed or explicitly redeploy.
 
+## Downloaded `.phx` cleanup on the target host
+
+The PackageManager stores OTA packages in:
+
+```
+<installation>/<SELF_UPDATE.LOCAL.DOWNLOAD_PATH>
+```
+
+An empty `SELF_UPDATE.LOCAL.DOWNLOAD_PATH` means the installation root.
+`UpdateDownloader` cleans this directory after a new `.phx` has been
+completely written and its size has been validated:
+
+- the package downloaded by the current operation is retained;
+- every other `*.phx` file in the same directory is removed;
+- unrelated files are never considered;
+- cleanup applies to both Guzzle and CLI cURL downloads;
+- deletion failures are logged and reported as warnings without turning a
+  successful download into a failed deployment.
+
+Cleanup does not run after a failed download or a `304 No update available`
+response. The previous package therefore remains available until a newer
+package has been downloaded successfully. With `install=false`, the latest
+package is retained for manual installation.
+
 ### Relevant implementation files
 
 - `Facades/DeployerFacade.php`

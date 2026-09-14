@@ -96,7 +96,7 @@ try {
     }
     
     //create directory with release name
-    if (mkdir($releasePath) === true) { //TODO SR INFO: Hier wird die Release-Ordnerstruktur erstellt, in die dann die Dateien entpackt werden.
+    if (mkdir($releasePath) === true) {
         echo("Directory {$releasePath} created!\n");
     } else {
         throw new Exception("Directory {$releasePath} could not be created!\n");
@@ -340,11 +340,11 @@ try {
     }
     
     //create/append release list file, deleting old releases
-    cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases); //TODO SR: Hier passiert das cleanup. Untersuche es!
+    cleanupReleases($deployPath, $releaseName, $releasesPath, $keepReleases);
     
     echo ("Self deployment successful!\n");
     
-} catch (\Throwable $e) { //TODO SR: KI Vorschlag: Es fängt nur Exceptions aber keine Throwables.
+} catch (\Throwable $e) {
     echo("\n -------------------- \n\n");
     echo("✘ ERROR - Line {$e->getLine()}: {$e->getMessage()} \n");
     echo("Logged in as: \n");
