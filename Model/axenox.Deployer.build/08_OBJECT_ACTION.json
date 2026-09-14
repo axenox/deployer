@@ -67,9 +67,9 @@
         {
             "_EXPORT_SUMMARY": "Build: Create Build [ShowBuildDialog]",
             "CREATED_ON": "2019-11-04 12:07:07",
-            "MODIFIED_ON": "2026-05-28 16:32:18",
+            "MODIFIED_ON": "2026-09-14 10:36:31",
             "CREATED_BY_USER": "0x11e9ea7fa76e99698f24847beb3e34e8",
-            "MODIFIED_BY_USER": "0x11ea4f31405af6f7bfc400505689aada",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11e9fef33e544e21822b847beb3e34e8",
             "OBJECT": "0x11e9f4d01e9108ebbacde4b318306b9a",
             "ACTION_PROTOTYPE": "exface/core/Actions/ShowDialog.php",
@@ -111,6 +111,10 @@
                             {
                                 "from": "name",
                                 "to": "name"
+                            },
+                            {
+                                "from": "=VersionIncrease(version, 0, 0, 1)",
+                                "to": "version"
                             }
                         ]
                     }
@@ -295,7 +299,7 @@
         {
             "_EXPORT_SUMMARY": "Build: Build > Deploy [ShowBuildThenDeployDialog]",
             "CREATED_ON": "2026-05-21 14:37:22",
-            "MODIFIED_ON": "2026-06-08 08:27:15",
+            "MODIFIED_ON": "2026-09-14 10:30:56",
             "CREATED_BY_USER": "0x11e8fe1c902c8ebea23ee4b318306b9a",
             "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11f19cf4d0790d0e9cf4025041000001",
@@ -339,6 +343,10 @@
                             {
                                 "from": "name",
                                 "to": "name"
+                            },
+                            {
+                                "from": "=VersionIncrease(version, 0, 0, 1)",
+                                "to": "version"
                             }
                         ]
                     }
