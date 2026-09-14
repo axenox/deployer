@@ -207,6 +207,12 @@ class DeployerFacade extends AbstractHttpFacade
         if (! file_exists($path . $filename)) {
             throw new FileNotFoundError('Deployment file ' . $path . $filename . ' not found!');
         }
+
+        $downloadMaxExecutionTime = (int) $this->getApp()->getConfig()->getOption('OTA_DOWNLOAD_MAX_EXECUTION_TIME');
+        $currentMaxExecutionTime = (int) ini_get('max_execution_time');
+        if ($currentMaxExecutionTime > 0 && $currentMaxExecutionTime < $downloadMaxExecutionTime) {
+            set_time_limit($downloadMaxExecutionTime);
+        }
         
         $headers = array_merge($headers, [
             'Expires' => 0,
