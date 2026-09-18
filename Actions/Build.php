@@ -3,6 +3,7 @@ namespace axenox\Deployer\Actions;
 
 use axenox\Deployer\DataTypes\BuildablePhpVersionDataType;
 use exface\Core\CommonLogic\AbstractActionDeferred;
+use exface\Core\CommonLogic\UxonObject;
 use exface\Core\DataTypes\HexadecimalNumberDataType;
 use exface\Core\DataTypes\SortingDirectionsDataType;
 use exface\Core\DataTypes\StringDataType;
@@ -118,7 +119,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
                 'php_version' => $this->getBuildData($task, 'php_version', 'php', BuildablePhpVersionDataType::getRuntimeVersion()),
                 'build_variant' => $this->getBuildVariantData($task, 'uid'),
                 'composer_json' => $this->getComposerJson($task),
-                'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json') ?? '{}'
+                'composer_auth_json' => $this->getBuildVariantData($task, 'composer_auth_json')
             ]);
         }
         
@@ -619,22 +620,14 @@ PHP;
      */
     protected function getComposerAuthJson(TaskInterface $task) : string
     {
-        $defaultComposerAuthJson = $this->getProjectData($task, 'default_composer_auth_json');
-        
-        if ($task->hasParameter('composer_auth_json')) {
-            $customComposerAuthJson = $task->getParameter('composer_auth_json');
-        } else {
-            try {
-                $inputData = $this->getInputDataSheet($task);
-                if ($col = $inputData->getColumns()->get('composer_auth_json')) {
-                    $customComposerAuthJson = $col->getCellValue(0);
-                }
-            } catch (ActionInputMissingError $e) {
-                $customComposerAuthJson = null;
-            }
+        /* @var \exface\Core\CommonLogic\UxonObject $authUxon */
+        $authUxon = $this->getApp()->getConfig()->getOption('COMPOSER.AUTH');        
+        $buildAuthJson = $this->getBuildVariantData($task, 'composer_auth_json');
+        if ($buildAuthJson) {
+            $buildAuthUxon = UxonObject::fromJson($buildAuthJson);
+            $authUxon = $authUxon->extend($buildAuthUxon);
         }
-        
-        return $customComposerAuthJson ? $customComposerAuthJson : $defaultComposerAuthJson;
+        return $authUxon->toJson(true);
     }
     
     /**
@@ -645,7 +638,7 @@ PHP;
      */
     protected function createComposerAuthJson(TaskInterface $task, string $projectFolder) : string
     {
-        $content = $this->getBuildVariantData($task, 'composer_auth_json');
+        $content = $this->getComposerAuthJson($task);
         file_put_contents($this->getBasePath() . $projectFolder . DIRECTORY_SEPARATOR . 'auth.json', $content);
         return $content;
     }
