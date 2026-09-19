@@ -344,7 +344,7 @@ try {
     
     echo ("Self deployment successful!\n");
     
-} catch (Exception $e) {
+} catch (\Throwable $e) {
     echo("\n -------------------- \n\n");
     echo("✘ ERROR - Line {$e->getLine()}: {$e->getMessage()} \n");
     echo("Logged in as: \n");
@@ -387,8 +387,11 @@ try {
                 }
             }
         }
-        deleteDirectory($releasePath);
-        echo("Directory {$releasePath} removed!\n");
+        if (deleteDirectory($releasePath) === true) {
+            echo("Directory {$releasePath} removed!\n");
+        } else {
+            echo("✘ ERROR - Directory {$releasePath} could not be removed completely!\n");
+        }
     }
 }
 
@@ -483,13 +486,17 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
     $line = $date . ',' . $releaseName;
     
     //adding new release to logfile
-    if (!file_exists ($depPath . DIRECTORY_SEPARATOR . "releases")) {
-        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $line . "\n");
-        echo ("Releases log file created!\n");
+    $releasesLogPath = $depPath . DIRECTORY_SEPARATOR . "releases";
+    $releasesLogExists = file_exists($releasesLogPath);
+    if ($releasesLogExists === false) {
+        $bytesWritten = file_put_contents($releasesLogPath, $line . "\n");
     } else {
-        file_put_contents($depPath . DIRECTORY_SEPARATOR . "releases", $line . "\n", FILE_APPEND);
-        echo ("Release added to log file!\n");
+        $bytesWritten = file_put_contents($releasesLogPath, $line . "\n", FILE_APPEND);
     }
+    if ($bytesWritten === false) {
+        throw new Exception("Release {$releaseName} could not be added to the releases log file!\n");
+    }
+    echo($releasesLogExists ? "Release added to log file!\n" : "Releases log file created!\n");
     
     if ($keepReleases === -1) {
         // Keep unlimited releases.
@@ -530,6 +537,21 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
         }
     }
 
+    // Untracked directories may belong to a concurrent deployment, so only treat old ones as stale.
+    $untrackedReleases = [];
+    // Not listed releases that are older than 24 hours are considered stale and will be deleted.
+    $staleReleaseTimestamp = time() - (24 * 60 * 60);
+    foreach ($dirList as $release) {
+        $releaseModifiedTimestamp = filemtime($releasesPath . DIRECTORY_SEPARATOR . $release);
+        if ($releaseModifiedTimestamp === false) {
+            echo("✘ ERROR - Modification time of release {$release} could not be determined; skipping cleanup!\n");
+            continue;
+        }
+        if ($releaseModifiedTimestamp < $staleReleaseTimestamp) {
+            $untrackedReleases[] = $release;
+        }
+    }
+
     //deleting number of to be kept releases from $releasesList
     $keep = $keepReleases;
     while ($keep > 0) {
@@ -537,8 +559,13 @@ function cleanupReleases(string $deployPath, string $releaseName, string $releas
         --$keep;
     }
     
-    //deleting all folders from releases still in $releasesList
-    foreach ($releasesList as $release){
+    // Delete surplus successful releases and directories left behind by failed or interrupted deployments.
+    $releasesToDelete = array_unique(array_merge($releasesList, $untrackedReleases));
+    foreach ($releasesToDelete as $release){
+        // Never delete the release that has just been deployed.
+        if ($release === $releaseName) {
+            continue;
+        }
         echo ("Deleting release: " . $release . "\n");
         $dir = $releasesPath . DIRECTORY_SEPARATOR . $release;
         $success = deleteDirectory($dir);        

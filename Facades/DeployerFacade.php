@@ -40,6 +40,12 @@ use exface\Core\Interfaces\DataSheets\DataSheetInterface;
  */
 class DeployerFacade extends AbstractHttpFacade
 {
+    private const HEADER_DEPLOYMENT_UID = 'X-Exface-Deployment-Uid';
+
+    private const STATUS_DOWNLOADED = 65;
+
+    private const STATUS_RUNNING_PHX = 70;
+
     /**
      *
      * {@inheritDoc}
@@ -88,10 +94,17 @@ class DeployerFacade extends AbstractHttpFacade
      */
     protected function createResponseForLog(string $projectAlias, string $hostName, ServerRequestInterface $request) : ResponseInterface
     {
+        $params = $request->getQueryParams();
         $deploySheet = $this->createDeploymentPublishedSheet($projectAlias, $hostName);
+        $deploymentUid = $params['deployment_uid'] ?? null;
+        if ($deploymentUid !== null) {
+            $deploySheet->getFilters()->addConditionFromString('uid', $deploymentUid, ComparatorDataType::EQUALS);
+        }
         $deploySheet->getColumns()->addMultiple([
             'log',
-            'status'
+            'status',
+            'build__name',
+            'host__name'
         ]);
         $deploySheet->dataRead();
                 
@@ -100,7 +113,6 @@ class DeployerFacade extends AbstractHttpFacade
         }
 
         
-        $params = $request->getQueryParams();
         $log = $deploySheet->getCellValue('log', 0);
         $logReceived = $request->getBody()->__toString() ?? '';
 
@@ -108,7 +120,10 @@ class DeployerFacade extends AbstractHttpFacade
         $log .= $logReceived === '.' ? $logReceived : PHP_EOL . $logReceived;
         $logSheet->setCellValue('log', 0, $log);
 
-        $status = $params['status'];
+        $status = $params['status'] ?? null;
+        if ($status !== null) {
+            $status = (int) $status;
+        }
         $isError = 
             array_key_exists('error', $params)  // Received data was explicitly marked as error by the remote
             || $this->isCliError($logReceived)
@@ -145,6 +160,18 @@ class DeployerFacade extends AbstractHttpFacade
 
         $logSheet->dataUpdate();
         
+        if (
+            $deploymentUid !== null
+            && in_array($status, [self::STATUS_DOWNLOADED, self::STATUS_RUNNING_PHX], true)
+            && $this->isLatestPublishedDeployment($projectAlias, $hostName, $deploymentUid)
+        ) {
+            $this->deleteDeploymentFile(
+                $projectAlias,
+                $deploySheet->getCellValue('build__name', 0),
+                $deploySheet->getCellValue('host__name', 0)
+            );
+        }
+
         return new Response(200, $this->buildHeadersCommon());
     }
     
@@ -170,20 +197,56 @@ class DeployerFacade extends AbstractHttpFacade
      */
     protected function createResponseForOTA(string $projectAlias, string $hostName, bool $redeploy = false) : ResponseInterface
     {
-        $ds = $this->createDeploymentPublishedSheet($projectAlias, $hostName);
+        $lockPath = FilePathDataType::join([
+            $this->getWorkbench()->filemanager()->getPathToCacheFolder(),
+            'deployer-ota-' . hash('sha256', $projectAlias . "\0" . $hostName) . '.lock'
+        ]);
+        $lock = @fopen($lockPath, 'c');
+        if ($lock === false) {
+            throw new RuntimeException('Cannot create OTA download lock "' . $lockPath . '"');
+        }
+        if (flock($lock, LOCK_EX | LOCK_NB) === false) {
+            fclose($lock);
+            return new Response(304, $this->buildHeadersCommon(), 'No updates found for project "' . $projectAlias . '": another update request is active');
+        }
+
+        try {
+            return $this->createResponseForOTALocked($projectAlias, $hostName, $redeploy);
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    /**
+     * Selects and reserves an OTA deployment while holding the host-specific download lock.
+     *
+     * @param string $projectAlias
+     * @param string $hostName
+     * @param bool $redeploy
+     * @return ResponseInterface
+     */
+    protected function createResponseForOTALocked(string $projectAlias, string $hostName, bool $redeploy) : ResponseInterface
+    {
+        $headers = $this->buildHeadersCommon();
+        $activeDeployment = $this->createDeploymentActiveSheet($projectAlias, $hostName);
+        $activeDeployment->dataRead();
+        if (! $activeDeployment->isEmpty()) {
+            return new Response(304, $headers, 'No updates found for project "' . $projectAlias . '": another deployment is active');
+        }
+
+        $ds = $this->createDeploymentDownloadableSheet($projectAlias, $hostName);
         $ds->getColumns()->addMultiple([
             'build__name',
             'host__name'
         ]);
         $ds->dataRead();
         
-        $headers = $this->buildHeadersCommon();
-        
         if ($ds->isEmpty()) {
             if ($redeploy === true) {
                 try {
                     $this->redeploy($projectAlias, $hostName);
-                    $ds = $this->createDeploymentPublishedSheet($projectAlias, $hostName);
+                    $ds = $this->createDeploymentDownloadableSheet($projectAlias, $hostName);
                     $ds->getColumns()->addMultiple([
                         'build__name',
                         'host__name'
@@ -197,15 +260,15 @@ class DeployerFacade extends AbstractHttpFacade
             }
         }
         
-        $filename = $ds->getCellValue('build__name', 0) . '_' . Deploy::getHostAlias($ds->getCellValue('host__name', 0)) . '.phx';
-        $path = $this->getWorkbench()->getInstallationPath() 
-        . DIRECTORY_SEPARATOR . FilePathDataType::normalize($this->getApp()->getConfig()->getOption('PROJECTS_FOLDER_RELATIVE_TO_BASE'))
-        . DIRECTORY_SEPARATOR . $projectAlias
-        . DIRECTORY_SEPARATOR . 'builds'
-        . DIRECTORY_SEPARATOR;
+        $filePath = $this->getDeploymentFilePath(
+            $projectAlias,
+            $ds->getCellValue('build__name', 0),
+            $ds->getCellValue('host__name', 0)
+        );
+        $filename = basename($filePath);
         
-        if (! file_exists($path . $filename)) {
-            throw new FileNotFoundError('Deployment file ' . $path . $filename . ' not found!');
+        if (! file_exists($filePath)) {
+            throw new FileNotFoundError('Deployment file ' . $filePath . ' not found!');
         }
 
         $downloadMaxExecutionTime = (int) $this->getApp()->getConfig()->getOption('OTA_DOWNLOAD_MAX_EXECUTION_TIME');
@@ -219,10 +282,11 @@ class DeployerFacade extends AbstractHttpFacade
             'Cache-Control', 'must-revalidate, post-check=0, pre-check=0',
             'Pragma' => 'public',
             'Content-Disposition' => 'attachment; filename=' . $filename,
-            'Content-Type' => 'application/x-httpd-php'
+            'Content-Type' => 'application/x-httpd-php',
+            self::HEADER_DEPLOYMENT_UID => $ds->getCellValue('uid', 0)
         ]);
         
-        $resource = fopen($path . $filename, 'r');
+        $resource = fopen($filePath, 'r');
         $stream = Utils::streamFor($resource);
         
         $statusSheet = $ds->extractSystemColumns();
@@ -230,6 +294,56 @@ class DeployerFacade extends AbstractHttpFacade
         $statusSheet->dataUpdate();
         
         return new Response(200, $headers, $stream);
+    }
+
+    /**
+     * Returns the absolute path of the self-deployment file for a deployment.
+     *
+     * @param string $projectAlias
+     * @param string $buildName
+     * @param string $hostName
+     * @return string
+     */
+    protected function getDeploymentFilePath(string $projectAlias, string $buildName, string $hostName) : string
+    {
+        $filename = $buildName . '_' . Deploy::getHostAlias($hostName) . '.phx';
+        if (
+            in_array($projectAlias, ['', '.', '..'], true)
+            || preg_match('/[\/\\\\\x00]/', $projectAlias)
+            || preg_match('/[\/\\\\\x00]/', $filename)
+        ) {
+            throw new RuntimeException('Cannot determine deployment file path from invalid project, build or host name');
+        }
+
+        return FilePathDataType::join([
+            $this->getWorkbench()->getInstallationPath(),
+            $this->getApp()->getConfig()->getOption('PROJECTS_FOLDER_RELATIVE_TO_BASE'),
+            $projectAlias,
+            'builds',
+            $filename
+        ]);
+    }
+
+    /**
+     * Deletes a self-deployment file after the target host confirms that it has been downloaded.
+     *
+     * @param string $projectAlias
+     * @param string $buildName
+     * @param string $hostName
+     * @return void
+     */
+    protected function deleteDeploymentFile(string $projectAlias, string $buildName, string $hostName) : void
+    {
+        $filePath = $this->getDeploymentFilePath($projectAlias, $buildName, $hostName);
+        if (! file_exists($filePath)) {
+            return;
+        }
+
+        if (@unlink($filePath) === false) {
+            $this->getWorkbench()->getLogger()->logException(
+                new RuntimeException('Downloaded deployment file "' . $filePath . '" could not be deleted')
+            );
+        }
     }
 
     /**
@@ -293,6 +407,48 @@ class DeployerFacade extends AbstractHttpFacade
         $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::GREATER_THAN_OR_EQUALS);
         $ds->getFilters()->addConditionFromString('status', 90, ComparatorDataType::LESS_THAN);
         return $ds;
+    }
+
+    /**
+     * @param string $projectAlias
+     * @param string $hostName
+     * @return DataSheetInterface
+     */
+    protected function createDeploymentDownloadableSheet(string $projectAlias, string $hostName) : DataSheetInterface
+    {
+        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
+        $ds->getFilters()->addConditionFromString('status', 60, ComparatorDataType::EQUALS);
+        return $ds;
+    }
+
+    /**
+     * @param string $projectAlias
+     * @param string $hostName
+     * @return DataSheetInterface
+     */
+    protected function createDeploymentActiveSheet(string $projectAlias, string $hostName) : DataSheetInterface
+    {
+        $ds = $this->createDeploymentSheet($projectAlias, $hostName);
+        $ds->getFilters()->addConditionFromString('status', 62, ComparatorDataType::GREATER_THAN_OR_EQUALS);
+        $ds->getFilters()->addConditionFromString('status', 80, ComparatorDataType::LESS_THAN);
+        return $ds;
+    }
+
+    /**
+     * Returns whether the deployment is still the latest published deployment for the host.
+     *
+     * @param string $projectAlias
+     * @param string $hostName
+     * @param string $deploymentUid
+     * @return bool
+     */
+    protected function isLatestPublishedDeployment(string $projectAlias, string $hostName, string $deploymentUid) : bool
+    {
+        $latestDeployment = $this->createDeploymentPublishedSheet($projectAlias, $hostName);
+        $latestDeployment->dataRead();
+
+        return ! $latestDeployment->isEmpty()
+            && $latestDeployment->getCellValue('uid', 0) === $deploymentUid;
     }
 
     /**
