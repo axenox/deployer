@@ -19,16 +19,19 @@ use exface\Core\Exceptions\Actions\ActionInputMissingError;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\CommonLogic\Filemanager;
-use axenox\Deployer\DeployerSshConnector\DeployerSshConnector;
 use Symfony\Component\Process\Process;
 use axenox\Deployer\Actions\Traits\BuildProjectTrait;
 use exface\Core\Interfaces\Tasks\ResultMessageStreamInterface;
 use exface\Core\Exceptions\InvalidArgumentException;
-use exface\Core\Factories\ConditionGroupFactory;
 use exface\Core\Exceptions\Actions\ActionInputError;
+use exface\Core\Factories\ActionFactory;
+use exface\Core\Factories\TaskFactory;
 
 /**
  * Creates a new build for a project from one of the build variants configured for it.
+ * 
+ * Successful builds are automatically audited by `axenox.Deployer.AuditBuild` after
+ * their Composer lock is saved. Audit errors are logged without failing the build.
  * 
  * ## Parameters
  * 
@@ -222,6 +225,28 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             $buildData->setCellValue('log', 0, $log);
             $buildData->setCellValue('status', 0, 90); // failed
             $this->getWorkbench()->getLogger()->logException($e);
+            $buildData->dataUpdate(false);
+        }
+
+        if ((int) $buildData->getCellValue('status', 0) === 99) {
+            $msg = PHP_EOL . 'Auditing ' . $buildName . '...' . PHP_EOL;
+            yield $msg;
+            $log .= $msg;
+
+            try {
+                $auditAction = ActionFactory::createFromString($this->getWorkbench(), AuditBuild::class);
+                $auditTask = TaskFactory::createFromDataSheet($buildData->copy());
+                $auditTask->setActionSelector($auditAction->getAliasWithNamespace());
+                $auditResult = $auditAction->handle($auditTask);
+                $msg = $auditResult->getMessage() . PHP_EOL;
+            } catch (\Throwable $e) {
+                $this->getWorkbench()->getLogger()->logException($e);
+                $msg = 'ERROR auditing ' . $buildName . ': ' . $e->getMessage() . PHP_EOL;
+            }
+
+            yield $msg;
+            $log .= $msg;
+            $buildData->setCellValue('log', 0, $log);
             $buildData->dataUpdate(false);
         }
 

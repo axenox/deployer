@@ -5,6 +5,12 @@ to collect advisories for existing builds, including already deployed builds.
 The action scans each build's saved `composer_lock`, not the current installation.
 No deployment status filter is applied: the caller selects the builds to audit.
 
+`axenox.Deployer.Build` automatically calls this action for the newly created build
+after a successful build and the final save of its `composer_lock`. Failed builds
+are not audited. The audit uses its own action transaction and normal authorization.
+Its summary or error is streamed to the caller and appended to the build log.
+Audit errors are also recorded in the workbench log; the build remains successful.
+
 For example, add this button to a build table:
 
 ```json
