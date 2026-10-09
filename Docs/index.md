@@ -6,4 +6,5 @@
 	- Manual upload or push/pull deployment (TODO)
    	- [SSH-upload to Windows Server](Client_setup/Windows_Server_host_setup.md)
 - [Troubleshooting builds](Troubleshooting_build.md)
+- [Auditing saved builds](AuditBuild.md)
 
