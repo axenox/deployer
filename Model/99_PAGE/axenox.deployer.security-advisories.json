@@ -1,0 +1,77 @@
+{
+    "uid": "0x11f1b047693c445ab047005056be9857",
+    "alias_with_namespace": "axenox.deployer.security-advisories",
+    "menu_parent_page_selector": "0xb9bb4be0e10011e99b6800a0c6000009",
+    "menu_index": 0,
+    "menu_visible": true,
+    "name": "Security Advisories",
+    "description": "",
+    "intro": "",
+    "replaces_page_selector": null,
+    "created_by_user_selector": "0x11ea11bb12970e55882500505689aada",
+    "created_on": "2026-10-10 01:08:59",
+    "modified_by_user_selector": "0x11ea11bb12970e55882500505689aada",
+    "modified_on": "2026-10-10 01:23:01",
+    "contents": {
+        "widget_type": "DataTable",
+        "object_alias": "axenox.Deployer.advisory",
+        "filters": [
+            {
+                "attribute_alias": "build_advisory__build__project"
+            },
+            {
+                "attribute_alias": "type"
+            },
+            {
+                "attribute_alias": "level"
+            }
+        ],
+        "columns": [
+            {
+                "attribute_alias": "public_id"
+            },
+            {
+                "attribute_alias": "level"
+            },
+            {
+                "attribute_alias": "name"
+            },
+            {
+                "attribute_alias": "package"
+            },
+            {
+                "attribute_alias": "type"
+            },
+            {
+                "attribute_alias": "build_advisory__build__currently_deployed__host__LABEL:LIST_DISTINCT",
+                "caption": "Affected hosts"
+            },
+            {
+                "attribute_alias": "versions_affected"
+            },
+            {
+                "attribute_alias": "version_fixed"
+            }
+        ],
+        "sorters": [
+            {
+                "attribute_alias": "level",
+                "direction": "desc"
+            },
+            {
+                "attribute_alias": "package",
+                "direction": "asc"
+            },
+            {
+                "attribute_alias": "type",
+                "direction": "asc"
+            }
+        ],
+        "buttons": [
+            {
+                "action_alias": "exface.Core.ShowObjectInfoDialog",
+                "bind_to_double_click": true
+            }
+        ]
+    }
+}
