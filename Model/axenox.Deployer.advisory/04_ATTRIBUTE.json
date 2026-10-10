@@ -291,9 +291,9 @@
         {
             "_EXPORT_SUMMARY": "Level [level]",
             "CREATED_ON": "2026-10-07 13:31:03",
-            "MODIFIED_ON": "2026-10-09 12:03:13",
+            "MODIFIED_ON": "2026-10-09 22:07:07",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11f19614945a811a9614025041000001",
             "SORTABLEFLAG": 1,
             "FILTERABLEFLAG": 1,
@@ -334,9 +334,7 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": {
-                "length_max": 10
-            }
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "_EXPORT_SUMMARY": "Package [package]",
@@ -391,9 +389,9 @@
         {
             "_EXPORT_SUMMARY": "Type [type]",
             "CREATED_ON": "2026-10-07 13:31:03",
-            "MODIFIED_ON": "2026-10-09 15:50:58",
+            "MODIFIED_ON": "2026-10-09 22:07:18",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11ea11bb12970e55882500505689aada",
             "UID": "0x11f1a422945a59d8a422025041000001",
             "SORTABLEFLAG": 1,
             "FILTERABLEFLAG": 1,
@@ -434,9 +432,7 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": {
-                "length_max": 20
-            }
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "_EXPORT_SUMMARY": "Version fixed [version_fixed]",
