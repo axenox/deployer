@@ -65,19 +65,25 @@ license selections and private-package classifications therefore participate in 
 saved build's license checks. Configuration uses strict UXON import, not the result-input
 boundary: it cannot supply license provenance or `text_available` evidence.
 
-Local declaration recovery and file enrichment always run while the vendor folder still
-exists, after applying any project overrides. Project license configuration is optional:
-an existing inventory is enriched even when that configuration is absent or blank.
-Relative license files resolve against the built
+Build snapshots and `GenerateLicenseBOM` use `LocalVendorBOM` for their top-level inventory.
+Plain `LicenseBOM`, Composer and inclusion BOMs remain lightweight sources without default
+enrichers. Construction and intermediate merges do not run the top-level enrichers or
+download terms. Both callers explicitly invoke `enrich()` after merging every source and
+project override. It recovers manifest declarations, reads configured license files
+and local package terms, then downloads missing terms from raw GitHub links and SPDX.
+Project license configuration is optional: this pipeline also runs for existing inventories
+when that configuration is absent or blank. Successfully downloaded terms are recorded
+with their source (`github` or `spdx`) and survive compaction as `text_available: true`.
+Unresolved identifiers still warn; network and HTTP failures propagate instead of certifying
+missing terms as available. Relative license files resolve against the built
 or cloned installation, not an unrelated directory on the audit machine. Later audits
 use the saved snapshot; changing project settings does not rewrite historical builds.
 Host-specific overrides remain deployment-time configuration. Custom recipes can pass
 `get('project_licenses_config', null)` as the second argument to `Build::buildRecipeBom()`
 to apply the same build-time configuration.
 
-Fallback generation does not depend on Composer installation hooks,
-database installation or remote license-text discovery. It recovers missing declarations
-from installed `package.json` manifests, then reads local license files before vendor cleanup.
+Fallback generation does not depend on Composer installation hooks or database installation.
+It uses the same local discovery and remote license-text resolution before vendor cleanup.
 Native npm/Bower names are also checked under Asset Packagist installation paths. Bundled
 packages without a standalone directory remain in the inventory without filesystem warnings.
 Previously, the fallback collected declarations but did not discover installed terms, causing

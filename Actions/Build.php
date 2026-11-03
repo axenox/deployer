@@ -29,11 +29,10 @@ use exface\Core\Factories\TaskFactory;
 use axenox\PackageManager\Common\LicenseBOM\BOMPackage;
 use axenox\PackageManager\Common\LicenseBOM\Format\JsonBOM;
 use axenox\PackageManager\Common\LicenseBOM\LicenseBOM;
+use axenox\PackageManager\Common\LicenseBOM\LocalVendorBOM;
 use axenox\PackageManager\Common\LicenseBOM\ComposerBOM;
 use axenox\PackageManager\Common\LicenseBOM\IncludesBOM;
-use axenox\PackageManager\Common\LicenseBOM\Enricher\FindLicensePackageJsonEnricher;
-use axenox\PackageManager\Common\LicenseBOM\Enricher\FindLicenseTextEnricher;
-use axenox\PackageManager\Common\LicenseBOM\Enricher\FindLicenseFileEnricher;
+use GuzzleHttp\ClientInterface;
 use exface\Core\DataTypes\JsonDataType;
 
 /**
@@ -279,27 +278,28 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
     /**
      * Captures build dependencies before recipes remove the built vendor folder.
      *
-     * Project configuration overrides inventory defaults before local enrichment and compaction.
-     * Existing inventories are reused without rebuilding the package list, but local license
-     * discovery always runs, including when optional project configuration is absent.
-     * No remote queries or configured installation Workbench are required.
+     * Project configuration overrides inventory defaults before enrichment and compaction.
+     * Existing inventories are reused without rebuilding the package list. LocalVendorBOM runs
+     * the same enrichers as GenerateLicenseBOM, only after all sources and overrides are merged.
+     * No configured installation Workbench is required; remote download failures propagate.
      *
      * @param string $projectPath
      * @param string|null $projectLicensesJson Configuration captured when the build started.
+     * @param ClientInterface|null $client HTTP transport for remote license sources.
      * @return LicenseBOM
      */
-     public static function buildRecipeBom(string $projectPath, ?string $projectLicensesJson = null) : LicenseBOM
+     public static function buildRecipeBom(string $projectPath, ?string $projectLicensesJson = null, ?ClientInterface $client = null) : LicenseBOM
     {
         $vendorPath = $projectPath . DIRECTORY_SEPARATOR . 'vendor';
         $licensePath = $vendorPath . DIRECTORY_SEPARATOR . 'licenses.json';
+        $bom = new LocalVendorBOM($vendorPath, $client);
         if (is_file($licensePath)) {
             $data = JsonDataType::decodeJson(file_get_contents($licensePath));
             if (! is_array($data['packages'] ?? null)) {
                 throw new InvalidArgumentException('Build package BOM must contain a packages array.');
             }
-            $bom = new LicenseBOM($data);
+            $bom->merge(new LicenseBOM($data));
         } else {
-            $bom = new LicenseBOM();
             $bom->merge(new ComposerBOM($projectPath . DIRECTORY_SEPARATOR . 'composer.lock'));
             $bundleUrns = [];
             foreach ($bom->getPackages() as $package) {
@@ -325,15 +325,7 @@ class Build extends AbstractActionDeferred implements iCanBeCalledFromCLI, iCrea
             }
             $bom->merge($projectBom);
         }
-        $manifestEnricher = new FindLicensePackageJsonEnricher($vendorPath);
-        foreach ($bom->getPackages() as $package) {
-            $bom->addPackage($manifestEnricher->enrich($package));
-        }
-        $bom->addEnricher(new FindLicenseFileEnricher($vendorPath));
-        $bom->addEnricher(new FindLicenseTextEnricher($vendorPath));
-        foreach ($bom->getPackages() as $package) {
-            $bom->addPackage($package);
-        }
+        $bom->enrich();
         return $bom;
     }
 

@@ -5,6 +5,9 @@ use axenox\Deployer\Actions\Build;
 use axenox\PackageManager\Common\LicenseBOM\Format\JsonBOM;
 use exface\Core\CommonLogic\Workbench;
 use exface\Core\Factories\ActionFactory;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -34,7 +37,8 @@ class BuildExistingBOMTest extends TestCase
                 'licenses' => [['name' => 'Commercial', 'text' => 'Project terms']]
             ], JSON_THROW_ON_ERROR);
             ActionFactory::createFromString(new Workbench(), Build::class);
-            $bom = Build::buildRecipeBom($projectPath, $configuration);
+            $client = new Client(['handler' => new MockHandler([new Response(200, [], 'MIT terms')])]);
+            $bom = Build::buildRecipeBom($projectPath, $configuration, $client);
             $package = $bom->getPackages()['private:example/library:1.2.3'];
             self::assertSame('Commercial', $package->getLicenseUsed());
             self::assertSame('Project terms', $package->getLicenses()['Commercial']->getText());
@@ -70,7 +74,8 @@ class BuildExistingBOMTest extends TestCase
             ]]], JSON_THROW_ON_ERROR);
             file_put_contents($licensePath, $source);
             ActionFactory::createFromString(new Workbench(), Build::class);
-            $bom = Build::buildRecipeBom($projectPath);
+            $client = new Client(['handler' => new MockHandler([new Response(200, [], 'MIT terms')])]);
+            $bom = Build::buildRecipeBom($projectPath, null, $client);
             self::assertTrue($bom->getPackages()['composer:example/library:']->hasLicenseText());
             $snapshot = json_decode((new JsonBOM($bom))->setFormat('minimal')->buildJson(), true, 512, JSON_THROW_ON_ERROR);
             self::assertSame([['name' => 'MIT', 'source' => 'spdx', 'text_available' => true]], $snapshot['packages'][0]['licenses']);
