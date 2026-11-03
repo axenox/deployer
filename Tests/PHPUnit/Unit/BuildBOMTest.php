@@ -9,6 +9,9 @@ use exface\Core\CommonLogic\Tasks\GenericTask;
 use exface\Core\CommonLogic\Workbench;
 use exface\Core\Exceptions\UxonMapError;
 use exface\Core\Factories\ActionFactory;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +38,7 @@ class BuildBOMTest extends TestCase
             $bom = Build::buildRecipeBom($projectPath, json_encode([
                 'packages' => [['name' => 'example/library', 'license_used' => 'Commercial']],
                 'licenses' => [['name' => 'Commercial', 'file' => 'project-terms.txt']]
-            ], JSON_THROW_ON_ERROR));
+            ], JSON_THROW_ON_ERROR), $this->licenseClient());
             $package = $bom->getPackages()['composer:example/library:'];
             self::assertSame('Selected project terms', $package->getLicenses()['Commercial']->getText());
             self::assertSame('local', $package->getLicenses()['Commercial']->getSource());
@@ -78,7 +81,7 @@ class BuildBOMTest extends TestCase
             ], JSON_THROW_ON_ERROR);
             $workbench = new Workbench();
             ActionFactory::createFromString($workbench, Build::class);
-            $bom = Build::buildRecipeBom($projectPath, $configuration);
+            $bom = Build::buildRecipeBom($projectPath, $configuration, $this->licenseClient());
             $package = $bom->getPackages()['composer:example/library:1.0.0'];
             self::assertSame('Commercial', $package->getLicenseUsed());
             self::assertSame($availableFile, $package->hasLicenseText());
@@ -194,13 +197,13 @@ class BuildBOMTest extends TestCase
             ], JSON_THROW_ON_ERROR));
 
             ActionFactory::createFromString(new Workbench(), Build::class);
-            $bom = Build::buildRecipeBom($projectPath);
+            $bom = Build::buildRecipeBom($projectPath, null, $this->licenseClient());
             $snapshot = json_decode((new JsonBOM($bom))->setFormat('minimal')->buildJson(), true, 512, JSON_THROW_ON_ERROR);
             $packages = array_column($snapshot['packages'], null, 'name');
             self::assertSame([['name' => 'MIT', 'source' => 'local', 'text_available' => true]], $packages['example/library']['licenses']);
             self::assertSame(['MIT'], array_column($packages['example']['licenses'], 'name'));
             self::assertSame([['name' => 'MIT', 'source' => 'local', 'text_available' => true]], $packages['example']['licenses']);
-            self::assertSame([['name' => 'MIT', 'text_available' => false]], $packages['not-installed']['licenses']);
+            self::assertSame([['name' => 'MIT', 'source' => 'spdx', 'text_available' => true]], $packages['not-installed']['licenses']);
             self::assertArrayNotHasKey('license_text', $packages['example/library']);
             self::assertFileDoesNotExist($projectPath . '/vendor/licenses.json');
         } finally {
@@ -241,7 +244,7 @@ class BuildBOMTest extends TestCase
             ]], JSON_THROW_ON_ERROR));
 
             ActionFactory::createFromString(new Workbench(), Build::class);
-            $bom = Build::buildRecipeBom($projectPath);
+            $bom = Build::buildRecipeBom($projectPath, null, $this->licenseClient());
             $snapshot = json_decode((new JsonBOM($bom))->setFormat('minimal')->buildJson(), true, 512, JSON_THROW_ON_ERROR);
             $packages = array_column($snapshot['packages'], null, 'name');
 
@@ -262,5 +265,20 @@ class BuildBOMTest extends TestCase
             rmdir($projectPath . '/vendor');
             rmdir($projectPath);
         }
+
+    }
+
+    /**
+     * Resolves standard MIT terms while leaving the fixture's custom Commercial license unresolved.
+     *
+     * @return Client
+     */
+    private function licenseClient() : Client
+    {
+        return new Client(['handler' => new MockHandler([
+            new Response(200, [], 'SPDX MIT terms'),
+            new Response(404),
+            new Response(404)
+        ])]);
     }
 }

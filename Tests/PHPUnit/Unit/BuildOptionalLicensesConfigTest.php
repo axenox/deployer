@@ -8,6 +8,9 @@ use axenox\PackageManager\Common\LicenseBOM\Format\JsonBOM;
 use exface\Core\CommonLogic\Tasks\GenericTask;
 use exface\Core\CommonLogic\Workbench;
 use exface\Core\Factories\ActionFactory;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -30,22 +33,28 @@ class BuildOptionalLicensesConfigTest extends TestCase
         $vendorPath = $projectPath . DIRECTORY_SEPARATOR . 'vendor';
         $composerPath = $vendorPath . DIRECTORY_SEPARATOR . 'example' . DIRECTORY_SEPARATOR . 'library';
         $npmPath = $vendorPath . DIRECTORY_SEPARATOR . 'npm-asset' . DIRECTORY_SEPARATOR . 'library';
+        $bowerPath = $vendorPath . DIRECTORY_SEPARATOR . 'bower-asset' . DIRECTORY_SEPARATOR . 'outlayer';
         $inventoryPath = $vendorPath . DIRECTORY_SEPARATOR . 'licenses.json';
         $stagedPath = $projectPath . DIRECTORY_SEPARATOR . 'package_bom.json';
         $manifestPath = $npmPath . DIRECTORY_SEPARATOR . 'package.json';
+        $bowerManifestPath = $bowerPath . DIRECTORY_SEPARATOR . 'package.json';
         $termsPaths = [
             $composerPath . DIRECTORY_SEPARATOR . 'LICENSE',
-            $npmPath . DIRECTORY_SEPARATOR . 'LICENSE'
+            $npmPath . DIRECTORY_SEPARATOR . 'LICENSE',
+            $bowerPath . DIRECTORY_SEPARATOR . 'LICENSE'
         ];
         mkdir($composerPath, 0777, true);
         mkdir($npmPath, 0777, true);
+        mkdir($bowerPath, 0777, true);
         try {
             $source = json_encode(['packages' => [
                 ['name' => 'example/library', 'version' => '1.0.0', 'license' => ['MIT']],
-                ['name' => 'npm-asset/library', 'version' => '2.0.0']
+                ['name' => 'npm-asset/library', 'version' => '2.0.0'],
+                ['name' => 'bower-asset/outlayer', 'version' => 'v2.1.1']
             ]], JSON_THROW_ON_ERROR);
             file_put_contents($inventoryPath, $source);
             file_put_contents($manifestPath, '{"name":"library","license":"MIT"}');
+            file_put_contents($bowerManifestPath, '{"name":"outlayer","license":"MIT"}');
             if ($availableTerms) {
                 foreach ($termsPaths as $path) {
                     file_put_contents($path, 'Installed MIT terms');
@@ -54,41 +63,43 @@ class BuildOptionalLicensesConfigTest extends TestCase
 
             $workbench = new Workbench();
             $action = ActionFactory::createFromString($workbench, Build::class);
-            $bom = Build::buildRecipeBom($projectPath, $configuration);
+            $responses = new MockHandler($availableTerms ? [] : [
+                new Response(200, [], 'SPDX MIT terms'),
+                new Response(200, [], 'SPDX MIT terms'),
+                new Response(200, [], 'SPDX MIT terms')
+            ]);
+            $client = new Client(['handler' => $responses]);
+            $bom = Build::buildRecipeBom($projectPath, $configuration, $client);
             (new JsonBOM($bom))->saveToFile($stagedPath);
             $method = new \ReflectionMethod(Build::class, 'buildPackageBom');
             $method->setAccessible(true);
             $snapshot = $method->invoke($action, $stagedPath);
             $packages = json_decode($snapshot, true, 512, JSON_THROW_ON_ERROR)['packages'];
 
-            self::assertSame(['example/library', 'library'], array_column($packages, 'name'));
-            self::assertSame(['composer', 'npm'], array_column($packages, 'ecosystem'));
+            self::assertSame(['example/library', 'library', 'outlayer'], array_column($packages, 'name'));
+            self::assertSame(['composer', 'npm', 'bower'], array_column($packages, 'ecosystem'));
             foreach ($packages as $package) {
                 self::assertSame('MIT', $package['license_used']);
                 self::assertCount(1, $package['licenses']);
                 self::assertSame('MIT', $package['licenses'][0]['name']);
-                self::assertSame($availableTerms, $package['licenses'][0]['text_available']);
+                self::assertTrue($package['licenses'][0]['text_available']);
                 self::assertArrayNotHasKey('text', $package['licenses'][0]);
-                if ($availableTerms) {
-                    self::assertSame('local', $package['licenses'][0]['source']);
-                }
+                self::assertSame($availableTerms ? 'local' : 'spdx', $package['licenses'][0]['source']);
             }
             self::assertSame($source, file_get_contents($inventoryPath));
+            self::assertSame(0, $responses->count());
 
             $task = new GenericTask($workbench);
             $task->setParameter(Audit::TASK_PARAM_SBOM, $snapshot);
             $findings = (new LicenseScanner($workbench))->audit($task);
-            self::assertCount($availableTerms ? 0 : 2, $findings);
-            foreach ($findings as $finding) {
-                self::assertSame('missing-license-text', $finding->getSourceId());
-            }
+            self::assertSame([], $findings);
         } finally {
-            foreach (array_merge([$inventoryPath, $stagedPath, $manifestPath], $termsPaths) as $path) {
+            foreach (array_merge([$inventoryPath, $stagedPath, $manifestPath, $bowerManifestPath], $termsPaths) as $path) {
                 if (is_file($path)) {
                     unlink($path);
                 }
             }
-            foreach ([$composerPath, dirname($composerPath), $npmPath, dirname($npmPath), $vendorPath, $projectPath] as $path) {
+            foreach ([$composerPath, dirname($composerPath), $npmPath, dirname($npmPath), $bowerPath, dirname($bowerPath), $vendorPath, $projectPath] as $path) {
                 rmdir($path);
             }
         }
