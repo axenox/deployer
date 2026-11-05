@@ -45,7 +45,7 @@ class AuditBuild extends AbstractAction implements iCreateData
 {
     private const ADVISORY_COLUMNS = [
         'level', 'name', 'type', 'package', 'ecosystem', 'details_url', 'description',
-        'remediation', 'versions_affected', 'version_fixed', 'public_id'
+        'remediation', 'versions_affected', 'version_fixed', 'public_id', 'bundled_in_urn'
     ];
 
     private $scannersUxon = null;
@@ -191,7 +191,8 @@ class AuditBuild extends AbstractAction implements iCreateData
             'remediation' => $finding['REMEDIATION'],
             'versions_affected' => $finding['VERSIONS_AFFECTED'],
             'version_fixed' => $finding['VERSION_FIXED'],
-            'public_id' => $finding['PUBLIC_ID']
+            'public_id' => $finding['PUBLIC_ID'],
+            'bundled_in_urn' => $finding['BUNDLED_IN_URN']
         ];
     }
 

@@ -47,6 +47,115 @@ class AuditBuildPersistenceTest extends TestCase
     }
 
     /**
+     * Bundle schema changes are idempotent and preserve populated ownership when rolled back.
+     *
+     * Random fixture tables keep migration validation independent of application records.
+     *
+     * @return void
+     */
+    public function testBundleMigrationPreservesOwnershipOnDowngrade() : void
+    {
+        if (getenv('EXFACE_DEPLOYER_PERSISTENCE_TEST') !== '1') {
+            self::markTestSkipped('Set EXFACE_DEPLOYER_PERSISTENCE_TEST=1 to enable isolated migration checks.');
+        }
+        $workbench = $this->workbench = new Workbench();
+        $workbench->start();
+        $this->handlersInstalled = true;
+        $sheet = DataSheetFactory::createFromObjectIdOrAlias($workbench, 'axenox.Deployer.advisory');
+        $connection = $sheet->getMetaObject()->getDataConnection();
+        if (! $connection instanceof SqlDataConnectorInterface) {
+            self::markTestSkipped('The migration check requires a SQL data connection.');
+        }
+        $table = 'audit_test_bundle_' . bin2hex(random_bytes(6));
+        $migration = str_replace('axxdep_advisory', $table, file_get_contents(dirname(__DIR__, 3)
+            . '/Install/Sql/MySQL/Migrations/1.4/20261105_1700_01_NEW_advisory_bundled_in_urn.sql'));
+        [$up, $down] = explode('-- DOWN', explode('-- UP', $migration, 2)[1], 2);
+        try {
+            $connection->runSql("CREATE TABLE {$table} (oid INT PRIMARY KEY)");
+            $connection->runSql("INSERT INTO {$table} VALUES (1)");
+            $connection->runSql($up, true);
+            $connection->runSql($up, true);
+            self::assertNull($connection->runSql("SELECT bundled_in_urn FROM {$table}")->getResultArray()[0]['bundled_in_urn']);
+            $connection->runSql($down, true);
+            $connection->runSql($up, true);
+            $connection->runSql("UPDATE {$table} SET bundled_in_urn = 'composer:example/bundle:v2.0.0'");
+            $connection->runSql($down, true);
+            self::assertSame('composer:example/bundle:v2.0.0',
+                $connection->runSql("SELECT trash_bundled_in_urn FROM {$table}")->getResultArray()[0]['trash_bundled_in_urn']);
+        } finally {
+            $connection->runSql("DROP TABLE IF EXISTS {$table}");
+        }
+    }
+
+    /**
+     * Stable release names update advisories while preserving current versions and bundle evidence.
+     *
+     * Writes and build links are rolled back; the selected existing build is never modified.
+     *
+     * @return void
+     */
+    public function testStableReleaseAdvisoriesUpdateEvidenceAndBundleOwnership() : void
+    {
+        if (getenv('EXFACE_DEPLOYER_PERSISTENCE_TEST') !== '1') {
+            self::markTestSkipped('Set EXFACE_DEPLOYER_PERSISTENCE_TEST=1 to enable rollback-only database checks.');
+        }
+        $workbench = $this->workbench = new Workbench();
+        $workbench->start();
+        $this->handlersInstalled = true;
+        $builds = DataSheetFactory::createFromObjectIdOrAlias($workbench, 'axenox.Deployer.build');
+        $builds->getColumns()->addFromUidAttribute();
+        $builds->setRowsLimit(1);
+        $builds->setAutoCount(false);
+        $builds->dataRead();
+        if ($builds->isEmpty()) {
+            self::markTestSkipped('The persistence check requires an existing build.');
+        }
+        $buildUid = $builds->getUidColumn()->getValue(0);
+        $package = 'example/audit-test-' . bin2hex(random_bytes(6));
+        $finding = array_replace(array_fill_keys(Audit::COLUMNS, ''), [
+            'NAME' => 'Update available for package ' . $package,
+            'PACKAGE' => $package, 'ECOSYSTEM' => 'composer', 'TYPE' => 'outdated', 'LEVEL' => 50,
+            'VERSION_INSTALLED' => '1.0.0', 'VERSION_FIXED' => '1.0.1',
+            'BOM_URN' => 'composer:' . $package . ':1.0.0',
+            'BUNDLED_IN_URN' => 'composer:example/bundle:v2.0.0',
+            'DESCRIPTION' => 'New version 1.0.1 available - currently on 1.0.0.'
+        ]);
+        $action = ActionFactory::createFromString($workbench, AuditBuild::class);
+        $save = new \ReflectionMethod(AuditBuild::class, 'saveFindings');
+        $transaction = $workbench->data()->startTransaction();
+        try {
+            $first = $save->invoke($action, $buildUid, [$finding], $transaction)->getRow(0);
+            $finding['VERSION_FIXED'] = '1.2.0';
+            $finding['DESCRIPTION'] = 'New version 1.2.0 available - currently on 1.0.0.';
+            $second = $save->invoke($action, $buildUid, [$finding], $transaction)->getRow(0);
+            self::assertSame($first['advisory'], $second['advisory']);
+            self::assertSame('1.0.0', $second['version']);
+            $advisory = DataSheetFactory::createFromObjectIdOrAlias($workbench, 'axenox.Deployer.advisory');
+            $advisory->getColumns()->addMultiple(['description', 'version_fixed', 'bundled_in_urn']);
+            $advisory->getFilters()->addConditionFromString($advisory->getMetaObject()->getUidAttribute()->getAlias(), $second['advisory']);
+            $advisory->dataRead();
+            self::assertSame($finding['DESCRIPTION'], $advisory->getRow(0)['description']);
+            self::assertSame('1.2.0', $advisory->getRow(0)['version_fixed']);
+            self::assertSame($finding['BUNDLED_IN_URN'], $advisory->getRow(0)['bundled_in_urn']);
+
+            $finding['TYPE'] = 'upgradable';
+            $finding['NAME'] = 'New version 2 available for package ' . $package;
+            $finding['VERSION_FIXED'] = '2.0.0';
+            $major = $save->invoke($action, $buildUid, [$finding], $transaction)->getRow(0);
+            self::assertNotSame($first['advisory'], $major['advisory']);
+            $finding['VERSION_FIXED'] = '2.4.1';
+            $sameMajor = $save->invoke($action, $buildUid, [$finding], $transaction)->getRow(0);
+            self::assertSame($major['advisory'], $sameMajor['advisory']);
+            $finding['NAME'] = 'New version 3 available for package ' . $package;
+            $finding['VERSION_FIXED'] = '3.0.0';
+            $nextMajor = $save->invoke($action, $buildUid, [$finding], $transaction)->getRow(0);
+            self::assertNotSame($major['advisory'], $nextMajor['advisory']);
+        } finally {
+            $transaction->rollback();
+        }
+    }
+
+    /**
      * The migration must normalize legacy links and preserve evidence when downgrading.
      *
      * Random isolated fixture tables exercise the real migration SQL without changing app tables.

@@ -116,6 +116,9 @@
                                 "attribute_alias": "package"
                             },
                             {
+                                "attribute_alias": "bundled_in_urn"
+                            },
+                            {
                                 "attribute_alias": "level"
                             },
                             {

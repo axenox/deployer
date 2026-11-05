@@ -166,7 +166,12 @@ message contains the summary. The action logbook contains each build's scanner
 status, hints and findings table, followed by the summary.
 
 The advisory mapping preserves `level`, `name`, `type`, `package`, `ecosystem`, `details_url`,
-`description`, `remediation`, `versions_affected`, `version_fixed` and `public_id`.
+`description`, `remediation`, `versions_affected`, `version_fixed`, `public_id` and `bundled_in_urn`.
+Audit enriches grouped findings from the saved BOM's `bundled_in`, matched by the exact
+ecosystem, package and installed version. This metadata is set on the aggregate only,
+leaving scanner originals unchanged, and serialized as `BUNDLED_IN_URN`. It is not reconstructed from the current
+installation. The owning bundle URN is shown as **Bundled in** in the default advisory
+editor; an empty value means ownership is not known.
 Audit's deterministic `ID` is not used as a database UID. Each link's `version`
 stores the finding's `VERSION_INSTALLED`, including an empty value when unknown.
 Its required `bom_urn` stores `BOM_URN`: the normalized `ecosystem:package:version`
@@ -189,6 +194,14 @@ Change the model behavior's comparison attributes to change advisory uniqueness 
 changing AuditBuild. Any normalization needed for matching also belongs to that policy,
 not an additional lookup in the action. PackageManager's existing cross-source and
 title-based merging remains unchanged.
+
+Release findings use type `outdated` and name `Update available for package <name>`
+for minor/patch updates, or type `upgradable` and name
+`New version <major> available for package <name>` for major upgrades. Stable names
+let new releases update an existing advisory instead of spawning one for each patch.
+Full candidate and installed versions remain in the description and version fields.
+Different target majors remain separate upgrade advisories. Existing advisories
+with the old names are not renamed or deleted automatically.
 
 Each finding is saved individually through a DataSheet. The duplicate behavior creates
 an advisory or updates a matching one with the supplied contents, returning its persisted

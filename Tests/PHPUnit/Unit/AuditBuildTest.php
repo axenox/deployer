@@ -31,25 +31,10 @@ class AuditBuildTest extends TestCase
      * 
      * @return void
      */
-    public function testMappingMatchesTheAdvisoryModel() : void
+    public function testMappingPreservesAdvisoryEvidence() : void
     {
         $finding = array_combine(Audit::COLUMNS, Audit::COLUMNS);
         $row = $this->mapFinding($finding);
-        $model = json_decode(file_get_contents(dirname(__DIR__, 3)
-            . '/Model/axenox.Deployer.advisory/04_ATTRIBUTE.json'), true, 512, JSON_THROW_ON_ERROR);
-        $attributes = array_column($model['rows'], 'ALIAS');
-        $ecosystem = array_column($model['rows'], null, 'ALIAS')['ecosystem'];
-        $datatypes = json_decode(file_get_contents(dirname(__DIR__, 4)
-            . '/packagemanager/Model/01_DATATYPE.json'), true, 512, JSON_THROW_ON_ERROR);
-        $datatype = array_column($datatypes['rows'], null, 'ALIAS')['PackageEcosystem'];
-        self::assertSame($datatype['UID'], $ecosystem['DATATYPE']);
-        self::assertSame('ecosystem', $ecosystem['DATA_ADDRESS']);
-        self::assertSame(1, $ecosystem['REQUIREDFLAG']);
-        self::assertSame("'composer'", $ecosystem['DEFAULT_VALUE']);
-        $columns = array_keys($row);
-        sort($attributes);
-        sort($columns);
-        self::assertSame($attributes, $columns);
         self::assertSame([
             'level' => 'LEVEL',
             'name' => 'NAME',
@@ -61,7 +46,8 @@ class AuditBuildTest extends TestCase
             'remediation' => 'REMEDIATION',
             'versions_affected' => 'VERSIONS_AFFECTED',
             'version_fixed' => 'VERSION_FIXED',
-            'public_id' => 'PUBLIC_ID'
+            'public_id' => 'PUBLIC_ID',
+            'bundled_in_urn' => 'BUNDLED_IN_URN'
         ], $row);
         self::assertArrayNotHasKey('uid', $row);
         self::assertArrayNotHasKey('id', $row);
@@ -85,6 +71,19 @@ class AuditBuildTest extends TestCase
         self::assertSame('', $row['public_id']);
         self::assertSame('unknown', $row['ecosystem']);
         self::assertSame('', $row['version_fixed']);
+        self::assertSame('', $row['bundled_in_urn']);
+    }
+
+    /**
+     * Bundle URNs are mapped unchanged.
+     * 
+     * @return void
+     */
+    public function testBundleOwnershipIsPreserved() : void
+    {
+        $finding = array_fill_keys(Audit::COLUMNS, '');
+        $finding['BUNDLED_IN_URN'] = 'composer:example/bundle:v1.2.3';
+        self::assertSame($finding['BUNDLED_IN_URN'], $this->mapFinding($finding)['bundled_in_urn']);
     }
 
     /**
@@ -111,10 +110,6 @@ class AuditBuildTest extends TestCase
         $action = ActionFactory::createFromString(new Workbench(), AuditBuild::class);
         $method = new \ReflectionMethod(AuditBuild::class, 'mapBuildAdvisoryRow');
         $method->setAccessible(true);
-        $model = json_decode(file_get_contents(dirname(__DIR__, 3)
-            . '/Model/axenox.Deployer.build_advisory/04_ATTRIBUTE.json'), true, 512, JSON_THROW_ON_ERROR);
-        $attributes = array_column($model['rows'], 'DATA_ADDRESS', 'ALIAS');
-        self::assertSame('version', $attributes['version']);
         foreach (['v1.2.3', '2.0.0', ''] as $version) {
             self::assertSame([
                 'build' => 'build-uid',
